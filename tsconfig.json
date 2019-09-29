@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        "outDir": "bin",
+        "outDir": "out",
         "rootDir": "src"
     }
 }
