@@ -52,8 +52,8 @@ export class Map {
         let newX = this.position.x - changeX / this.scale;
         let newY = this.position.y - changeY / this.scale;
 
-        this.position.x = Math.floor(Math.max(Math.min(newX, this.width - this.width / this.scale), 0));
-        this.position.y = Math.floor(Math.max(Math.min(newY, this.height - this.height / this.scale), 0));
+        this.position.x = Math.max(Math.min(newX, this.width - this.width / this.scale), 0);
+        this.position.y = Math.max(Math.min(newY, this.height - this.height / this.scale), 0);
 
         return lastX !== this.position.x || lastY !== this.position.y;
     }
@@ -76,15 +76,31 @@ export class Map {
     }
 
     public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d');
+        let ctx: CanvasRenderingContext2D = elem.getContext('2d', { alpha: false });
 
         let columnsInView = this.width / this.scale;
         let rowsInView = this.height / this.scale;
 
-        for (let x = this.position.x, i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            for (let y = this.position.y, j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                this.cells[x][y].render(ctx, i, j, this.scale);
+        for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
+            let lastType = CellType.None;
+            let cellsInBatch = 1;
+            let batchStartY = 0;
+            for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
+                let cell = this.cells[x][y];
+                if (cell.type !== lastType) {
+                    if (lastType !== CellType.None) {
+                        ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
+                    }
+
+                    batchStartY = j * this.scale;
+                    ctx.fillStyle = lastType = cell.type;
+                    cellsInBatch = 1;
+                } else {
+                    ++cellsInBatch;
+                    continue;
+                }
             }
+            ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
         }
     }
 

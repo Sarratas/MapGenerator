@@ -2,7 +2,7 @@ import { Map } from './Map.js'
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: Map = undefined;
-const mapSize = 800;
+const mapSize = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate').addEventListener('click', function(event) {
@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', function() {
         let loadingText = "Generating new map...";
         let loadingTextWidth = ctx.measureText(loadingText).width;
         
-        const topOffset = 390;
+        const topOffset = 490;
         const generationTimeout = 100;
 
         ctx.fillText(loadingText , canvas.width / 2 - loadingTextWidth / 2, topOffset);
