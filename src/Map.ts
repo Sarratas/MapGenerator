@@ -21,12 +21,15 @@ export class Map {
     private readonly minScale = 1;
     private readonly maxScale = 100;
 
+    private readonly minRenderInterval = 50;
+
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.scale = 1;
         this.cells = [];
         this.position = { x: 0, y: 0 };
+        this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
     }
 
     public zoomIn(): boolean {

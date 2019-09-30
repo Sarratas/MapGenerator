@@ -10,4 +10,31 @@ export class Utils {
         }
         return result;
     }
+
+    public static throttle(func: Function, ms: number) {
+        let isThrottled = false;
+        let savedArgs: Array<any> = [];
+        let savedThis: Object = undefined;
+      
+        function wrapper(...args: Array<any>) {
+            if (isThrottled) {
+                savedArgs = args;
+                savedThis = this;
+                return;
+            }
+
+            func.apply(this, args);
+
+            isThrottled = true;
+      
+            setTimeout(function() {
+                isThrottled = false;
+                if (savedThis !== undefined) {
+                    wrapper.apply(savedThis, savedArgs);
+                    savedArgs = savedThis = undefined;
+                }
+            }, ms);
+        }
+        return wrapper;
+    }
 }
