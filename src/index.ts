@@ -1,7 +1,8 @@
 import { Map } from './Map.js'
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-let map: Map = null;
+let map: Map = undefined;
+const mapSize = 800;
 
 window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate').addEventListener('click', function(event) {
@@ -15,16 +16,19 @@ window.addEventListener('DOMContentLoaded', function() {
 
         let loadingText = "Generating new map...";
         let loadingTextWidth = ctx.measureText(loadingText).width;
+        
+        const topOffset = 390;
+        const generationTimeout = 100;
 
-        ctx.fillText(loadingText , canvas.width / 2 - loadingTextWidth / 2, 390);
+        ctx.fillText(loadingText , canvas.width / 2 - loadingTextWidth / 2, topOffset);
 
-        setTimeout(generateMap, 100);
+        setTimeout(generateMap, generationTimeout);
     });
 
 });
 
 function generateMap() {
-    map = new Map(800, 800);
+    map = new Map(mapSize, mapSize);
 
     map.generate();
 
@@ -48,10 +52,10 @@ canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
 });
 
 canvas.addEventListener('mousedown', function(event: MouseEvent): void {
-    if (!map) {
+    if (map === undefined) {
         return;
     }
-    
+
     let lastX = event.screenX;
     let lastY = event.screenY;
 

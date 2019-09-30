@@ -1,0 +1,82 @@
+{
+    "rules": {
+        "prettier": true,
+        "cyclomatic-complexity": false,
+        "increment-decrement": false,
+        "newline-before-return": false,
+        "no-parameter-properties": false,
+        "no-parameter-reassignment": false,
+        "no-unused-variable": false,
+        "typedef": false,
+        "unnecessary-else": false,
+        "comment-format": {
+            "options": [
+                "check-space"
+            ]
+        },
+        "member-access": true,
+        "only-arrow-functions": false,
+        "no-any": true,
+        "no-magic-numbers": [true, {"allowed-numbers": [0, 1, 2] }],
+        "no-non-null-assertion": true,
+        "no-null-keyword": true,
+        "no-require-imports": true,
+        "no-unbound-method": true,
+        "no-unnecessary-qualifier": true,
+        "no-use-before-declare": true,
+        "no-void-expression": {
+            "options": [
+                "ignore-arrow-function-shorthand"
+            ]
+        },
+        "prefer-function-over-method": true,
+        "strict-comparisons": true,
+        "strict-type-predicates": true,
+        "indent": [true, "spaces", 4],
+        "triple-equals": {
+            "options": [
+                "allow-undefined-check"
+            ]
+        },
+        "ban": {
+            "options": [
+                [
+                    "describe",
+                    "only"
+                ],
+                [
+                    "it",
+                    "only"
+                ]
+            ]
+        },
+        "interface-name": false,
+        "max-classes-per-file": false,
+        "member-ordering": {
+            "options": {
+                "order": "statics-first"
+            }
+        },
+        "no-console": {
+            "options": [
+                "log"
+            ]
+        },
+        "no-switch-case-fall-through": true,
+        "strict-boolean-expressions": {
+            "options": [
+                "allow-boolean-or-undefined"
+            ]
+        },
+        "switch-default": true,
+        "variable-name": {
+            "options": [
+                "ban-keywords",
+                "check-format",
+                "allow-leading-underscore",
+                "allow-pascal-case"
+            ]
+        },
+        "linebreak-style": false
+    }
+}

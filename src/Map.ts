@@ -9,11 +9,17 @@ export class Map {
 
     private cells: Array<Array<Cell>>;
 
-    private mountainFactor = 0.007;
-    private mountainSpreadFactor = 0.45;
+    private readonly mountainFactor = 0.007;
+    private readonly mountainSpreadFactor = 0.45;
 
-    private lakeFactor = 0.0001;
-    private lakeSpreadFactor = 0.064;
+    private readonly lakeFactor = 0.0001;
+    private readonly lakeSpreadFactor = 0.064;
+
+    private readonly smoothingMountainFactor = 5;
+    private readonly smoothingLakeFactor = 7;
+
+    private readonly minScale = 1;
+    private readonly maxScale = 100;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -24,7 +30,7 @@ export class Map {
     }
 
     public zoomIn(): boolean {
-        if (this.scale >= 100) return false;
+        if (this.scale >= this.maxScale) return false;
 
         ++this.scale;
         this.movePosition(0, 0);
@@ -32,7 +38,7 @@ export class Map {
     }
 
     public zoomOut(): boolean {
-        if (this.scale <= 1) return false;
+        if (this.scale <= this.minScale) return false;
 
         --this.scale;
         this.movePosition(0, 0);
@@ -49,12 +55,13 @@ export class Map {
         this.position.x = Math.floor(Math.max(Math.min(newX, this.width - this.width / this.scale), 0));
         this.position.y = Math.floor(Math.max(Math.min(newY, this.height - this.height / this.scale), 0));
 
-        return lastX != this.position.x || lastY != this.position.y;
+        return lastX !== this.position.x || lastY !== this.position.y;
     }
 
     public get size() {
         return this.width * this.height;
     }
+
     public generate() {
         for (let x = 0; x < this.width; ++x) {
             this.cells.push([]);
@@ -64,9 +71,21 @@ export class Map {
         }
         this.generateLakes();
         this.generateMountains();
-        this.generateHighlands();
         this.smoothingPass();
         this.generatePlains();
+    }
+
+    public render(elem: HTMLCanvasElement): void {
+        let ctx: CanvasRenderingContext2D = elem.getContext('2d');
+
+        let columnsInView = this.width / this.scale;
+        let rowsInView = this.height / this.scale;
+
+        for (let x = this.position.x, i = 0; x < this.position.x + columnsInView; ++x, ++i) {
+            for (let y = this.position.y, j = 0; y < this.position.y + rowsInView; ++y, ++j) {
+                this.cells[x][y].render(ctx, i, j, this.scale);
+            }
+        }
     }
 
     private generateLakes() {
@@ -88,13 +107,11 @@ export class Map {
 
             let adjacentCells = this.getAdjacentCells2(cell, 2);
             adjacentCells.forEach(function(cell: Cell) {
-                if (cell.type != CellType.None) return;
+                if (cell.type !== CellType.None) return;
 
                 if (Math.random() < spreadFactor) {
                     cell.type = CellType.Lake;
                     cellsToProcess.push(cell);
-                } else {
-                    //cell.type = CellType.Plain;
                 }
             });
         }
@@ -111,7 +128,7 @@ export class Map {
             let seedCell = this.cells[x][y];
 
             // prevent mountain generation right next to lakes
-            if (this.getAdjacentCells(seedCell).some(cell => cell.type == CellType.Lake)) {
+            if (this.getAdjacentCells(seedCell).some(cell => cell.type === CellType.Lake)) {
                 continue;
             }
 
@@ -124,7 +141,7 @@ export class Map {
 
             let adjacentCells = this.getAdjacentCells(cell);
             adjacentCells.forEach(function(cell: Cell) {
-                if (cell.type != CellType.None) return;
+                if (cell.type !== CellType.None) return;
 
                 if (Math.random() < spreadFactor) {
                     cell.type = CellType.Mountain;
@@ -136,13 +153,9 @@ export class Map {
         }
     }
 
-    private generateHighlands() {
-
-    }
-
     private generatePlains() {
         this.cells.forEach(elems => elems.forEach(currentCell => {
-            if (currentCell.type == CellType.None) {
+            if (currentCell.type === CellType.None) {
                 currentCell.type = CellType.Plain;
             }
         }));
@@ -152,23 +165,23 @@ export class Map {
         this.cells.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellType.Lake:
-                    if (this.getAdjacentCells2(currentCell).every(cell => cell.type != CellType.Lake)) {
+                    if (this.getAdjacentCells2(currentCell).every(cell => cell.type !== CellType.Lake)) {
                         currentCell.type = CellType.None;
                         break;
                     }
                     break;
                 case CellType.Highland:
-                    if (this.getAdjacentCells2(currentCell).filter(cell => cell.type == CellType.Mountain).length > 5) {
+                    if (this.getAdjacentCells2(currentCell).filter(cell => cell.type === CellType.Mountain).length > this.smoothingMountainFactor) {
                         currentCell.type = CellType.Mountain;
                     }
-                    // no break;
+                    /* falls through */
                 case CellType.Mountain:
-                    if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type == CellType.Lake)) {
+                    if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type === CellType.Lake)) {
                         currentCell.type = CellType.None;
                     }
                     break;
                 case CellType.None:
-                    if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type == CellType.Lake).length > 7) {
+                    if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type === CellType.Lake).length > this.smoothingLakeFactor) {
                         currentCell.type = CellType.Lake;
                         break;
                     }
@@ -202,25 +215,12 @@ export class Map {
         let arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
         arrayX.forEach(posX => arrayY.forEach(posY => {
             // don't include source cell in result array
-            if (cell.posX == posX && cell.posY == posY) return;
+            if (cell.posX === posX && cell.posY === posY) return;
 
             if (posX >= 0 && posX < this.width && posY >= 0 && posY < this.height) {
                 result.push(this.cells[posX][posY]);
             }
         }));
         return result;
-    }
-
-    public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d');
-
-        let columnsInView = this.width / this.scale;
-        let rowsInView = this.height / this.scale;
-
-        for (let x = this.position.x, i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            for (let y = this.position.y, j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                this.cells[x][y].render(ctx, i, j, this.scale);
-            }
-        }
     }
 }
