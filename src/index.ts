@@ -36,6 +36,10 @@ function generateMap() {
 }
 
 canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
+    if (map === undefined) {
+        return;
+    }
+
     event.preventDefault();
 
     let needsRendering = false;
