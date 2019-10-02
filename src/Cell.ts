@@ -1,9 +1,10 @@
 export enum CellType {
     None = '#FFFFFF',
-    Mountain = '#CC0000',
-    Lake = '#0066CC',
-    Plain = '#00CC00',
-    Highland = '#CCCC00',
+    Mountain = '#A47666',
+    Water = '#1A9DCE',
+    Plain = '#64815C',
+    Highland = '#D2BC8D',
+    DeepWater = '#1587BE',
 
     Placeholder = '#000000',
 }

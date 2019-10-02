@@ -82,6 +82,7 @@ export class Map {
         this.generateLakes();
         this.generateMountains();
         this.smoothingPass();
+        this.smoothingPass2();
         this.generatePlains();
     }
 
@@ -152,6 +153,7 @@ export class Map {
         
                 ctx.fillStyle = cell.type;
                 ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
             }
         }
@@ -167,7 +169,7 @@ export class Map {
             let y = Utils.rand(0, this.height - 1);
             let seedCell = this.cells[x][y];
 
-            seedCell.type = CellType.Lake;
+            seedCell.type = CellType.Water;
             cellsToProcess.push(this.cells[x][y]);
         }
 
@@ -179,7 +181,7 @@ export class Map {
                 if (cell.type !== CellType.None) return;
 
                 if (Math.random() < spreadFactor) {
-                    cell.type = CellType.Lake;
+                    cell.type = CellType.Water;
                     cellsToProcess.push(cell);
                 }
             });
@@ -197,7 +199,7 @@ export class Map {
             let seedCell = this.cells[x][y];
 
             // prevent mountain generation right next to lakes
-            if (this.getAdjacentCells(seedCell).some(cell => cell.type === CellType.Lake)) {
+            if (this.getAdjacentCells(seedCell).some(cell => cell.type === CellType.Water)) {
                 continue;
             }
 
@@ -233,8 +235,8 @@ export class Map {
     private smoothingPass() {
         this.cells.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
-                case CellType.Lake:
-                    if (this.getAdjacentCells2(currentCell).every(cell => cell.type !== CellType.Lake)) {
+                case CellType.Water:
+                    if (this.getAdjacentCells2(currentCell).every(cell => cell.type !== CellType.Water)) {
                         currentCell.type = CellType.None;
                         break;
                     }
@@ -245,13 +247,28 @@ export class Map {
                     }
                     /* falls through */
                 case CellType.Mountain:
-                    if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type === CellType.Lake)) {
+                    if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type === CellType.Water)) {
                         currentCell.type = CellType.None;
                     }
                     break;
                 case CellType.None:
-                    if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type === CellType.Lake).length > this.smoothingLakeFactor) {
-                        currentCell.type = CellType.Lake;
+                    if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
+                        currentCell.type = CellType.Water;
+                        break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }));
+    }
+
+    private smoothingPass2() {
+        this.cells.forEach(elems => elems.forEach(currentCell => {
+            switch (currentCell.type) {
+                case CellType.Water:
+                    if (this.getAdjacentCells2(currentCell, 4).every(cell => cell.type === CellType.Water || cell.type === CellType.DeepWater)) {
+                        currentCell.type = CellType.DeepWater;
                         break;
                     }
                     break;
