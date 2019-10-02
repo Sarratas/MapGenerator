@@ -22,6 +22,12 @@ export class Map {
     private readonly maxScale = 100;
 
     private readonly minRenderInterval = 50;
+    private readonly hexagonThresholdScale = 10;
+
+    private readonly hexagonAngle = 0.523598776;
+    private readonly hexagonBorderWidth = 0.1;
+
+    private readonly placeholderCell: Cell;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -30,6 +36,7 @@ export class Map {
         this.cells = [];
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
+        this.placeholderCell = new Cell(0, 0, CellType.Placeholder);
     }
 
     public zoomIn(): boolean {
@@ -80,7 +87,16 @@ export class Map {
 
     public render(elem: HTMLCanvasElement): void {
         let ctx: CanvasRenderingContext2D = elem.getContext('2d', { alpha: false });
+        ctx.clearRect(0, 0, this.width, this.height);
 
+        if (this.scale >= this.hexagonThresholdScale) {
+            this.renderHexagonal(ctx);
+        } else {
+            this.renderSquare(ctx);
+        }
+    }
+
+    private renderSquare(ctx: CanvasRenderingContext2D): void {
         let columnsInView = this.width / this.scale;
         let rowsInView = this.height / this.scale;
 
@@ -104,6 +120,40 @@ export class Map {
                 }
             }
             ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
+        }
+    }
+
+    private renderHexagonal(ctx: CanvasRenderingContext2D): void {
+        let hexRectangleWidth = this.scale;
+        let hexRadius = hexRectangleWidth / 2;
+        let sideLength = hexRadius / Math.cos(this.hexagonAngle);
+        let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
+        let hexRectangleHeight = sideLength + 2 * hexHeight;
+
+        let columnsInView = this.width / hexRectangleWidth;
+        let rowsInView = this.height / hexHeight;
+        
+        ctx.lineWidth = this.hexagonBorderWidth;
+
+        for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
+            for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
+                let cell = x >= 0 && y >= 0 ? this.cells[x][y] : this.placeholderCell;
+                let positionX = i * hexRectangleWidth + ((j % 2) * hexRadius);
+                let positionY = j * (sideLength + hexHeight);
+                
+                ctx.beginPath();
+                ctx.moveTo(positionX + hexRadius, positionY);
+                ctx.lineTo(positionX + hexRectangleWidth, positionY + hexHeight);
+                ctx.lineTo(positionX + hexRectangleWidth, positionY + hexHeight + sideLength);
+                ctx.lineTo(positionX + hexRadius, positionY + hexRectangleHeight);
+                ctx.lineTo(positionX, positionY + sideLength + hexHeight);
+                ctx.lineTo(positionX, positionY + hexHeight);
+                ctx.closePath();
+        
+                ctx.fillStyle = cell.type;
+                ctx.fill();
+                ctx.stroke();
+            }
         }
     }
 

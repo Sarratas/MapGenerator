@@ -4,26 +4,19 @@ export enum CellType {
     Lake = '#0066CC',
     Plain = '#00CC00',
     Highland = '#CCCC00',
+
+    Placeholder = '#000000',
 }
 
 export class Cell {
     public type: CellType;
+
     public posX: number;
     public posY: number;
 
-    private cellSize: number = 1;
-
-    constructor(posX: number, posY: number) {
+    constructor(posX: number, posY: number, type: CellType = CellType.None) {
         this.posX = posX;
         this.posY = posY;
-        this.type = CellType.None;
-    }
-
-    public render(context: CanvasRenderingContext2D, posX: number, posY: number, scale: number): void {
-        context.fillStyle = this.type;
-
-        let startX = posX * scale;
-        let startY = posY * scale;
-        context.fillRect(startX, startY, this.cellSize * scale, this.cellSize * scale);
+        this.type = type;
     }
 }
