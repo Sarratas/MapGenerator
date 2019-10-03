@@ -139,7 +139,7 @@ export class Map {
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
                 let cell = x >= 0 && y >= 0 ? this.cells[x][y] : this.placeholderCell;
-                let positionX = i * hexRectangleWidth + ((j % 2) * hexRadius);
+                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius);
                 let positionY = j * (sideLength + hexHeight);
                 
                 ctx.beginPath();
