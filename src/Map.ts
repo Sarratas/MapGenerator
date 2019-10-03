@@ -23,11 +23,16 @@ export class Map {
 
     private readonly minRenderInterval = 50;
     private readonly hexagonThresholdScale = 10;
+    private readonly textureThresholdScale = 100;
 
     private readonly hexagonAngle = 0.523598776;
     private readonly hexagonBorderWidth = 0.1;
 
     private readonly placeholderCell: Cell;
+
+    private readonly sprite: HTMLImageElement;
+    private readonly spriteElementWidth = 155;
+    private readonly spriteElementHeight = 185;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -37,6 +42,9 @@ export class Map {
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new Cell(0, 0, CellType.Placeholder);
+
+        this.sprite = new Image();
+        this.sprite.src = "sprite.png";
     }
 
     public zoomIn(): boolean {
@@ -87,7 +95,7 @@ export class Map {
     }
 
     public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d', { alpha: false });
+        let ctx: CanvasRenderingContext2D = elem.getContext('2d');
         ctx.clearRect(0, 0, this.width, this.height);
 
         if (this.scale >= this.hexagonThresholdScale) {
@@ -151,8 +159,12 @@ export class Map {
                 ctx.lineTo(positionX, positionY + hexHeight);
                 ctx.closePath();
         
-                ctx.fillStyle = cell.type;
-                ctx.fill();
+                if (this.scale < this.textureThresholdScale) {
+                    ctx.fillStyle = cell.type;
+                    ctx.fill();
+                } else {
+                    ctx.drawImage(this.sprite, cell.offsetX, cell.offsetY, this.spriteElementWidth, this.spriteElementHeight, positionX, positionY, hexRectangleWidth, hexRectangleHeight);
+                }
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
             }
@@ -169,7 +181,7 @@ export class Map {
             let y = Utils.rand(0, this.height - 1);
             let seedCell = this.cells[x][y];
 
-            seedCell.type = CellType.Water;
+            seedCell.setType(CellType.Water);
             cellsToProcess.push(this.cells[x][y]);
         }
 
@@ -181,7 +193,7 @@ export class Map {
                 if (cell.type !== CellType.None) return;
 
                 if (Math.random() < spreadFactor) {
-                    cell.type = CellType.Water;
+                    cell.setType(CellType.Water);
                     cellsToProcess.push(cell);
                 }
             });
@@ -203,7 +215,7 @@ export class Map {
                 continue;
             }
 
-            seedCell.type = CellType.Mountain;
+            seedCell.setType(CellType.Mountain);
             cellsToProcess.push(this.cells[x][y]);
         }
 
@@ -215,10 +227,10 @@ export class Map {
                 if (cell.type !== CellType.None) return;
 
                 if (Math.random() < spreadFactor) {
-                    cell.type = CellType.Mountain;
+                    cell.setType(CellType.Mountain);
                     cellsToProcess.push(cell);
                 } else {
-                    cell.type = CellType.Highland;
+                    cell.setType(CellType.Highland);
                 }
             });
         }
@@ -227,7 +239,7 @@ export class Map {
     private generatePlains() {
         this.cells.forEach(elems => elems.forEach(currentCell => {
             if (currentCell.type === CellType.None) {
-                currentCell.type = CellType.Plain;
+                currentCell.setType(CellType.Plain);
             }
         }));
     }
@@ -237,23 +249,23 @@ export class Map {
             switch (currentCell.type) {
                 case CellType.Water:
                     if (this.getAdjacentCells2(currentCell).every(cell => cell.type !== CellType.Water)) {
-                        currentCell.type = CellType.None;
+                        currentCell.setType(CellType.None);
                         break;
                     }
                     break;
                 case CellType.Highland:
                     if (this.getAdjacentCells2(currentCell).filter(cell => cell.type === CellType.Mountain).length > this.smoothingMountainFactor) {
-                        currentCell.type = CellType.Mountain;
+                        currentCell.setType(CellType.Mountain);
                     }
                     /* falls through */
                 case CellType.Mountain:
                     if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type === CellType.Water)) {
-                        currentCell.type = CellType.None;
+                        currentCell.setType(CellType.None);
                     }
                     break;
                 case CellType.None:
                     if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
-                        currentCell.type = CellType.Water;
+                        currentCell.setType(CellType.Water);
                         break;
                     }
                     break;
@@ -268,7 +280,7 @@ export class Map {
             switch (currentCell.type) {
                 case CellType.Water:
                     if (this.getAdjacentCells2(currentCell, 4).every(cell => cell.type === CellType.Water || cell.type === CellType.DeepWater)) {
-                        currentCell.type = CellType.DeepWater;
+                        currentCell.setType(CellType.DeepWater);
                         break;
                     }
                     break;
