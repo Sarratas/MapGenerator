@@ -30,7 +30,12 @@
             ]
         },
         "prefer-function-over-method": true,
-        "strict-comparisons": true,
+        "strict-comparisons": [
+            true,
+            {
+                "allow-object-equal-comparison": true
+            }
+        ],
         "strict-type-predicates": true,
         "indent": [true, "spaces", 4],
         "triple-equals": {
