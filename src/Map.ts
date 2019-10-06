@@ -1,22 +1,37 @@
 import { Cell, CellType } from "./Cell.js";
 import { Utils } from "./Utils.js";
+import FastPriorityQueue from "./FastPriorityQueue.js";
 
-export class Map {
+enum NeighborAlgorithms {
+    Square,
+    Cube
+}
+
+enum Ranges {
+    Immediate   = 1,
+    Close       = 2,
+    Medium      = 4,
+    Far         = 8
+}
+
+export class WorldMap {
     private width: number;
     private height: number;
     private scale: number;
     private position: { x: number, y: number };
 
-    private cells: Array<Array<Cell>>;
+    private cellsSquare: Array<Array<Cell>>;
+    private cellsCube: Map<string, Cell>;
 
-    private readonly mountainFactor = 0.007;
-    private readonly mountainSpreadFactor = 0.45;
+    private readonly mountainFactor = 0.001;
+    private readonly mountainSpreadFactor = 0.35;
 
     private readonly lakeFactor = 0.0001;
     private readonly lakeSpreadFactor = 0.064;
 
     private readonly smoothingMountainFactor = 5;
-    private readonly smoothingLakeFactor = 7;
+    private readonly smoothingLakeFactor = 11;
+    private readonly waterSmoothingPasses = 3;
 
     private readonly minScale = 1;
     private readonly maxScale = 100;
@@ -34,14 +49,26 @@ export class Map {
     private readonly spriteElementWidth = 155;
     private readonly spriteElementHeight = 185;
 
+    private readonly generationNeighborAlgorithm = NeighborAlgorithms.Square;
+    private readonly smoothingNeighborAlgorithm = NeighborAlgorithms.Square;
+
+    private getAdjacentCellsForSmoothing: (cell: Cell, radius: Ranges) => Array<Cell>;
+    private getAdjacentCellsForGenerating: (cell: Cell, radius: Ranges) => Array<Cell>;
+
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.scale = 1;
-        this.cells = [];
+        this.cellsSquare = [];
+        this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new Cell(0, 0, CellType.Placeholder);
+
+        this.getAdjacentCellsForSmoothing = this.smoothingNeighborAlgorithm === NeighborAlgorithms.Square ?
+            this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
+        this.getAdjacentCellsForGenerating = this.generationNeighborAlgorithm === NeighborAlgorithms.Square ?
+            this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
 
         this.sprite = new Image();
         this.sprite.src = "sprite.png";
@@ -82,15 +109,19 @@ export class Map {
 
     public generate() {
         for (let x = 0; x < this.width; ++x) {
-            this.cells.push([]);
+            this.cellsSquare.push([]);
             for (let y = 0; y < this.height; ++y) {
-                this.cells[this.cells.length - 1].push(new Cell(x, y));
+                let newCell = new Cell(x, y);
+                this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
+                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
             }
         }
+
         this.generateLakes();
         this.generateMountains();
         this.smoothingPass();
         this.smoothingPass2();
+        this.smoothingPass3();
         this.generatePlains();
     }
 
@@ -105,6 +136,52 @@ export class Map {
         }
     }
 
+    public calculatePath(startX: number, startY: number, endX: number, endY: number) {
+        let startCell = this.cellsSquare[startX][startY];
+        let endCell = this.cellsSquare[endX][endY];
+
+        startCell.type = CellType.None;
+        endCell.type = CellType.None;
+
+        let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
+        queue.add({cell: startCell, priority: 0});
+
+        let prevCell = new Map<Cell, Cell>();
+        let currCost = new Map<Cell, number>();
+        prevCell.set(startCell, undefined);
+        currCost.set(startCell, 0);
+
+        while (!queue.isEmpty()) {
+            let current = queue.poll();
+            if (current.cell === endCell) break;
+
+            for (let next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
+                if (next.isMovementDisabled()) continue;
+                let newCost = currCost.get(current.cell) + next.getMovementCost();
+                if (!currCost.has(next) || newCost < currCost.get(next)) {
+                    currCost.set(next, newCost);
+                    let priority = newCost + next.getDistanceFrom(endCell);
+                    queue.add({cell: next, priority: priority});
+                    prevCell.set(next, current.cell);
+                }
+            }
+        }
+
+        // backtrace the path
+        let current = endCell;
+        let result: Array<Cell> = [];
+        while (current !== undefined) {
+            result.push(current);
+            current = prevCell.get(current);
+        }
+
+        return result;
+    }
+
+    private getCellCube(x: number, y: number, z: number) {
+        return this.cellsCube.get(x + '.' + y + '.' + z);
+    }
+
     private renderSquare(ctx: CanvasRenderingContext2D): void {
         let columnsInView = this.width / this.scale;
         let rowsInView = this.height / this.scale;
@@ -114,7 +191,7 @@ export class Map {
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                let cell = this.cells[x][y];
+                let cell = this.cellsSquare[x][y];
                 if (cell.type !== lastType) {
                     if (lastType !== CellType.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
@@ -146,7 +223,7 @@ export class Map {
 
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
-                let cell = x >= 0 && y >= 0 ? this.cells[x][y] : this.placeholderCell;
+                let cell = x >= 0 && y >= 0 ? this.cellsSquare[x][y] : this.placeholderCell;
                 let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius);
                 let positionY = j * (sideLength + hexHeight);
                 
@@ -179,16 +256,15 @@ export class Map {
         for (let i = 0; i < seedsNumber; ++i) {
             let x = Utils.rand(0, this.width - 1);
             let y = Utils.rand(0, this.height - 1);
-            let seedCell = this.cells[x][y];
+            let seedCell = this.cellsSquare[x][y];
 
             seedCell.setType(CellType.Water);
-            cellsToProcess.push(this.cells[x][y]);
+            cellsToProcess.push(this.cellsSquare[x][y]);
         }
-
         while (cellsToProcess.length > 0) {
             let cell = cellsToProcess.shift();
 
-            let adjacentCells = this.getAdjacentCells2(cell, 2);
+            let adjacentCells = this.getAdjacentCellsForGenerating(cell, Ranges.Close);
             adjacentCells.forEach(function(cell: Cell) {
                 if (cell.type !== CellType.None) return;
 
@@ -208,21 +284,21 @@ export class Map {
         for (let i = 0; i < seedsNumber; ++i) {
             let x = Utils.rand(0, this.width - 1);
             let y = Utils.rand(0, this.height - 1);
-            let seedCell = this.cells[x][y];
+            let seedCell = this.cellsSquare[x][y];
 
             // prevent mountain generation right next to lakes
-            if (this.getAdjacentCells(seedCell).some(cell => cell.type === CellType.Water)) {
+            if (this.getAdjacentCellsForGenerating(seedCell, Ranges.Immediate).some(cell => cell.type === CellType.Water)) {
                 continue;
             }
 
             seedCell.setType(CellType.Mountain);
-            cellsToProcess.push(this.cells[x][y]);
+            cellsToProcess.push(this.cellsSquare[x][y]);
         }
 
         while (cellsToProcess.length > 0) {
             let cell = cellsToProcess.shift();
 
-            let adjacentCells = this.getAdjacentCells(cell);
+            let adjacentCells = this.getAdjacentCellsForGenerating(cell, Ranges.Immediate);
             adjacentCells.forEach(function(cell: Cell) {
                 if (cell.type !== CellType.None) return;
 
@@ -237,7 +313,7 @@ export class Map {
     }
 
     private generatePlains() {
-        this.cells.forEach(elems => elems.forEach(currentCell => {
+        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             if (currentCell.type === CellType.None) {
                 currentCell.setType(CellType.Plain);
             }
@@ -245,26 +321,26 @@ export class Map {
     }
 
     private smoothingPass() {
-        this.cells.forEach(elems => elems.forEach(currentCell => {
+        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellType.Water:
-                    if (this.getAdjacentCells2(currentCell).every(cell => cell.type !== CellType.Water)) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Immediate).filter(cell => cell.type === CellType.Water).length < 2) {
                         currentCell.setType(CellType.None);
                         break;
                     }
                     break;
                 case CellType.Highland:
-                    if (this.getAdjacentCells2(currentCell).filter(cell => cell.type === CellType.Mountain).length > this.smoothingMountainFactor) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Immediate).filter(cell => cell.type === CellType.Mountain).length > this.smoothingMountainFactor) {
                         currentCell.setType(CellType.Mountain);
                     }
                     /* falls through */
                 case CellType.Mountain:
-                    if (this.getAdjacentCells2(currentCell, 2).some(cell => cell.type === CellType.Water)) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).some(cell => cell.type === CellType.Water)) {
                         currentCell.setType(CellType.None);
                     }
                     break;
                 case CellType.None:
-                    if (this.getAdjacentCells2(currentCell, 2).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
                         currentCell.setType(CellType.Water);
                         break;
                     }
@@ -276,10 +352,33 @@ export class Map {
     }
 
     private smoothingPass2() {
-        this.cells.forEach(elems => elems.forEach(currentCell => {
+        for (let i = 0; i < this.waterSmoothingPasses; ++i) {
+            this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
+                switch (currentCell.type) {
+                    case CellType.Water:
+                        if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Immediate).filter(cell => cell.type === CellType.Water).length < i + 3) {
+                            currentCell.setType(CellType.None);
+                            break;
+                        }
+                        break;
+                    case CellType.None:
+                        if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
+                            currentCell.setType(CellType.Water);
+                            break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }));
+        }
+    }
+
+    private smoothingPass3() {
+        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellType.Water:
-                    if (this.getAdjacentCells2(currentCell, 4).every(cell => cell.type === CellType.Water || cell.type === CellType.DeepWater)) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Medium).every(cell => cell.type === CellType.Water || cell.type === CellType.DeepWater)) {
                         currentCell.setType(CellType.DeepWater);
                         break;
                     }
@@ -290,24 +389,7 @@ export class Map {
         }));
     }
 
-    private getAdjacentCells(cell: Cell): Array<Cell> {
-        let result: Array<Cell> = [];
-        if (cell.posX > 0) {
-            result.push(this.cells[cell.posX - 1][cell.posY]);
-        }
-        if (cell.posY > 0) {
-            result.push(this.cells[cell.posX][cell.posY - 1]);
-        }
-        if (cell.posX < this.width - 1) {
-            result.push(this.cells[cell.posX + 1][cell.posY]);
-        }
-        if (cell.posY < this.height - 1) {
-            result.push(this.cells[cell.posX][cell.posY + 1]);
-        }
-        return result;
-    }
-
-    private getAdjacentCells2(cell: Cell, radius: number = 1): Array<Cell> {
+    private getAdjacentCellsSquare(cell: Cell, radius: number): Array<Cell> {
         let result: Array<Cell> = [];
         let arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
         let arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
@@ -316,9 +398,26 @@ export class Map {
             if (cell.posX === posX && cell.posY === posY) return;
 
             if (posX >= 0 && posX < this.width && posY >= 0 && posY < this.height) {
-                result.push(this.cells[posX][posY]);
+                result.push(this.cellsSquare[posX][posY]);
             }
         }));
+        return result;
+    }
+
+    private getAdjacentCellsCube(cell: Cell, radius: number): Array<Cell> {
+        let result: Array<Cell> = [];
+        for (let cubeX = cell.cubeX - radius; cubeX <= cell.cubeX + radius; ++cubeX) {
+            for (let cubeY = cell.cubeY - radius; cubeY <= cell.cubeY + radius; ++cubeY) {
+                let cubeZ = - cubeX - cubeY;
+                if (cell.cubeZ - cubeZ < -radius || cell.cubeZ - cubeZ > radius) continue;
+                // don't include source cell in result array
+                if (cell.cubeX === cubeX && cell.cubeY === cubeY && cell.cubeZ === cubeZ) continue;
+    
+                let neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
+                if (neighborCell != undefined)
+                    result.push(neighborCell);
+            }
+        }
         return result;
     }
 }

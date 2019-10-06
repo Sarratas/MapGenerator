@@ -35,16 +35,44 @@ export class Cell {
     public offsetX: number;
     public offsetY: number;
 
+    public cubeX: number;
+    public cubeY: number;
+    public cubeZ: number;
+
     constructor(posX: number, posY: number, type: CellType = CellType.None) {
         this.posX = posX;
         this.posY = posY;
         this.type = type;
+
+        this.cubeX = posX - (posY - (posY & 1)) / 2;
+        this.cubeZ = posY;
+        this.cubeY = -this.cubeX - this.cubeZ;
+
         this.setSpriteOffset(type);
     }
 
     public setType(type: CellType) {
         this.type = type;
         this.setSpriteOffset(type);
+    }
+
+    public getMovementCost(): number {
+        switch (this.type) {
+            case CellType.Mountain:
+                return 4;
+            case CellType.Highland:
+                return 2;
+            default:
+                return 1;
+        }
+    }
+
+    public getDistanceFrom(target: Cell): number {
+        return Math.max(Math.abs(this.cubeX - target.cubeX), Math.abs(this.cubeY - target.cubeY), Math.abs(this.cubeZ - target.cubeZ));
+    }
+
+    public isMovementDisabled(): boolean {
+        return this.type === CellType.Water || this.type === CellType.DeepWater;
     }
 
     private setSpriteOffset(type: CellType) {

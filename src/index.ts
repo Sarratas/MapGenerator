@@ -1,7 +1,8 @@
-import { Map } from './Map.js'
+import { WorldMap } from './Map.js';
+import { CellType } from './Cell.js';
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-let map: Map = undefined;
+let map: WorldMap = undefined;
 const mapSize = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -25,10 +26,27 @@ window.addEventListener('DOMContentLoaded', function() {
         setTimeout(generateMap, generationTimeout);
     });
 
+    document.getElementById('calcPath').addEventListener('click', function(event) {
+        event.preventDefault();
+        let form: HTMLFormElement = document.getElementById('calcPathForm') as HTMLFormElement;
+        let startX = form.elements['startX'].value;
+        let startY = form.elements['startY'].value;
+
+        let endX = form.elements['endX'].value;
+        let endY = form.elements['endY'].value;
+
+        let path = map.calculatePath(startX, startY, endX, endY);
+
+        for (let cell of path) {
+            cell.type = CellType.Placeholder;
+        }
+        
+        map.render(canvas);
+    });
 });
 
 function generateMap() {
-    map = new Map(mapSize, mapSize);
+    map = new WorldMap(mapSize, mapSize);
 
     map.generate();
 
