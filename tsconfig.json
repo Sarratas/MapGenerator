@@ -3,6 +3,7 @@
         "target": "ES6",
         "outDir": "out",
         "rootDir": "src",
-        "allowJs": true
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true
     }
 }
