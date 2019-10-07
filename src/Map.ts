@@ -42,6 +42,7 @@ export class WorldMap {
 
     private readonly hexagonAngle = 0.523598776;
     private readonly hexagonBorderWidth = 0.1;
+    private readonly hexagonHeightFactor = 0.75;
 
     private readonly placeholderCell: Cell;
 
@@ -97,8 +98,10 @@ export class WorldMap {
         let newX = this.position.x - changeX / this.scale;
         let newY = this.position.y - changeY / this.scale;
 
-        this.position.x = Math.max(Math.min(newX, this.width - this.width / this.scale), 0);
-        this.position.y = Math.max(Math.min(newY, this.height - this.height / this.scale), 0);
+        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+
+        this.position.x = Math.max(Math.min(newX, this.width - columnsInView + 2), 0);
+        this.position.y = Math.max(Math.min(newY, this.height - rowsInView + 2), 0);
 
         return lastX !== this.position.x || lastY !== this.position.y;
     }
@@ -178,20 +181,36 @@ export class WorldMap {
         return result;
     }
 
+    private countVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
+        if (this.scale < this.hexagonThresholdScale) {
+            return { columnsInView: this.width / this.scale, rowsInView: this.height / this.scale };
+        } else {
+            let hexRectangleWidth = this.scale;
+            let hexRadius = hexRectangleWidth / 2;
+            let sideLength = hexRadius / Math.cos(this.hexagonAngle);
+            let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
+            let hexRectangleHeight = sideLength + 2 * hexHeight;
+
+            let columnsInView = this.width / hexRectangleWidth;
+            let rowsInView = this.height / hexRectangleHeight / this.hexagonHeightFactor;
+
+            return { columnsInView, rowsInView };
+        }
+    }
+
     private getCellCube(x: number, y: number, z: number) {
         return this.cellsCube.get(x + '.' + y + '.' + z);
     }
 
     private renderSquare(ctx: CanvasRenderingContext2D): void {
-        let columnsInView = this.width / this.scale;
-        let rowsInView = this.height / this.scale;
+        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
             let lastType = CellType.None;
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                let cell = this.cellsSquare[x][y];
+                let cell = x >= 0 && y >= 0 && x < this.width && y < this.height ? this.cellsSquare[x][y] : this.placeholderCell;
                 if (cell.type !== lastType) {
                     if (lastType !== CellType.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
@@ -216,14 +235,13 @@ export class WorldMap {
         let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
         let hexRectangleHeight = sideLength + 2 * hexHeight;
 
-        let columnsInView = this.width / hexRectangleWidth;
-        let rowsInView = this.height / hexHeight;
+        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
         
         ctx.lineWidth = this.hexagonBorderWidth;
 
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
-                let cell = x >= 0 && y >= 0 ? this.cellsSquare[x][y] : this.placeholderCell;
+                let cell = x >= 0 && y >= 0 && x < this.width && y < this.height ? this.cellsSquare[x][y] : this.placeholderCell;
                 let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius);
                 let positionY = j * (sideLength + hexHeight);
                 
