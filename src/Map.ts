@@ -1,6 +1,6 @@
-import { Cell, CellType } from "./Cell.js";
-import { Utils } from "./Utils.js";
-import FastPriorityQueue from "./FastPriorityQueue.js";
+import { Cell, CellType } from "./Cell";
+import { Utils } from "./Utils";
+import FastPriorityQueue from "../node_modules/fastpriorityqueue/FastPriorityQueue";
 
 enum NeighborAlgorithms {
     Square,

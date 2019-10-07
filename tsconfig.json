@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
-        "target": "ES6",
-        "outDir": "out",
-        "rootDir": "src",
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "es6",
+        "target": "es6",
+        "sourceMap": true,
         "allowJs": true,
         "allowSyntheticDefaultImports": true
     }

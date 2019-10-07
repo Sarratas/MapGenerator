@@ -1,5 +1,6 @@
-import { WorldMap } from './Map.js';
-import { CellType } from './Cell.js';
+import { WorldMap } from './Map';
+import { CellType } from './Cell';
+import './styles/index.scss';
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap = undefined;
@@ -28,14 +29,23 @@ window.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('calcPath').addEventListener('click', function(event) {
         event.preventDefault();
+
+        interface pathFormElements extends HTMLFormControlsCollection {
+            startX: HTMLInputElement;
+            startY: HTMLInputElement;
+            endX: HTMLInputElement;
+            endY: HTMLInputElement;
+        }
+
         let form: HTMLFormElement = document.getElementById('calcPathForm') as HTMLFormElement;
-        let startX = form.elements['startX'].value;
-        let startY = form.elements['startY'].value;
+        let formElements: pathFormElements = form.elements as pathFormElements;
+        let startX: number = +formElements.startX.value;
+        let startY: number = +formElements.startY.value;
 
-        let endX = form.elements['endX'].value;
-        let endY = form.elements['endY'].value;
+        let endX: number = +formElements.endX.value;
+        let endY: number = +formElements.endY.value;
 
-        let path = map.calculatePath(startX, startY, endX, endY);
+        let path = map.calculatePath(startX, startY, endX, endY)
 
         for (let cell of path) {
             cell.type = CellType.Placeholder;
