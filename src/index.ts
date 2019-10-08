@@ -1,4 +1,4 @@
-import { WorldMap } from './Map';
+import { WorldMap, GenerationParams } from './Map';
 import { CellType } from './Cell';
 import './styles/index.scss';
 
@@ -8,6 +8,7 @@ const mapSize = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generate').addEventListener('click', function(event) {
+        event.preventDefault();
         
         let ctx = canvas.getContext('2d');
 
@@ -56,7 +57,17 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function generateMap() {
-    map = new WorldMap(mapSize, mapSize);
+    let params: GenerationParams = <GenerationParams>{};
+    let inputs = document.querySelectorAll('#generateForm input, #generateForm select') as NodeListOf<HTMLInputElement | HTMLSelectElement>;
+
+    type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
+
+    for (let input of inputs) {
+        let name: KeysOfType<GenerationParams, number> = input.name as KeysOfType<GenerationParams, number>;
+        params[name] = parseFloat(input.value);
+    }
+
+    map = new WorldMap(mapSize, mapSize, params);
 
     map.generate();
 

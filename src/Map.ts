@@ -2,9 +2,9 @@ import { Cell, CellType } from "./Cell";
 import { Utils } from "./Utils";
 import FastPriorityQueue from "../node_modules/fastpriorityqueue/FastPriorityQueue";
 
-enum NeighborAlgorithms {
+export enum NeighborAlgorithms {
     Square,
-    Cube
+    Cube 
 }
 
 enum Ranges {
@@ -12,6 +12,21 @@ enum Ranges {
     Close       = 2,
     Medium      = 4,
     Far         = 8
+}
+
+export interface GenerationParams {
+    mountainFactor?: number;
+    mountainSpreadFactor?: number;
+
+    lakeFactor?: number;
+    lakeSpreadFactor?: number;
+
+    smoothingMountainFactor?: number;
+    smoothingLakeFactor?: number;
+    waterSmoothingPasses?: number;
+
+    generationNeighborAlgorithm?: NeighborAlgorithms;
+    smoothingNeighborAlgorithm?: NeighborAlgorithms;
 }
 
 export class WorldMap {
@@ -23,15 +38,20 @@ export class WorldMap {
     private cellsSquare: Array<Array<Cell>>;
     private cellsCube: Map<string, Cell>;
 
-    private readonly mountainFactor = 0.001;
-    private readonly mountainSpreadFactor = 0.35;
+    private readonly generationParams: GenerationParams = {
+        mountainFactor: 0.001,
+        mountainSpreadFactor: 0.35,
+    
+        lakeFactor: 0.0001,
+        lakeSpreadFactor: 0.064,
+    
+        smoothingMountainFactor: 5,
+        smoothingLakeFactor: 11,
+        waterSmoothingPasses: 3,
 
-    private readonly lakeFactor = 0.0001;
-    private readonly lakeSpreadFactor = 0.064;
-
-    private readonly smoothingMountainFactor = 5;
-    private readonly smoothingLakeFactor = 11;
-    private readonly waterSmoothingPasses = 3;
+        generationNeighborAlgorithm: NeighborAlgorithms.Square,
+        smoothingNeighborAlgorithm: NeighborAlgorithms.Square,
+    }
 
     private readonly minScale = 1;
     private readonly maxScale = 100;
@@ -50,15 +70,13 @@ export class WorldMap {
     private readonly spriteElementWidth = 155;
     private readonly spriteElementHeight = 185;
 
-    private readonly generationNeighborAlgorithm = NeighborAlgorithms.Square;
-    private readonly smoothingNeighborAlgorithm = NeighborAlgorithms.Square;
-
     private getAdjacentCellsForSmoothing: (cell: Cell, radius: Ranges) => Array<Cell>;
     private getAdjacentCellsForGenerating: (cell: Cell, radius: Ranges) => Array<Cell>;
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, params?: GenerationParams) {
         this.width = width;
         this.height = height;
+        this.generationParams = { ...this.generationParams, ...params }
         this.scale = 1;
         this.cellsSquare = [];
         this.cellsCube = new Map<string, Cell>();
@@ -66,9 +84,9 @@ export class WorldMap {
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new Cell(0, 0, CellType.Placeholder);
 
-        this.getAdjacentCellsForSmoothing = this.smoothingNeighborAlgorithm === NeighborAlgorithms.Square ?
+        this.getAdjacentCellsForSmoothing = this.generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Square ?
             this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
-        this.getAdjacentCellsForGenerating = this.generationNeighborAlgorithm === NeighborAlgorithms.Square ?
+        this.getAdjacentCellsForGenerating = this.generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Square ?
             this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
 
         this.sprite = new Image();
@@ -267,9 +285,9 @@ export class WorldMap {
     }
 
     private generateLakes() {
-        let seedsNumber = this.lakeFactor * this.size;
+        let seedsNumber = this.generationParams.lakeFactor * this.size;
         let cellsToProcess: Array<Cell> = [];
-        let spreadFactor = this.lakeSpreadFactor;
+        let spreadFactor = this.generationParams.lakeSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
             let x = Utils.rand(0, this.width - 1);
@@ -295,9 +313,9 @@ export class WorldMap {
     }
 
     private generateMountains() {
-        let seedsNumber = this.mountainFactor * this.size;
+        let seedsNumber = this.generationParams.mountainFactor * this.size;
         let cellsToProcess: Array<Cell> = [];
-        let spreadFactor = this.mountainSpreadFactor;
+        let spreadFactor = this.generationParams.mountainSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
             let x = Utils.rand(0, this.width - 1);
@@ -348,7 +366,7 @@ export class WorldMap {
                     }
                     break;
                 case CellType.Highland:
-                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Immediate).filter(cell => cell.type === CellType.Mountain).length > this.smoothingMountainFactor) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Immediate).filter(cell => cell.type === CellType.Mountain).length > this.generationParams.smoothingMountainFactor) {
                         currentCell.setType(CellType.Mountain);
                     }
                     /* falls through */
@@ -358,7 +376,7 @@ export class WorldMap {
                     }
                     break;
                 case CellType.None:
-                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
+                    if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.generationParams.smoothingLakeFactor) {
                         currentCell.setType(CellType.Water);
                         break;
                     }
@@ -370,7 +388,7 @@ export class WorldMap {
     }
 
     private smoothingPass2() {
-        for (let i = 0; i < this.waterSmoothingPasses; ++i) {
+        for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
             this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
                 switch (currentCell.type) {
                     case CellType.Water:
@@ -380,7 +398,7 @@ export class WorldMap {
                         }
                         break;
                     case CellType.None:
-                        if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.smoothingLakeFactor) {
+                        if (this.getAdjacentCellsForSmoothing(currentCell, Ranges.Close).filter(cell => cell.type === CellType.Water).length > this.generationParams.smoothingLakeFactor) {
                             currentCell.setType(CellType.Water);
                             break;
                         }

@@ -21,7 +21,7 @@
     "build": "webpack --mode development --progress --colors",
     "build-production": "webpack -p --progress --colors",
     "build-watch": "webpack --watch --progress --colors --mode development",
-    "start": "webpack-dev-server --open --mode development"
+    "start": "webpack-dev-server --open chrome --mode development"
   },
   "repository": {
     "type": "git",

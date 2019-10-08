@@ -6,10 +6,10 @@ body {
         margin: 0 auto;
         display: block;
         cursor: all-scroll;
+        float: left;
     }
 
     button {
-        background-color: #4CAF50;
         border: none;
         color: white;
         padding: 15px 32px;
@@ -17,5 +17,37 @@ body {
         font-weight: 700;
         font-size: 16px;
         cursor: pointer;
+    }
+
+    button.red {
+        background-color: #8B0000;
+    }
+
+    button.green {
+        background-color: #4CAF50;
+    }
+
+    table td {
+        vertical-align: top;
+    }
+
+    form {
+        border: 2px solid #ccc;
+        padding: 10px;
+        float: none;
+        display: block;
+        margin-bottom: 20px;
+
+        table {
+            text-align: right;
+
+            tbody > tr:last-child > td {
+                padding-bottom: 20px;
+            }
+
+            select {
+                width: 100%;
+            }
+        }
     }
 }

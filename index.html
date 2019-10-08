@@ -5,29 +5,95 @@
         <meta charset="UTF-8">
     </head>
     <body>
-        <canvas id="canvas" width="1000" height="1000"></canvas><br/>
-        <button id="generate">Generate</button><br/><br/>
-        <form id="calcPathForm">
-            <table style="margin: 0 auto">
-                <tr>
-                    <td><label for="startX">Punkt początkowy X:</label></td>
-                    <td><input id="startX" name="startX" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td><label for="startY">Punkt początkowy Y:</label></td>
-                    <td><input id="startY" name="startY" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td><label for="endX">Punkt początkowy X:</label></td>
-                    <td><input id="endX" name="endX" type="text"></input></td>
-                </tr>
-                <tr>
-                    <td><label for="endY">Punkt początkowy Y:</label></td>
-                    <td><input id="endY" name="endY" type="text"></input></td>
-                </tr>
-            </table>
-            <button id="calcPath">Calculate path</button><br/><br/>
-        </form>
+        <table>
+            <tr>
+                <td>
+                    <canvas id="canvas" width="1000" height="1000"></canvas>
+                </td>
+                <td>
+                    <form id="generateForm">
+                        <table style="margin: 0 auto">
+                            <tbody>
+                                <tr>
+                                    <td><label for="mountainFactor">mountainFactor:</label></td>
+                                    <td><input id="mountainFactor" name="mountainFactor" type="number" value="0.001" step="0.0001" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="mountainSpreadFactor">mountainSpreadFactor:</label></td>
+                                    <td><input id="mountainSpreadFactor" name="mountainSpreadFactor" type="number" value="0.35" step="0.001" /></td>
+                                </tr>
+                            </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><label for="lakeFactor">lakeFactor:</label></td>
+                                    <td><input id="lakeFactor" name="lakeFactor" type="number" value="0.0001" step="0.00001" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="lakeSpreadFactor">lakeSpreadFactor:</label></td>
+                                    <td><input id="lakeSpreadFactor" name="lakeSpreadFactor" type="number" value="0.064" step="0.001" /></td>
+                                </tr>
+                            </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><label for="smoothingMountainFactor">smoothingMountainFactor:</label></td>
+                                    <td><input id="smoothingMountainFactor" name="smoothingMountainFactor" type="number" value="5" step="1" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="smoothingLakeFactor">smoothingLakeFactor:</label></td>
+                                    <td><input id="smoothingLakeFactor" name="smoothingLakeFactor" type="number" value="11" step="1" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="waterSmoothingPasses">waterSmoothingPasses:</label></td>
+                                    <td><input id="waterSmoothingPasses" name="waterSmoothingPasses" type="number" value="3" step="1" /></td>
+                                </tr>
+                            </tbody>
+                            <tbody>
+                                <tr>
+                                    <td><label for="generationNeighborAlgorithm">generationNeighborAlgorithm:</label></td>
+                                    <td>
+                                        <select id="generationNeighborAlgorithm" name="generationNeighborAlgorithm">
+                                            <option value="0" selected>Square</option>
+                                            <option value="1">Cube</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label for="smoothingNeighborAlgorithm">smoothingNeighborAlgorithm:</label></td>
+                                    <td>
+                                        <select id="smoothingNeighborAlgorithm" name="smoothingNeighborAlgorithm">
+                                            <option value="0" selected>Square</option>
+                                            <option value="1">Cube</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button id="generate" class="red">Generate</button><br/><br/>
+                    </form>
+                    <form id="calcPathForm">
+                        <table style="margin: 0 auto">
+                            <tr>
+                                <td><label for="startX">Punkt początkowy X:</label></td>
+                                <td><input id="startX" name="startX" type="text" /></td>
+                            </tr>
+                            <tr>
+                                <td><label for="startY">Punkt początkowy Y:</label></td>
+                                <td><input id="startY" name="startY" type="text" /></td>
+                            </tr>
+                            <tr>
+                                <td><label for="endX">Punkt początkowy X:</label></td>
+                                <td><input id="endX" name="endX" type="text" /></td>
+                            </tr>
+                            <tr>
+                                <td><label for="endY">Punkt początkowy Y:</label></td>
+                                <td><input id="endY" name="endY" type="text" /></td>
+                            </tr>
+                        </table>
+                        <button id="calcPath" class="green">Calculate path</button><br/><br/>
+                    </form>
+                </td>
+            </tr>
+        </table>
         <script src="dist/bundle.js" type="module"></script>
     </body>
 </html>
