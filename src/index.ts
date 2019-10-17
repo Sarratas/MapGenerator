@@ -83,10 +83,14 @@ canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
 
     let needsRendering = false;
 
+    let mousePos = getMousePos(canvas, event);
+    let currentX = mousePos.x;
+    let currentY = mousePos.y;
+
     if (event.deltaY < 0) {
-        needsRendering = map.zoomIn();
+        needsRendering = map.zoomIn(currentX, currentY);
     } else if (event.deltaY > 0) {
-        needsRendering = map.zoomOut();
+        needsRendering = map.zoomOut(currentX, currentY);
     }
 
     if (needsRendering) {
@@ -99,14 +103,16 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
         return;
     }
 
-    let lastX = event.screenX;
-    let lastY = event.screenY;
+    let initialMousePos = getMousePos(canvas, event);
+    let lastX = initialMousePos.x;
+    let lastY = initialMousePos.y;
 
     let handleMouseMove = function(event: MouseEvent): void {
-        let currentX = event.screenX;
-        let currentY = event.screenY;
+        let mousePos = getMousePos(canvas, event);
+        let currentX = mousePos.x;
+        let currentY = mousePos.y;
 
-        if (map.movePosition(currentX - lastX, currentY - lastY)) {
+        if (map.movePosition(lastX - currentX, lastY - currentY)) {
             map.render(canvas);
         }
 
@@ -115,10 +121,11 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
     }
 
     let handleMouseUp = function(event: MouseEvent): void {
-        let endX = event.screenX;
-        let endY = event.screenY;
+        let mousePos = getMousePos(canvas, event);
+        let endX = mousePos.x;
+        let endY = mousePos.y;
 
-        if (map.movePosition(endX - lastX, endY - lastY)) {
+        if (map.movePosition(lastX - endX, lastY - endY)) {
             map.render(canvas);
         }
 
@@ -129,3 +136,11 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mousemove', handleMouseMove);
 });
+
+function getMousePos(canvas: HTMLCanvasElement, event: MouseEvent) {
+    let rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+}

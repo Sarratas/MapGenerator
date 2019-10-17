@@ -76,7 +76,7 @@ export class WorldMap {
     constructor(width: number, height: number, params?: GenerationParams) {
         this.width = width;
         this.height = height;
-        this.generationParams = { ...this.generationParams, ...params }
+        this.generationParams = { ...this.generationParams, ...params };
         this.scale = 1;
         this.cellsSquare = [];
         this.cellsCube = new Map<string, Cell>();
@@ -93,28 +93,40 @@ export class WorldMap {
         this.sprite.src = "sprite.png";
     }
 
-    public zoomIn(): boolean {
+    public zoomIn(posX: number, posY: number): boolean {
         if (this.scale >= this.maxScale) return false;
 
+        let newX = this.position.x + posX / this.scale - posX / (this.scale + 1);
+        let newY = this.position.y + posY / this.scale - posY / (this.scale + 1);
+
         ++this.scale;
-        this.movePosition(0, 0);
+        this.setPosition(newX, newY);
+
         return true;
     }
 
-    public zoomOut(): boolean {
+    public zoomOut(posX: number, posY: number): boolean {
         if (this.scale <= this.minScale) return false;
 
+        let newX = this.position.x + posX / this.scale - posX / (this.scale - 1);
+        let newY = this.position.y + posY / this.scale - posY / (this.scale - 1);
+
         --this.scale;
-        this.movePosition(0, 0);
+        this.setPosition(newX, newY);
+
         return true;
     }
 
     public movePosition(changeX: number, changeY: number): boolean {
+        let newX = this.position.x + changeX / this.scale;
+        let newY = this.position.y + changeY / this.scale;
+
+        return this.setPosition(newX, newY);
+    }
+
+    public setPosition(newX: number, newY: number): boolean {
         let lastX = this.position.x;
         let lastY = this.position.y;
-
-        let newX = this.position.x - changeX / this.scale;
-        let newY = this.position.y - changeY / this.scale;
 
         let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
