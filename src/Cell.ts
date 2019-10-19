@@ -68,7 +68,10 @@ export class Cell {
     }
 
     public getDistanceFrom(target: Cell): number {
-        return Math.max(Math.abs(this.cubeX - target.cubeX), Math.abs(this.cubeY - target.cubeY), Math.abs(this.cubeZ - target.cubeZ));
+        return Math.max(
+            Math.abs(this.cubeX - target.cubeX),
+            Math.abs(this.cubeY - target.cubeY),
+            Math.abs(this.cubeZ - target.cubeZ));
     }
 
     public isMovementDisabled(): boolean {

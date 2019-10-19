@@ -15,7 +15,7 @@ export class Utils {
         let isThrottled = false;
         let savedArgs: Array<any> = [];
         let savedThis: Object = undefined;
-      
+
         function wrapper(...args: Array<any>) {
             if (isThrottled) {
                 savedArgs = args;
@@ -26,7 +26,7 @@ export class Utils {
             func.apply(this, args);
 
             isThrottled = true;
-      
+
             setTimeout(function() {
                 isThrottled = false;
                 if (savedThis !== undefined) {

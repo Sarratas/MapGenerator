@@ -4,11 +4,11 @@
         "cyclomatic-complexity": false,
         "increment-decrement": false,
         "newline-before-return": false,
-        "no-parameter-properties": false,
+        "no-parameter-properties": true,
         "no-parameter-reassignment": false,
         "no-unused-variable": false,
         "typedef": false,
-        "unnecessary-else": false,
+        "unnecessary-else": true,
         "comment-format": {
             "options": [
                 "check-space"
@@ -55,7 +55,7 @@
                 ]
             ]
         },
-        "interface-name": false,
+        "interface-name": true,
         "max-classes-per-file": false,
         "member-ordering": {
             "options": {
@@ -79,9 +79,65 @@
                 "ban-keywords",
                 "check-format",
                 "allow-leading-underscore",
-                "allow-pascal-case"
+                "allow-pascal-case",
+                "require-const-for-all-caps"
             ]
         },
-        "linebreak-style": false
+        "linebreak-style": [true, "CRLF"],
+        "align": [true, "parameters", "statements"],
+        "arrow-parens": [true, "ban-single-arg-parens"],
+        "eofline": true,
+        "import-spacing": true,
+        "no-consecutive-blank-lines": true,
+        "no-irregular-whitespace": true,
+        "no-trailing-whitespace": true,
+        "number-literal-format": true,
+        "quotemark": [true, "single", "avoid-escape", "avoid-template"],
+        "semicolon": [true, "always"],
+        "trailing-comma": [true, {"multiline": "always", "singleline": "never", "esSpecCompliant": true}],
+        "whitespace": [true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-module",
+            "check-separator",
+            "check-rest-spread",
+            "check-type",
+            "check-typecast",
+            "check-type-operator"
+        ],
+        "arrow-return-shorthand": true,
+        "binary-expression-operand-order": true,
+        "class-name": true,
+        "encoding": true,
+        "file-name-casing": [true, "camel-case"],
+        "interface-over-type-literal": true,
+        "match-default-export-name": true,
+        "newline-per-chained-call": true,
+        "no-angle-bracket-type-assertion": true,
+        "no-boolean-literal-compare": true,
+        "no-unnecessary-callback-wrapper": true,
+        "no-unnecessary-initializer": true,
+        "object-literal-key-quotes": [true, "consistent-as-needed"],
+        "one-line": [true,
+            "check-catch",
+            "check-finally",
+            "check-else",
+            "check-open-brace",
+            "check-whitespace"
+        ],
+        "one-variable-per-declaration": [true, "ignore-for-loop"],
+        "prefer-switch": true,
+        "space-before-function-paren": [true, {
+            "anonymous": "never",
+            "named": "never",
+            "asyncArrow": "always",
+            "method": "never",
+            "constructor": "never"
+        }],
+        "space-within-parens": false,
+        "switch-final-break": [true, "always"],
+        "unnecessary-bind": true,
+        "max-line-length": [true, 120]
     }
 }
