@@ -1,5 +1,5 @@
 import { Cell, CellType } from './cell';
-import { Utils } from './Utils';
+import { Utils } from './utils';
 import FastPriorityQueue from '../node_modules/fastpriorityqueue/FastPriorityQueue';
 
 export enum NeighborAlgorithms {
