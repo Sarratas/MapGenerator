@@ -23,7 +23,6 @@
         "no-require-imports": true,
         "no-unbound-method": true,
         "no-unnecessary-qualifier": true,
-        "no-use-before-declare": true,
         "no-void-expression": {
             "options": [
                 "ignore-arrow-function-shorthand"
