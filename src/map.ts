@@ -24,6 +24,7 @@ export interface IGenerationParams {
     smoothingMountainFactor: number;
     smoothingLakeFactor: number;
     waterSmoothingPasses: number;
+    waterSmoothingPass3Factor: number;
 
     generationNeighborAlgorithm: NeighborAlgorithms;
     smoothingNeighborAlgorithm: NeighborAlgorithms;
@@ -48,6 +49,7 @@ export class WorldMap {
         smoothingMountainFactor: 5,
         smoothingLakeFactor: 11,
         waterSmoothingPasses: 3,
+        waterSmoothingPass3Factor: 3,
 
         generationNeighborAlgorithm: NeighborAlgorithms.Square,
         smoothingNeighborAlgorithm: NeighborAlgorithms.Square,
