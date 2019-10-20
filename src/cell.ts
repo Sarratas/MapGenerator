@@ -1,33 +1,54 @@
-export enum CellType {
-    None = '#FFFFFF',
-    Mountain = '#A47666',
-    Water = '#1A9DCE',
-    Plain = '#64815C',
-    Highland = '#D2BC8D',
-    DeepWater = '#1587BE',
+export enum CellTypes {
+    None            = 0,
+    Plain           = 1,
+    Highland        = 2,
+    Mountain        = 4,
+    Land            = Plain | Highland | Mountain,
 
-    Placeholder = '#000000',
+    ShallowWater    = 128,
+    DeepWater       = 256,
+    Water           = ShallowWater | DeepWater,
+
+    Placeholder     = 4096,
+}
+
+export enum CellColor {
+    None            = '#FFFFFF',
+    Mountain        = '#A47666',
+    ShallowWater    = '#1A9DCE',
+    Plain           = '#64815C',
+    Highland        = '#D2BC8D',
+    DeepWater       = '#1587BE',
+
+    Placeholder     = '#000000',
 }
 
 enum OffsetRows {
-    First = 65,
-    Second = 244,
-    Third = 430,
+    First   = 65,
+    Second  = 244,
+    Third   = 430,
 }
 
 enum OffsetColumns {
-    First = 45,
-    Second = 135,
-    Third = 230,
-    Fourth = 323,
-    Fifth = 418,
-    Sixth = 512,
+    First   = 45,
+    Second  = 135,
+    Third   = 230,
+    Fourth  = 323,
+    Fifth   = 418,
+    Sixth   = 512,
     Seventh = 605,
-    Eight = 700,
+    Eight   = 700,
+}
+
+enum MovementCosts {
+    Easy        = 1,
+    Medium      = 2,
+    Hard        = 4,
+    Impossible  = Infinity,
 }
 
 export class Cell {
-    public type: CellType;
+    public type: CellTypes;
 
     public posX: number;
     public posY: number;
@@ -39,7 +60,14 @@ export class Cell {
     public cubeY: number;
     public cubeZ: number;
 
-    constructor(posX: number, posY: number, type: CellType = CellType.None) {
+    public movementCost: number;
+
+    public movementEnabled: boolean;
+
+    public color: CellColor;
+    public highlightColor?: CellColor;
+
+    constructor(posX: number, posY: number, type: CellTypes = CellTypes.None) {
         this.posX = posX;
         this.posY = posY;
         this.type = type;
@@ -48,23 +76,13 @@ export class Cell {
         this.cubeZ = posY;
         this.cubeY = -this.cubeX - this.cubeZ;
 
-        this.setSpriteOffset(type);
-    }
+        this.offsetX = OffsetColumns.Sixth;
+        this.offsetY = OffsetRows.Second;
 
-    public setType(type: CellType) {
-        this.type = type;
-        this.setSpriteOffset(type);
-    }
+        this.movementCost = MovementCosts.Easy;
+        this.movementEnabled = true;
 
-    public getMovementCost(): number {
-        switch (this.type) {
-            case CellType.Mountain:
-                return 4;
-            case CellType.Highland:
-                return 2;
-            default:
-                return 1;
-        }
+        this.color = CellColor.None;
     }
 
     public getDistanceFrom(target: Cell): number {
@@ -74,39 +92,106 @@ export class Cell {
             Math.abs(this.cubeZ - target.cubeZ));
     }
 
-    public isMovementDisabled(): boolean {
-        return this.type === CellType.Water || this.type === CellType.DeepWater;
-    }
-
-    private setSpriteOffset(type: CellType) {
-        switch (type) {
-            case CellType.Mountain:
-                this.offsetX = OffsetColumns.Seventh;
-                this.offsetY = OffsetRows.Third;
-                break;
-            case CellType.Water:
-                this.offsetX = OffsetColumns.Fifth;
-                this.offsetY = OffsetRows.First;
-                break;
-            case CellType.Plain:
-                this.offsetX = OffsetColumns.First;
-                this.offsetY = OffsetRows.First;
-                break;
-            case CellType.Highland:
-                this.offsetX = OffsetColumns.Fifth;
-                this.offsetY = OffsetRows.Third;
-                break;
-            case CellType.DeepWater:
-                this.offsetX = OffsetColumns.Seventh;
-                this.offsetY = OffsetRows.First;
-                break;
-            case CellType.Placeholder:
-            case CellType.None:
-                this.offsetX = OffsetColumns.Sixth;
-                this.offsetY = OffsetRows.Second;
-                break;
+    public convert(): Cell {
+        switch (this.type) {
+            case CellTypes.Mountain:
+                return new MountainCell(this.posX, this.posY);
+            case CellTypes.DeepWater:
+                return new DeepWaterCell(this.posX, this.posY);
+            case CellTypes.ShallowWater:
+                return new ShallowWaterCell(this.posX, this.posY);
+            case CellTypes.Plain:
+                return new PlainCell(this.posX, this.posY);
+            case CellTypes.Highland:
+                return new HighlandCell(this.posX, this.posY);
+            case CellTypes.None:
+            case CellTypes.Placeholder:
+                return new PlaceholderCell(this.posX, this.posY);
             default:
-                break;
+                return new PlainCell(this.posX, this.posY);
         }
+    }
+}
+
+class PlaceholderCell extends Cell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.Placeholder);
+
+        this.movementEnabled = false;
+    }
+}
+
+class LandCell extends Cell {
+    constructor(posX: number, posY: number, type: CellTypes) {
+        super(posX, posY, type);
+
+        this.movementEnabled = true;
+    }
+}
+
+class MountainCell extends LandCell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.Mountain);
+
+        this.movementCost = MovementCosts.Hard;
+        this.color = CellColor.Mountain;
+
+        this.offsetX = OffsetColumns.Seventh;
+        this.offsetY = OffsetRows.Third;
+    }
+}
+
+class HighlandCell extends LandCell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.Highland);
+
+        this.movementCost = MovementCosts.Medium;
+        this.color = CellColor.Highland;
+
+        this.offsetX = OffsetColumns.Fifth;
+        this.offsetY = OffsetRows.Third;
+    }
+}
+
+class PlainCell extends LandCell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.Plain);
+
+        this.movementCost = MovementCosts.Easy;
+        this.color = CellColor.Plain;
+
+        this.offsetX = OffsetColumns.First;
+        this.offsetY = OffsetRows.First;
+    }
+}
+
+class WaterCell extends Cell {
+    constructor(posX: number, posY: number, type: CellTypes) {
+        super(posX, posY, type);
+
+        this.movementCost = MovementCosts.Impossible;
+        this.movementEnabled = false;
+    }
+}
+
+class ShallowWaterCell extends WaterCell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.Water);
+
+        this.color = CellColor.ShallowWater;
+
+        this.offsetX = OffsetColumns.Fifth;
+        this.offsetY = OffsetRows.First;
+    }
+}
+
+class DeepWaterCell extends WaterCell {
+    constructor(posX: number, posY: number) {
+        super(posX, posY, CellTypes.DeepWater);
+
+        this.color = CellColor.DeepWater;
+
+        this.offsetX = OffsetColumns.Seventh;
+        this.offsetY = OffsetRows.First;
     }
 }

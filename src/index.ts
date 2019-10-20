@@ -1,5 +1,5 @@
 import { WorldMap, IGenerationParams } from './map';
-import { CellType } from './cell';
+import { CellColor } from './cell';
 import './styles/index.scss';
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
@@ -52,7 +52,7 @@ window.addEventListener('DOMContentLoaded', function() {
         let path = map.calculatePath(startX, startY, endX, endY);
 
         for (let cell of path) {
-            cell.type = CellType.Placeholder;
+            cell.highlightColor = CellColor.Placeholder;
         }
 
         map.render(canvas);

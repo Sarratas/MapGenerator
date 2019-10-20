@@ -1,4 +1,4 @@
-import { Cell, CellType } from './cell';
+import { Cell, CellTypes, CellColor } from './cell';
 import { Utils } from './utils';
 import FastPriorityQueue from '../node_modules/fastpriorityqueue/FastPriorityQueue';
 
@@ -70,8 +70,8 @@ export class WorldMap {
     private readonly spriteElementWidth = 155;
     private readonly spriteElementHeight = 185;
 
-    private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: Array<CellType>) => Array<Cell>;
-    private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: Array<CellType>) => Array<Cell>;
+    private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
+    private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
 
     constructor(width: number, height: number, params?: IGenerationParams) {
         this.width = width;
@@ -82,7 +82,7 @@ export class WorldMap {
         this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
-        this.placeholderCell = new Cell(0, 0, CellType.Placeholder);
+        this.placeholderCell = new Cell(0, 0, CellTypes.Placeholder);
 
         this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Square ?
             this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
@@ -156,6 +156,8 @@ export class WorldMap {
         this.smoothingPass2();
         this.smoothingPass3();
         this.generatePlains();
+
+        this.convertCells();
     }
 
     public render(elem: HTMLCanvasElement): void {
@@ -169,12 +171,12 @@ export class WorldMap {
         }
     }
 
-    public calculatePath(startX: number, startY: number, endX: number, endY: number) {
+    public calculatePath(startX: number, startY: number, endX: number, endY: number): Array<Cell> {
         let startCell = this.cellsSquare[startX][startY];
         let endCell = this.cellsSquare[endX][endY];
 
-        startCell.type = CellType.None;
-        endCell.type = CellType.None;
+        startCell.type = CellTypes.None;
+        endCell.type = CellTypes.None;
 
         let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
         queue.add({cell: startCell, priority: 0});
@@ -189,8 +191,8 @@ export class WorldMap {
             if (current.cell === endCell) break;
             let x = this.getAdjacentCellsCube(current.cell, Ranges.Immediate);
             for (let next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
-                if (next.isMovementDisabled()) continue;
-                let newCost = currCost.get(current.cell) + next.getMovementCost();
+                if (!next.movementEnabled) continue;
+                let newCost = currCost.get(current.cell) + next.movementCost;
                 if (!currCost.has(next) || newCost < currCost.get(next)) {
                     currCost.set(next, newCost);
                     let priority = newCost + next.getDistanceFrom(endCell);
@@ -236,18 +238,20 @@ export class WorldMap {
         let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            let lastType = CellType.None;
+            let lastFillColor: CellColor;
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
                 let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                if (cell.type !== lastType) {
-                    if (lastType !== CellType.None) {
+                let fillColor = cell.highlightColor !== undefined ? cell.highlightColor : cell.color;
+                if (fillColor !== lastFillColor) {
+                    if (lastFillColor !== CellColor.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
                     }
 
                     batchStartY = j * this.scale;
-                    ctx.fillStyle = lastType = cell.type;
+                    ctx.fillStyle = fillColor;
+                    lastFillColor = fillColor;
                     cellsInBatch = 1;
                 } else {
                     ++cellsInBatch;
@@ -289,7 +293,7 @@ export class WorldMap {
                 ctx.closePath();
 
                 if (this.scale < this.textureThresholdScale) {
-                    ctx.fillStyle = cell.type;
+                    ctx.fillStyle = cell.highlightColor !== undefined ? cell.highlightColor : cell.color;
                     ctx.fill();
                 } else {
                     ctx.drawImage(sprite, cell.offsetX, cell.offsetY, spriteWidth, spriteHeight,
@@ -311,7 +315,7 @@ export class WorldMap {
             let y = Utils.rand(0, this.height - 1);
             let seedCell = this.cellsSquare[x][y];
 
-            seedCell.setType(CellType.Water);
+            seedCell.type = CellTypes.Water;
             cellsToProcess.push(this.cellsSquare[x][y]);
         }
         while (cellsToProcess.length > 0) {
@@ -319,10 +323,10 @@ export class WorldMap {
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
             adjacentCells.forEach(function(cell: Cell) {
-                if (cell.type !== CellType.None) return;
+                if (cell.type !== CellTypes.None) return;
 
                 if (Math.random() < spreadFactor) {
-                    cell.setType(CellType.Water);
+                    cell.type = CellTypes.ShallowWater;
                     cellsToProcess.push(cell);
                 }
             });
@@ -340,11 +344,11 @@ export class WorldMap {
             let seedCell = this.cellsSquare[x][y];
 
             // prevent mountain generation right next to lakes
-            if (this.getAdjCellsForGenerating(seedCell, Ranges.Immediate, [CellType.Water]).length > 0) {
+            if (this.getAdjCellsForGenerating(seedCell, Ranges.Immediate, CellTypes.Water).length > 0) {
                 continue;
             }
 
-            seedCell.setType(CellType.Mountain);
+            seedCell.type = CellTypes.Mountain;
             cellsToProcess.push(this.cellsSquare[x][y]);
         }
 
@@ -353,13 +357,13 @@ export class WorldMap {
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
             adjacentCells.forEach(function(cell: Cell) {
-                if (cell.type !== CellType.None) return;
+                if (cell.type !== CellTypes.None) return;
 
                 if (Math.random() < spreadFactor) {
-                    cell.setType(CellType.Mountain);
+                    cell.type = CellTypes.Mountain;
                     cellsToProcess.push(cell);
                 } else {
-                    cell.setType(CellType.Highland);
+                    cell.type = CellTypes.Highland;
                 }
             });
         }
@@ -367,8 +371,8 @@ export class WorldMap {
 
     private generatePlains() {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            if (currentCell.type === CellType.None) {
-                currentCell.setType(CellType.Plain);
+            if (currentCell.type === CellTypes.None) {
+                currentCell.type = CellTypes.Plain;
             }
         }));
     }
@@ -377,29 +381,29 @@ export class WorldMap {
         let adjacentCells: Array<Cell> = [];
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
-                case CellType.Water:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, [CellType.Water]);
+                case CellTypes.ShallowWater:
+                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Water);
                     if (adjacentCells.length < 2) {
-                        currentCell.setType(CellType.None);
+                        currentCell.type = CellTypes.None;
                         break;
                     }
                     break;
-                case CellType.Highland:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, [CellType.Mountain]);
+                case CellTypes.Highland:
+                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Mountain);
                     if (adjacentCells.length > this.generationParams.smoothingMountainFactor) {
-                        currentCell.setType(CellType.Mountain);
+                        currentCell.type = CellTypes.Mountain;
                     }
                     /* falls through */
-                case CellType.Mountain:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, [CellType.Water]);
+                case CellTypes.Mountain:
+                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
                     if (adjacentCells.length > 0) {
-                        currentCell.setType(CellType.None);
+                        currentCell.type = CellTypes.None;
                     }
                     break;
-                case CellType.None:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, [CellType.Water]);
+                case CellTypes.None:
+                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
                     if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
-                        currentCell.setType(CellType.Water);
+                        currentCell.type = CellTypes.ShallowWater;
                         break;
                     }
                     break;
@@ -414,17 +418,17 @@ export class WorldMap {
         for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
             this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
                 switch (currentCell.type) {
-                    case CellType.Water:
-                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, [CellType.Water]);
-                        if (adjacentCells.length < i + 3) {
-                            currentCell.setType(CellType.None);
+                    case CellTypes.ShallowWater:
+                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Water);
+                        if (adjacentCells.length < i + this.generationParams.waterSmoothingPass3Factor) {
+                            currentCell.type = CellTypes.None;
                             break;
                         }
                         break;
-                    case CellType.None:
-                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, [CellType.Water]);
+                    case CellTypes.None:
+                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
                         if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
-                            currentCell.setType(CellType.Water);
+                            currentCell.type = CellTypes.ShallowWater;
                             break;
                         }
                         break;
@@ -438,10 +442,10 @@ export class WorldMap {
     private smoothingPass3() {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
-                case CellType.Water:
-                    let adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Medium, [CellType.Water, CellType.DeepWater]);
-                    if (adjacentCells.length === 8 + 16 + 24 + 32) {
-                        currentCell.setType(CellType.DeepWater);
+                case CellTypes.ShallowWater:
+                    let adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Medium);
+                    if (adjacentCells.every(cell => cell.type & CellTypes.Water)) {
+                        currentCell.type = CellTypes.DeepWater;
                         break;
                     }
                     break;
@@ -451,7 +455,18 @@ export class WorldMap {
         }));
     }
 
-    private getAdjacentCellsSquare(cell: Cell, radius: number, filterTypes?: Array<CellType>): Array<Cell> {
+    private convertCells() {
+        for (let x = 0; x < this.width; ++x) {
+            for (let y = 0; y < this.height; ++y) {
+                let newCell = this.cellsSquare[x][y].convert();
+
+                this.cellsSquare[x][y] = newCell;
+                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
+            }
+        }
+    }
+
+    private getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         let result: Array<Cell> = [];
         let arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
         let arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
@@ -462,14 +477,14 @@ export class WorldMap {
             let neighborCell = this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
             if (neighborCell === undefined) return;
 
-            if (filterTypes === undefined || filterTypes.includes(neighborCell.type)) {
+            if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
                 result.push(neighborCell);
             }
         }));
         return result;
     }
 
-    private getAdjacentCellsCube(cell: Cell, radius: number, filterTypes?: Array<CellType>): Array<Cell> {
+    private getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         let result: Array<Cell> = [];
         for (let cubeX = cell.cubeX - radius; cubeX <= cell.cubeX + radius; ++cubeX) {
             for (let cubeY = cell.cubeY - radius; cubeY <= cell.cubeY + radius; ++cubeY) {
@@ -481,7 +496,7 @@ export class WorldMap {
                 let neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
                 if (neighborCell === undefined) continue;
 
-                if (filterTypes === undefined || filterTypes.includes(neighborCell.type)) {
+                if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
                     result.push(neighborCell);
                 }
             }
