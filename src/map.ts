@@ -1,5 +1,7 @@
 import { Cell, CellTypes, CellColor } from './cell';
 import { Utils } from './utils';
+import { Path } from './path';
+
 import FastPriorityQueue from '../node_modules/fastpriorityqueue/FastPriorityQueue';
 
 export enum NeighborAlgorithms {
@@ -173,7 +175,7 @@ export class WorldMap {
         }
     }
 
-    public calculatePath(startX: number, startY: number, endX: number, endY: number): Array<Cell> {
+    public calculatePath(startX: number, startY: number, endX: number, endY: number): Path {
         let startCell = this.cellsSquare[startX][startY];
         let endCell = this.cellsSquare[endX][endY];
 
@@ -183,9 +185,9 @@ export class WorldMap {
         let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
         queue.add({cell: startCell, priority: 0});
 
-        let prevCell = new Map<Cell, Cell>();
+        let cellsMap = new Map<Cell, Cell>();
         let currCost = new Map<Cell, number>();
-        prevCell.set(startCell, undefined);
+        cellsMap.set(startCell, undefined);
         currCost.set(startCell, 0);
 
         while (!queue.isEmpty()) {
@@ -199,20 +201,20 @@ export class WorldMap {
                     currCost.set(next, newCost);
                     let priority = newCost + next.getDistanceFrom(endCell);
                     queue.add({cell: next, priority: priority});
-                    prevCell.set(next, current.cell);
+                    cellsMap.set(next, current.cell);
                 }
             }
         }
 
         // backtrace the path
         let current = endCell;
-        let result: Array<Cell> = [];
-        while (current !== undefined) {
-            result.push(current);
-            current = prevCell.get(current);
-        }
+        let path: Path = new Path();
 
-        return result;
+        do {
+            path.add(current);
+        } while ((current = cellsMap.get(current)) !== undefined);
+
+        return path;
     }
 
     private countVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
@@ -240,7 +242,7 @@ export class WorldMap {
         let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            let lastFillColor: CellColor;
+            let lastFillColor: string;
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {

@@ -65,7 +65,7 @@ export class Cell {
     public movementEnabled: boolean;
 
     public color: CellColor;
-    public highlightColor?: CellColor;
+    public highlightColor?: string;
 
     constructor(posX: number, posY: number, type: CellTypes = CellTypes.None) {
         this.posX = posX;

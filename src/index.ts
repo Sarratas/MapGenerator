@@ -1,9 +1,10 @@
 import { WorldMap, IGenerationParams } from './map';
-import { CellColor } from './cell';
 import './styles/index.scss';
+import { Path } from './path';
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap;
+let activePath: Path;
 const mapSize = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -49,11 +50,21 @@ window.addEventListener('DOMContentLoaded', function() {
         let endX: number = +formElements.endX.value;
         let endY: number = +formElements.endY.value;
 
-        let path = map.calculatePath(startX, startY, endX, endY);
-
-        for (let cell of path) {
-            cell.highlightColor = CellColor.Placeholder;
+        if (activePath !== undefined) {
+            activePath.hide();
         }
+
+        activePath = map.calculatePath(startX, startY, endX, endY);
+
+        activePath.show();
+
+        let pathCostInput = document.getElementById('pathCost') as HTMLInputElement;
+        let pathRealCostInput = document.getElementById('pathRealCost') as HTMLInputElement;
+        let pathCost = activePath.getCost();
+        let pathRealCost = activePath.getRealCost();
+
+        pathCostInput.value = pathCost.toString();
+        pathRealCostInput.value = pathRealCost.toString();
 
         map.render(canvas);
     });
