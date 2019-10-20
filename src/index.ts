@@ -60,7 +60,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function generateMap() {
-    let params: IGenerationParams = {};
+    let params: Partial<IGenerationParams> = {};
     type NodeListOfInputs = NodeListOf<HTMLInputElement | HTMLSelectElement>;
     let inputs = document.querySelectorAll('#generateForm input, #generateForm select') as NodeListOfInputs;
 

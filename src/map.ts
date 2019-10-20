@@ -15,18 +15,18 @@ enum Ranges {
 }
 
 export interface IGenerationParams {
-    mountainFactor?: number;
-    mountainSpreadFactor?: number;
+    mountainFactor: number;
+    mountainSpreadFactor: number;
 
-    lakeFactor?: number;
-    lakeSpreadFactor?: number;
+    lakeFactor: number;
+    lakeSpreadFactor: number;
 
-    smoothingMountainFactor?: number;
-    smoothingLakeFactor?: number;
-    waterSmoothingPasses?: number;
+    smoothingMountainFactor: number;
+    smoothingLakeFactor: number;
+    waterSmoothingPasses: number;
 
-    generationNeighborAlgorithm?: NeighborAlgorithms;
-    smoothingNeighborAlgorithm?: NeighborAlgorithms;
+    generationNeighborAlgorithm: NeighborAlgorithms;
+    smoothingNeighborAlgorithm: NeighborAlgorithms;
 }
 
 export class WorldMap {
@@ -73,7 +73,7 @@ export class WorldMap {
     private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
     private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
 
-    constructor(width: number, height: number, params?: IGenerationParams) {
+    constructor(width: number, height: number, params?: Partial<IGenerationParams>) {
         this.width = width;
         this.height = height;
         this.generationParams = { ...this.generationParams, ...params };
