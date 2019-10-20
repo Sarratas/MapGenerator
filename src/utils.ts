@@ -11,12 +11,13 @@ export class Utils {
         return result;
     }
 
-    public static throttle(func: Function, ms: number) {
+    // tslint:disable-next-line:no-any
+    public static throttle<T extends Array<any>, U>(func: (...params: T) => U, ms: number) {
         let isThrottled = false;
-        let savedArgs: Array<any> = [];
-        let savedThis: Object = undefined;
+        let savedArgs: Array<T>;
+        let savedThis: Object;
 
-        function wrapper(...args: Array<any>) {
+        function wrapper(...args: T): U {
             if (isThrottled) {
                 savedArgs = args;
                 savedThis = this;
