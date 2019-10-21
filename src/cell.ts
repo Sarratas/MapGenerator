@@ -75,6 +75,10 @@ export class Cell {
         this.cubeX = posX - (posY - (posY & 1)) / 2;
         this.cubeZ = posY;
         this.cubeY = -this.cubeX - this.cubeZ;
+        // eliminate negative zero for jest
+        if (this.cubeY === 0) {
+            this.cubeY = 0;
+        }
 
         this.offsetX = OffsetColumns.Sixth;
         this.offsetY = OffsetRows.Second;
@@ -83,6 +87,7 @@ export class Cell {
         this.movementEnabled = true;
 
         this.color = CellColor.None;
+        this.type = type;
     }
 
     public getDistanceFrom(target: Cell): number {
@@ -108,12 +113,12 @@ export class Cell {
             case CellTypes.Placeholder:
                 return new PlaceholderCell(this.posX, this.posY);
             default:
-                return new PlainCell(this.posX, this.posY);
+                throw new TypeError('Unexpected cell type');
         }
     }
 }
 
-class PlaceholderCell extends Cell {
+export class PlaceholderCell extends Cell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.Placeholder);
 
@@ -121,7 +126,7 @@ class PlaceholderCell extends Cell {
     }
 }
 
-class LandCell extends Cell {
+export class LandCell extends Cell {
     constructor(posX: number, posY: number, type: CellTypes) {
         super(posX, posY, type);
 
@@ -129,7 +134,7 @@ class LandCell extends Cell {
     }
 }
 
-class MountainCell extends LandCell {
+export class MountainCell extends LandCell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.Mountain);
 
@@ -141,7 +146,7 @@ class MountainCell extends LandCell {
     }
 }
 
-class HighlandCell extends LandCell {
+export class HighlandCell extends LandCell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.Highland);
 
@@ -153,7 +158,7 @@ class HighlandCell extends LandCell {
     }
 }
 
-class PlainCell extends LandCell {
+export class PlainCell extends LandCell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.Plain);
 
@@ -165,7 +170,7 @@ class PlainCell extends LandCell {
     }
 }
 
-class WaterCell extends Cell {
+export class WaterCell extends Cell {
     constructor(posX: number, posY: number, type: CellTypes) {
         super(posX, posY, type);
 
@@ -174,7 +179,7 @@ class WaterCell extends Cell {
     }
 }
 
-class ShallowWaterCell extends WaterCell {
+export class ShallowWaterCell extends WaterCell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.Water);
 
@@ -185,7 +190,7 @@ class ShallowWaterCell extends WaterCell {
     }
 }
 
-class DeepWaterCell extends WaterCell {
+export class DeepWaterCell extends WaterCell {
     constructor(posX: number, posY: number) {
         super(posX, posY, CellTypes.DeepWater);
 
