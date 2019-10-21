@@ -1,4 +1,9 @@
 {
+    "linterOptions": {
+        "exclude": [
+            "src/tests/*.ts"
+        ]
+    },
     "rules": {
         "prettier": true,
         "cyclomatic-complexity": false,

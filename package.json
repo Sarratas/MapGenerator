@@ -34,6 +34,9 @@
   },
   "homepage": "https://github.com/Sarratas/MapGenerator#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.19",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
     "webpack-dev-server": "^3.8.2"
   }
 }
