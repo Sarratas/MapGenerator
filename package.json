@@ -23,6 +23,7 @@
     "build-watch": "webpack --watch --progress --colors --mode development",
     "start": "webpack-dev-server --open chrome --mode development",
     "test": "npx jest",
+    "coverage": "npx jest --coverage --coverageReporters=text-lcov | npx coveralls",
     "lint": "tslint --config tslint.json --project ."
   },
   "repository": {
@@ -37,6 +38,7 @@
   "homepage": "https://github.com/Sarratas/MapGenerator#readme",
   "devDependencies": {
     "@types/jest": "^24.0.19",
+    "coveralls": "^3.0.7",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
     "tslint": "^5.20.0",
