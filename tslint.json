@@ -1,11 +1,12 @@
 {
     "linterOptions": {
         "exclude": [
-            "src/tests/*.ts"
+            "src/tests/*.ts",
+            "*.js",
+            "coverage/**/*"
         ]
     },
     "rules": {
-        "prettier": true,
         "cyclomatic-complexity": false,
         "increment-decrement": false,
         "newline-before-return": false,
@@ -23,7 +24,7 @@
         "only-arrow-functions": false,
         "no-any": true,
         "no-magic-numbers": [true, {"allowed-numbers": [0, 1, 2] }],
-        "no-non-null-assertion": true,
+        "no-non-null-assertion": false,
         "no-null-keyword": true,
         "no-require-imports": true,
         "no-unbound-method": true,

@@ -22,7 +22,8 @@
     "build-production": "webpack -p --progress --colors",
     "build-watch": "webpack --watch --progress --colors --mode development",
     "start": "webpack-dev-server --open chrome --mode development",
-    "test": "npx jest"
+    "test": "npx jest",
+    "lint": "tslint --config tslint.json --project ."
   },
   "repository": {
     "type": "git",
