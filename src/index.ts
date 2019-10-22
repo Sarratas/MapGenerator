@@ -3,18 +3,18 @@ import './styles/index.scss';
 import { Path } from './path';
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-let map: WorldMap;
-let activePath: Path;
+let map: WorldMap | undefined;
+let activePath: Path | undefined;
 const mapSize = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
-    let generateButton = document.getElementById('generate');
-    let calcPathButton = document.getElementById('calcPath');
+    let generateButton = document.getElementById('generate') as HTMLButtonElement;
+    let calcPathButton = document.getElementById('calcPath') as HTMLButtonElement;
 
     generateButton.addEventListener('click', function(event) {
         event.preventDefault();
 
-        let ctx = canvas.getContext('2d');
+        let ctx = canvas.getContext('2d')!;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -33,6 +33,8 @@ window.addEventListener('DOMContentLoaded', function() {
     });
 
     calcPathButton.addEventListener('click', function(event) {
+        if (map === undefined) return;
+
         event.preventDefault();
 
         interface IPathFormElements extends HTMLFormControlsCollection {
@@ -114,15 +116,15 @@ canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
 });
 
 canvas.addEventListener('mousedown', function(event: MouseEvent): void {
-    if (map === undefined) {
-        return;
-    }
+    if (map === undefined) return;
 
     let initialMousePos = getMousePos(canvas, event);
     let lastX = initialMousePos.x;
     let lastY = initialMousePos.y;
 
     let handleMouseMove = function(event: MouseEvent): void {
+        if (map === undefined) return;
+
         let mousePos = getMousePos(canvas, event);
         let currentX = mousePos.x;
         let currentY = mousePos.y;
@@ -136,6 +138,8 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
     };
 
     let handleMouseUp = function(event: MouseEvent): void {
+        if (map === undefined) return;
+
         let mousePos = getMousePos(canvas, event);
         let endX = mousePos.x;
         let endY = mousePos.y;

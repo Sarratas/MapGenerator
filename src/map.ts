@@ -77,7 +77,7 @@ export class WorldMap {
     private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
     private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
 
-    constructor(width: number, height: number, params?: Partial<IGenerationParams>) {
+    constructor(width: number, height: number, params: Partial<IGenerationParams> = {}) {
         this.width = width;
         this.height = height;
         this.generationParams = { ...this.generationParams, ...params };
@@ -88,10 +88,10 @@ export class WorldMap {
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new Cell(0, 0, CellTypes.Placeholder);
 
-        this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Square ?
-            this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
-        this.getAdjCellsForGenerating = params.generationNeighborAlgorithm === NeighborAlgorithms.Square ?
-            this.getAdjacentCellsSquare.bind(this) : this.getAdjacentCellsCube.bind(this);
+        this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
+            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
+        this.getAdjCellsForGenerating = params.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
+            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
 
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
@@ -165,7 +165,7 @@ export class WorldMap {
     }
 
     public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d');
+        let ctx: CanvasRenderingContext2D = elem.getContext('2d')!;
         ctx.clearRect(0, 0, this.width, this.height);
 
         if (this.scale >= this.hexagonThresholdScale) {
@@ -185,19 +185,19 @@ export class WorldMap {
         let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
         queue.add({cell: startCell, priority: 0});
 
-        let cellsMap = new Map<Cell, Cell>();
+        let cellsMap = new Map<Cell, Cell | undefined>();
         let currCost = new Map<Cell, number>();
         cellsMap.set(startCell, undefined);
         currCost.set(startCell, 0);
 
         while (!queue.isEmpty()) {
-            let current = queue.poll();
+            let current = queue.poll()!;
             if (current.cell === endCell) break;
             let x = this.getAdjacentCellsCube(current.cell, Ranges.Immediate);
             for (let next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
                 if (!next.movementEnabled) continue;
-                let newCost = currCost.get(current.cell) + next.movementCost;
-                if (!currCost.has(next) || newCost < currCost.get(next)) {
+                let newCost = currCost.get(current.cell)! + next.movementCost;
+                if (!currCost.has(next) || newCost < currCost.get(next)!) {
                     currCost.set(next, newCost);
                     let priority = newCost + next.getDistanceFrom(endCell);
                     queue.add({cell: next, priority: priority});
@@ -207,7 +207,7 @@ export class WorldMap {
         }
 
         // backtrace the path
-        let current = endCell;
+        let current: Cell | undefined = endCell;
         let path: Path = new Path();
 
         do {
@@ -242,7 +242,7 @@ export class WorldMap {
         let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            let lastFillColor: string;
+            let lastFillColor: string = '';
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
@@ -323,7 +323,7 @@ export class WorldMap {
             cellsToProcess.push(this.cellsSquare[x][y]);
         }
         while (cellsToProcess.length > 0) {
-            let cell = cellsToProcess.shift();
+            let cell = cellsToProcess.shift()!;
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
             adjacentCells.forEach(function(cell: Cell) {
@@ -357,7 +357,7 @@ export class WorldMap {
         }
 
         while (cellsToProcess.length > 0) {
-            let cell = cellsToProcess.shift();
+            let cell = cellsToProcess.shift()!;
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
             adjacentCells.forEach(function(cell: Cell) {

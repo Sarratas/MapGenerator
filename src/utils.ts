@@ -14,10 +14,10 @@ export class Utils {
     // tslint:disable-next-line:no-any
     public static throttle<T extends Array<any>, U>(func: (...params: T) => U, ms: number) {
         let isThrottled = false;
-        let savedArgs: Array<T>;
-        let savedThis: Object;
+        let savedArgs: T | undefined;
+        let savedThis: Object | undefined;
 
-        function wrapper(...args: T): U {
+        function wrapper(...args: T) {
             if (isThrottled) {
                 savedArgs = args;
                 savedThis = this;
@@ -30,9 +30,9 @@ export class Utils {
 
             setTimeout(function() {
                 isThrottled = false;
-                if (savedThis !== undefined) {
+                if (savedThis !== undefined && savedArgs !== undefined) {
                     wrapper.apply(savedThis, savedArgs);
-                    savedArgs = savedThis = undefined;
+                    savedThis = savedArgs = undefined;
                 }
             }, ms);
         }
