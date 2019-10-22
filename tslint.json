@@ -88,7 +88,7 @@
                 "require-const-for-all-caps"
             ]
         },
-        "linebreak-style": [true, "CRLF"],
+        "linebreak-style": [true, "LF"],
         "align": [true, "parameters", "statements"],
         "arrow-parens": [true, "ban-single-arg-parens"],
         "eofline": true,
