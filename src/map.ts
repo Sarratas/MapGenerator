@@ -234,7 +234,7 @@ export class WorldMap {
         return { columnsInView, rowsInView };
     }
 
-    private getCellCube(x: number, y: number, z: number) {
+    private getCellCube(x: number, y: number, z: number): Cell | undefined {
         return this.cellsCube.get(x + '.' + y + '.' + z);
     }
 
@@ -490,21 +490,21 @@ export class WorldMap {
 
     private getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         let result: Array<Cell> = [];
-        for (let cubeX = cell.cubeX - radius; cubeX <= cell.cubeX + radius; ++cubeX) {
-            for (let cubeY = cell.cubeY - radius; cubeY <= cell.cubeY + radius; ++cubeY) {
-                let cubeZ = - cubeX - cubeY;
-                if (cell.cubeZ - cubeZ < -radius || cell.cubeZ - cubeZ > radius) continue;
-                // don't include source cell in result array
-                if (cell.cubeX === cubeX && cell.cubeY === cubeY && cell.cubeZ === cubeZ) continue;
+        let arrayX = Utils.range(cell.cubeX - radius, cell.cubeX + radius);
+        let arrayY = Utils.range(cell.cubeY - radius, cell.cubeY + radius);
+        arrayX.forEach(cubeX => arrayY.forEach(cubeY => {
+            let cubeZ = -cubeX - cubeY;
+            if (cell.cubeZ - cubeZ < -radius || cell.cubeZ - cubeZ > radius) return;
+            // don't include source cell in result array
+            if (cell.cubeX === cubeX && cell.cubeY === cubeY && cell.cubeZ === cubeZ) return;
 
-                let neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
-                if (neighborCell === undefined) continue;
+            let neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
+            if (neighborCell === undefined) return;
 
-                if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
-                    result.push(neighborCell);
-                }
+            if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
+                result.push(neighborCell);
             }
-        }
+        }));
         return result;
     }
 
