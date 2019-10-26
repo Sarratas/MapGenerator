@@ -37,6 +37,12 @@ test('Cube cell coords', () => {
     expect(cell5.cubeX).toBe(50);
     expect(cell5.cubeY).toBe(-149);
     expect(cell5.cubeZ).toBe(99);
+
+    expect(cell1.cubeX + cell1.cubeY + cell1.cubeZ).toBe(0);
+    expect(cell2.cubeX + cell2.cubeY + cell2.cubeZ).toBe(0);
+    expect(cell3.cubeX + cell3.cubeY + cell3.cubeZ).toBe(0);
+    expect(cell4.cubeX + cell4.cubeY + cell4.cubeZ).toBe(0);
+    expect(cell5.cubeX + cell5.cubeY + cell5.cubeZ).toBe(0);
 });
 
 test('Calculating distance between cells', () => {
