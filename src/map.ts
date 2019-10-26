@@ -319,7 +319,7 @@ export class WorldMap {
             let y = Utils.rand(0, this.height - 1);
             let seedCell = this.cellsSquare[x][y];
 
-            seedCell.type = CellTypes.Water;
+            seedCell.type = CellTypes.ShallowWater;
             cellsToProcess.push(this.cellsSquare[x][y]);
         }
         while (cellsToProcess.length > 0) {
