@@ -1,4 +1,4 @@
-export class Utils {
+export default class Utils {
     public static rand(min: number, max: number) {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }

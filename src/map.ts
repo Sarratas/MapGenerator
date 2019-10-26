@@ -1,5 +1,5 @@
 import { Cell, CellTypes, CellColor } from './cell';
-import { Utils } from './utils';
+import Utils from './utils';
 import { Path } from './path';
 
 import FastPriorityQueue from '../node_modules/fastpriorityqueue/FastPriorityQueue';
