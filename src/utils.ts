@@ -30,7 +30,7 @@ export default class Utils {
 
             setTimeout(function() {
                 isThrottled = false;
-                if (savedThis !== undefined && savedArgs !== undefined) {
+                if (savedArgs !== undefined) {
                     wrapper.apply(savedThis, savedArgs);
                     savedThis = savedArgs = undefined;
                 }
