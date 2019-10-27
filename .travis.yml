@@ -1,8 +1,9 @@
 language: node_js
 node_js:
   - "10.16"
-script:
-  - npm run coverage
-  - npm run lint
 before_script:
   - npm install
+script:
+  - npm run build-production
+  - npm run coverage
+  - npm run lint
