@@ -23,7 +23,7 @@
     "build-watch": "webpack --watch --progress --colors --mode development",
     "start": "webpack-dev-server --open chrome --mode development",
     "test": "npx jest",
-    "coverage": "npx jest --coverage --coverageReporters=text-lcov | npx coveralls",
+    "coverage": "npx jest --verbose --coverage --coverageReporters=text-lcov | npx coveralls",
     "lint": "tslint --config tslint.json --project ."
   },
   "repository": {
