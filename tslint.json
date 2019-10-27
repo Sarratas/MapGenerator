@@ -26,7 +26,7 @@
         "no-magic-numbers": [true, {"allowed-numbers": [0, 1, 2] }],
         "no-non-null-assertion": false,
         "no-null-keyword": true,
-        "no-require-imports": true,
+        "no-require-imports": false,
         "no-unbound-method": true,
         "no-unnecessary-qualifier": true,
         "no-void-expression": {

@@ -2,7 +2,7 @@ import { Cell, CellTypes, CellColor } from './cell';
 import Utils from './utils';
 import { Path } from './path';
 
-import FastPriorityQueue from '../node_modules/fastpriorityqueue/FastPriorityQueue';
+import FastPriorityQueue = require('../node_modules/fastpriorityqueue/FastPriorityQueue');
 
 export enum NeighborAlgorithms {
     Square,
@@ -95,6 +95,8 @@ export class WorldMap {
 
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
+
+        this.generateEmptyCells();
     }
 
     public zoomIn(posX: number, posY: number): boolean {
@@ -134,10 +136,14 @@ export class WorldMap {
 
         let { columnsInView, rowsInView } = this.countVisibleCellsCount();
 
-        this.position.x = Math.max(Math.min(newX, this.width - columnsInView + 2), 0);
-        this.position.y = Math.max(Math.min(newY, this.height - rowsInView + 2), 0);
+        this.position.x = Math.max(Math.min(newX, this.width - columnsInView), 0);
+        this.position.y = Math.max(Math.min(newY, this.height - rowsInView), 0);
 
         return lastX !== this.position.x || lastY !== this.position.y;
+    }
+
+    public getPosition(): { x: number, y: number } {
+        return this.position;
     }
 
     public get size() {
@@ -145,15 +151,6 @@ export class WorldMap {
     }
 
     public generate() {
-        for (let x = 0; x < this.width; ++x) {
-            this.cellsSquare.push([]);
-            for (let y = 0; y < this.height; ++y) {
-                let newCell = new Cell(x, y);
-                this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
-                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
-            }
-        }
-
         this.generateLakes();
         this.generateMountains();
         this.smoothingPass();
@@ -305,6 +302,17 @@ export class WorldMap {
                 }
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
+            }
+        }
+    }
+
+    private generateEmptyCells() {
+        for (let x = 0; x < this.width; ++x) {
+            this.cellsSquare.push([]);
+            for (let y = 0; y < this.height; ++y) {
+                let newCell = new Cell(x, y);
+                this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
+                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
             }
         }
     }
