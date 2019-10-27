@@ -1,0 +1,16 @@
+HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation(type => {
+    return {
+        clearRect: jest.fn(),
+        fillRect: jest.fn(),
+        fillStyle: null,
+        lineWidth: null,
+        beginPath: jest.fn(),
+        moveTo: jest.fn(),
+        lineTo: jest.fn(),
+        closePath: jest.fn(),
+        fill: jest.fn(),
+        drawImage: jest.fn(),
+        strokeStyle: null,
+        stroke: jest.fn(),
+    }
+});
