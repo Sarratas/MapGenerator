@@ -1,16 +1,5 @@
 import Utils from '../utils';
 
-test('Utils.rand', () => {
-    jest.spyOn(global.Math, 'random')
-        .mockReturnValueOnce(0)
-        .mockReturnValueOnce(0.5)
-        .mockReturnValueOnce(0.999999);
-    
-    expect(Utils.rand(2, 8)).toBe(2);
-    expect(Utils.rand(2, 8)).toBe(5);
-    expect(Utils.rand(2, 8)).toBe(8);
-});
-
 test('Utils.range', () => {
     expect(Utils.range(0, 0)).toEqual([0]);
     expect(Utils.range(0, 1)).toEqual([0, 1]);

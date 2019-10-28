@@ -1,6 +1,7 @@
 import { Cell, CellTypes, CellColor } from './cell';
 import Utils from './utils';
 import { Path } from './path';
+import Prando from 'prando';
 
 import FastPriorityQueue = require('../node_modules/fastpriorityqueue/FastPriorityQueue');
 
@@ -30,6 +31,8 @@ export interface IGenerationParams {
 
     generationNeighborAlgorithm: NeighborAlgorithms;
     smoothingNeighborAlgorithm: NeighborAlgorithms;
+
+    seed: string | undefined;
 }
 
 export class WorldMap {
@@ -40,6 +43,8 @@ export class WorldMap {
 
     private cellsSquare: Array<Array<Cell>>;
     private cellsCube: Map<string, Cell>;
+
+    private rng: Prando;
 
     private readonly generationParams: IGenerationParams = {
         mountainFactor: 0.001,
@@ -55,6 +60,8 @@ export class WorldMap {
 
         generationNeighborAlgorithm: NeighborAlgorithms.Square,
         smoothingNeighborAlgorithm: NeighborAlgorithms.Square,
+
+        seed: undefined,
     };
 
     private readonly minScale = 1;
@@ -81,6 +88,7 @@ export class WorldMap {
         this.width = width;
         this.height = height;
         this.generationParams = { ...this.generationParams, ...params };
+        this.rng = new Prando(this.generationParams.seed);
         this.scale = 1;
         this.cellsSquare = [];
         this.cellsCube = new Map<string, Cell>();
@@ -323,8 +331,8 @@ export class WorldMap {
         let spreadFactor = this.generationParams.lakeSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
-            let x = Utils.rand(0, this.width - 1);
-            let y = Utils.rand(0, this.height - 1);
+            let x = this.rng.nextInt(0, this.width - 1);
+            let y = this.rng.nextInt(0, this.height - 1);
             let seedCell = this.cellsSquare[x][y];
 
             seedCell.type = CellTypes.ShallowWater;
@@ -334,10 +342,10 @@ export class WorldMap {
             let cell = cellsToProcess.shift()!;
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
-            adjacentCells.forEach(function(cell: Cell) {
+            adjacentCells.forEach((cell: Cell) => {
                 if (cell.type !== CellTypes.None) return;
 
-                if (Math.random() < spreadFactor) {
+                if (this.rng.next() < spreadFactor) {
                     cell.type = CellTypes.ShallowWater;
                     cellsToProcess.push(cell);
                 }
@@ -351,8 +359,8 @@ export class WorldMap {
         let spreadFactor = this.generationParams.mountainSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
-            let x = Utils.rand(0, this.width - 1);
-            let y = Utils.rand(0, this.height - 1);
+            let x = this.rng.nextInt(0, this.width - 1);
+            let y = this.rng.nextInt(0, this.height - 1);
             let seedCell = this.cellsSquare[x][y];
 
             // prevent mountain generation right next to lakes
@@ -368,10 +376,10 @@ export class WorldMap {
             let cell = cellsToProcess.shift()!;
 
             let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
-            adjacentCells.forEach(function(cell: Cell) {
+            adjacentCells.forEach((cell: Cell) => {
                 if (cell.type !== CellTypes.None) return;
 
-                if (Math.random() < spreadFactor) {
+                if (this.rng.next() < spreadFactor) {
                     cell.type = CellTypes.Mountain;
                     cellsToProcess.push(cell);
                 } else {

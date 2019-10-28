@@ -75,13 +75,22 @@ window.addEventListener('DOMContentLoaded', function() {
 function generateMap() {
     let params: Partial<IGenerationParams> = {};
     type NodeListOfInputs = NodeListOf<HTMLInputElement | HTMLSelectElement>;
+    type StrOrUndef = string | undefined;
     let inputs = document.querySelectorAll('#generateForm input, #generateForm select') as NodeListOfInputs;
 
     type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 
     for (let input of inputs) {
-        let name: KeysOfType<IGenerationParams, number> = input.name as KeysOfType<IGenerationParams, number>;
-        params[name] = parseFloat(input.value);
+        let nameN: KeysOfType<IGenerationParams, number> = input.name as KeysOfType<IGenerationParams, number>;
+        let nameS: KeysOfType<IGenerationParams, StrOrUndef> = input.name as KeysOfType<IGenerationParams, StrOrUndef>;
+
+        if (input.value === '') continue;
+
+        if (isNaN(+input.value)) {
+            params[nameS] = input.value;
+        } else {
+            params[nameN] = parseFloat(input.value);
+        }
     }
 
     map = new WorldMap(mapSize, mapSize, params);
