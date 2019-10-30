@@ -110,10 +110,13 @@ export class WorldMap {
     public zoomIn(posX: number, posY: number): boolean {
         if (this.scale >= this.maxScale) return false;
 
-        let newX = this.position.x + posX / this.scale - posX / (this.scale + 1);
-        let newY = this.position.y + posY / this.scale - posY / (this.scale + 1);
+        let scaleChange = Math.floor(Math.sqrt(this.scale));
+        let newScale = Math.min(this.scale + scaleChange, this.maxScale);
 
-        ++this.scale;
+        let newX = this.position.x + posX / this.scale - posX / newScale;
+        let newY = this.position.y + posY / this.scale - posY / newScale;
+
+        this.scale = newScale;
         this.setPosition(newX, newY);
 
         return true;
@@ -122,10 +125,13 @@ export class WorldMap {
     public zoomOut(posX: number, posY: number): boolean {
         if (this.scale <= this.minScale) return false;
 
-        let newX = this.position.x + posX / this.scale - posX / (this.scale - 1);
-        let newY = this.position.y + posY / this.scale - posY / (this.scale - 1);
+        let scaleChange = Math.floor(Math.sqrt(this.scale));
+        let newScale = Math.max(this.scale - scaleChange, this.minScale);
 
-        --this.scale;
+        let newX = this.position.x + posX / this.scale - posX / newScale;
+        let newY = this.position.y + posY / this.scale - posY / newScale;
+
+        this.scale = newScale;
         this.setPosition(newX, newY);
 
         return true;
