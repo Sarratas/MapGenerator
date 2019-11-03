@@ -58,15 +58,17 @@ window.addEventListener('DOMContentLoaded', function() {
 
         activePath = map.calculatePath(startX, startY, endX, endY);
 
-        activePath.show();
+        if (activePath !== undefined) {
+            activePath.show();
 
-        let pathCostInput = document.getElementById('pathCost') as HTMLInputElement;
-        let pathRealCostInput = document.getElementById('pathRealCost') as HTMLInputElement;
-        let pathCost = activePath.getCost();
-        let pathRealCost = activePath.getRealCost();
+            let pathCostInput = document.getElementById('pathCost') as HTMLInputElement;
+            let pathRealCostInput = document.getElementById('pathRealCost') as HTMLInputElement;
+            let pathCost = activePath.getCost();
+            let pathRealCost = activePath.getRealCost();
 
-        pathCostInput.value = pathCost.toString();
-        pathRealCostInput.value = pathRealCost.toString();
+            pathCostInput.value = pathCost.toString();
+            pathRealCostInput.value = pathRealCost.toString();
+        }
 
         map.render(canvas);
     });

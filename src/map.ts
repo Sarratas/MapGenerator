@@ -186,12 +186,13 @@ export class WorldMap {
         }
     }
 
-    public calculatePath(startX: number, startY: number, endX: number, endY: number): Path {
+    public calculatePath(startX: number, startY: number, endX: number, endY: number): Path | undefined {
         let startCell = this.cellsSquare[startX][startY];
         let endCell = this.cellsSquare[endX][endY];
 
-        startCell.type = CellTypes.None;
-        endCell.type = CellTypes.None;
+        if (!startCell.movementEnabled || !endCell.movementEnabled) {
+            return undefined;
+        }
 
         let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
         queue.add({cell: startCell, priority: 0});
@@ -217,9 +218,13 @@ export class WorldMap {
         }
 
         // backtrace the path
-        let current: Cell | undefined = endCell;
-        let path: Path = new Path();
+        let current: Cell | undefined = cellsMap.get(endCell);
+        if (current === undefined) { // path not found
+            return undefined;
+        }
 
+        let path: Path = new Path();
+        path.add(endCell);
         do {
             path.add(current);
         } while ((current = cellsMap.get(current)) !== undefined);

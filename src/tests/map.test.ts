@@ -390,7 +390,7 @@ describe('Path calculation tests', () => {
     test('Calculate straight path', () => {
         let map = new WorldMap(50, 50);
 
-        let path = map.calculatePath(0, 0, 5, 5);
+        let path = map.calculatePath(0, 0, 5, 5)!;
 
         expect(path.getCost()).toBe(9);
 
@@ -405,6 +405,26 @@ describe('Path calculation tests', () => {
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 2, cubeY: -6, cubeZ: 4 })]));
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 3, cubeY: -7, cubeZ: 4 })]));
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 3, cubeY: -8, cubeZ: 5 })]));
+    });
+
+    test('Result undefined if path start not found', () => {
+        let map = new WorldMap(50, 50);
+
+        map['cellsSquare'][0][0].movementEnabled = false;
+
+        let path = map.calculatePath(0, 0, 5, 5);
+
+        expect(path).toBeUndefined();
+    });
+
+    test('Result undefined if path end not found', () => {
+        let map = new WorldMap(50, 50);
+
+        map['cellsSquare'][5][5].movementEnabled = false;
+
+        let path = map.calculatePath(0, 0, 5, 5);
+
+        expect(path).toBeUndefined();
     });
 });
 
