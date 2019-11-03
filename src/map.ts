@@ -204,7 +204,6 @@ export class WorldMap {
         while (!queue.isEmpty()) {
             let current = queue.poll()!;
             if (current.cell === endCell) break;
-            let x = this.getAdjacentCellsCube(current.cell, Ranges.Immediate);
             for (let next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
                 if (!next.movementEnabled) continue;
                 let newCost = currCost.get(current.cell)! + next.movementCost;

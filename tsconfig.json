@@ -10,5 +10,7 @@
         "strict": true,
         "strictNullChecks": true,
         "noImplicitThis": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
     }
 }
