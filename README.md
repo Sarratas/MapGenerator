@@ -11,17 +11,17 @@ MapGenerator allows to generate simple 2d map and render it on HTML5 canvas elem
 Path calculation feature allows to find the fastest way between two points using A* search algorithm. 
 
 ## Technologies
-* TypeScript (typed superset of JavaScript)
-* Webpack (module bundler)
-* Sass (css preprocessor)
-* prando (deterministic pseudo-random number generator)
-* fastpriorityqueue (fast, heap-based priority queue)
-* ts-jest (TypeScript preprocessor with sourcemap support for Jest)
-* jest (JavaScript testing framework)
-* tslint (static analysis tool for TypeScript)  
+**TypeScript** *(typed superset of JavaScript)*  
+**Webpack** *(module bundler)*  
+**Sass** *(css preprocessor)*  
+**prando** *(deterministic pseudo-random number generator)*  
+**fastpriorityqueue** *(fast, heap-based priority queue)*  
+**ts-jest** *(TypeScript preprocessor with sourcemap support for Jest)*  
+**jest** *(JavaScript testing framework)*  
+**tslint** *(static analysis tool for TypeScript)*  
   
-* travis (continuous integration service)
-* coveralls (test coverage history & statistics)
+**Travis CI** *(continuous integration service)*  
+**Coveralls** *(test coverage history & statistics)*
 
 ## Installation Guide
 
