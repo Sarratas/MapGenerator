@@ -1,8 +1,29 @@
-# MapGenerator
-[![Build Status](https://travis-ci.com/Sarratas/MapGenerator.svg?branch=master)](https://travis-ci.com/Sarratas/MapGenerator)
-[![Coverage Status](https://coveralls.io/repos/github/Sarratas/MapGenerator/badge.svg)](https://coveralls.io/github/Sarratas/MapGenerator)
+# MapGenerator [![Build Status](https://travis-ci.com/Sarratas/MapGenerator.svg?branch=master)](https://travis-ci.com/Sarratas/MapGenerator) [![Coverage Status](https://coveralls.io/repos/github/Sarratas/MapGenerator/badge.svg)](https://coveralls.io/github/Sarratas/MapGenerator)
 
-# Installation guide
+* [General Info](#general-info)
+* [Technologies](#technologies)
+* [Installation Guide](#installation-guide)
+
+--------------
+
+## General Info
+MapGenerator allows to generate simple 2d map and render it on HTML5 canvas element. There is support for scrolling and zooming of the generated map. Several generation parameters can be adjusted.  
+Path calculation feature allows to find the fastest way between two points using A* search algorithm. 
+
+## Technologies
+* TypeScript (typed superset of JavaScript)
+* Webpack (module bundler)
+* Sass (css preprocessor)
+* prando (deterministic pseudo-random number generator)
+* fastpriorityqueue (fast, heap-based priority queue)
+* ts-jest (TypeScript preprocessor with sourcemap support for Jest)
+* jest (JavaScript testing framework)
+* tslint (static analysis tool for TypeScript)  
+  
+* travis (continuous integration service)
+* coveralls (test coverage history & statistics)
+
+## Installation Guide
 
 ### Prerequisites
 Download and install nodejs with npm via https://nodejs.org/en/download/ or your system's specific package manager.
