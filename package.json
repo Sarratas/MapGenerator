@@ -8,7 +8,7 @@
     "fastpriorityqueue": "^0.6.3",
     "fibers": "^4.0.2",
     "file-loader": "^5.0.2",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.13.0",
     "prando": "^5.1.1",
     "sass": "^1.23.0",
     "sass-loader": "^8.0.0",
