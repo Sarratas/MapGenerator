@@ -66,6 +66,7 @@ export class WorldMap {
 
     private readonly minScale = 1;
     private readonly maxScale = 100;
+    private readonly initialScale = 50;
 
     private readonly minRenderInterval = 50;
     private readonly hexagonThresholdScale = 10;
@@ -89,7 +90,7 @@ export class WorldMap {
         this.height = height;
         this.generationParams = { ...this.generationParams, ...params };
         this.rng = new Prando(this.generationParams.seed);
-        this.scale = 1;
+        this.scale = this.initialScale;
         this.cellsSquare = [];
         this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
