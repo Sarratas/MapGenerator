@@ -296,11 +296,14 @@ export class WorldMap {
 
         ctx.lineWidth = this.hexagonBorderWidth;
 
+        const offsetX = (this.position.x - Math.floor(this.position.x)) * this.scale;
+        const offsetY = (this.position.y - Math.floor(this.position.y)) * this.scale;
+
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
                 let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius);
-                let positionY = j * (sideLength + hexHeight);
+                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
+                let positionY = j * (sideLength + hexHeight) - offsetY;
 
                 ctx.beginPath();
                 ctx.moveTo(positionX + hexRadius, positionY);
