@@ -70,7 +70,7 @@ window.addEventListener('DOMContentLoaded', function() {
             pathRealCostInput.value = pathRealCost.toString();
         }
 
-        map.render(canvas);
+        map.render();
     });
 });
 
@@ -99,7 +99,9 @@ function generateMap() {
 
     map.generate();
 
-    map.render(canvas);
+    map.initView(canvas);
+
+    map.render();
 }
 
 canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
@@ -122,7 +124,7 @@ canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
     }
 
     if (needsRendering) {
-        map.render(canvas);
+        map.render();
     }
 });
 
@@ -141,7 +143,7 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
         let currentY = mousePos.y;
 
         if (map.movePosition(lastX - currentX, lastY - currentY)) {
-            map.render(canvas);
+            map.render();
         }
 
         lastX = currentX;
@@ -156,7 +158,7 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
         let endY = mousePos.y;
 
         if (map.movePosition(lastX - endX, lastY - endY)) {
-            map.render(canvas);
+            map.render();
         }
 
         document.removeEventListener('mouseup', handleMouseUp);

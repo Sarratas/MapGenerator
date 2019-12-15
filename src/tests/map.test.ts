@@ -150,6 +150,8 @@ describe('Zoom in tests', () => {
     test('Zoom in to top left corner', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         expect(map['scale']).toBe(1);
 
         map.zoomIn(0, 0);
@@ -166,6 +168,8 @@ describe('Zoom in tests', () => {
 
     test('Zoom in to bottom left corner', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         expect(map['scale']).toBe(1);
 
@@ -184,6 +188,8 @@ describe('Zoom in tests', () => {
     test('Zoom in to top right corner', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         expect(map['scale']).toBe(1);
 
         map.zoomIn(100, 0);
@@ -200,6 +206,8 @@ describe('Zoom in tests', () => {
 
     test('Zoom in to bottom right corner', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         expect(map['scale']).toBe(1);
 
@@ -218,6 +226,8 @@ describe('Zoom in tests', () => {
     test('Zoom in to random direction', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         expect(map['scale']).toBe(1);
 
         map.zoomIn(15, 0);
@@ -230,6 +240,8 @@ describe('Zoom in tests', () => {
 
     test('Zoom in limit', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         expect(map['scale']).toBe(1);
 
@@ -247,6 +259,8 @@ describe('Zoom out tests', () => {
     test('Zoom out limit', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         let minScale = map['minScale'];
 
         expect(map['scale']).toBe(minScale);
@@ -258,6 +272,8 @@ describe('Zoom out tests', () => {
 
     test('Zoom out to top left corner', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -273,6 +289,8 @@ describe('Zoom out tests', () => {
     test('Zoom out to top right corner', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
 
@@ -287,6 +305,8 @@ describe('Zoom out tests', () => {
     test('Zoom out to bottom left corner', () => {
         let map = new WorldMap(100, 100);
 
+        map.initView(undefined, 1);
+
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
 
@@ -300,6 +320,8 @@ describe('Zoom out tests', () => {
 
     test('Zoom out to bottom right corner', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -316,6 +338,8 @@ describe('Zoom out tests', () => {
 describe('Map position operations tests', () => {
     test('Move position', () => {
         let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
 
         map['scale'] = 2;
 
@@ -334,11 +358,36 @@ describe('Map position operations tests', () => {
         map.movePosition(-200, -200);
         expect(map.getPosition()).toEqual({ x: 0, y: 0 });
     });
+
+    test('Close movement', () => {
+        let map = new WorldMap(100, 100);
+
+        map.initView(undefined, 1);
+
+        map['scale'] = 2;
+
+        map.movePosition(0.2, 0.2);
+        expect(map.getPosition().x).toBeCloseTo(0.1, 0.1);
+
+        map.movePosition(0.2, 0.2);
+        expect(map.getPosition().x).toBeCloseTo(0.2, 0.2);
+
+        map.movePosition(-0.2, 0);
+        expect(map.getPosition().x).toBeCloseTo(0.1, 0.2);
+
+        map.movePosition(0, -0.2);
+        expect(map.getPosition().x).toBeCloseTo(0.1, 0.1);
+
+        map.movePosition(-0.2, -0.2);
+        expect(map.getPosition().x).toBeCloseTo(0, 0);
+    });
 });
 
 describe('Adjacent cells algorithm tests', () => {
     test('Adjacent cells for square coords', () => {
         let map = new WorldMap(50, 50);
+
+        map.initView(undefined, 1);
 
         let initCell = map['cellsSquare'][5][5];
         map['cellsSquare'][5][6].type = CellTypes.Plain;
@@ -365,6 +414,8 @@ describe('Adjacent cells algorithm tests', () => {
     test('Adjacent cells for cube coords', () => {
         let map = new WorldMap(50, 50);
 
+        map.initView(undefined, 1);
+
         let initCell = map['getCellCube'](10, -20, 10)!;
         map['getCellCube'](10, -21, 11)!.type = CellTypes.Plain;
 
@@ -390,6 +441,8 @@ describe('Path calculation tests', () => {
     test('Calculate straight path', () => {
         let map = new WorldMap(50, 50);
 
+        map.initView(undefined, 1);
+
         let path = map.calculatePath(0, 0, 5, 5)!;
 
         expect(path.getCost()).toBe(9);
@@ -410,6 +463,8 @@ describe('Path calculation tests', () => {
     test('Result undefined if path start not found', () => {
         let map = new WorldMap(50, 50);
 
+        map.initView(undefined, 1);
+
         map['cellsSquare'][0][0].movementEnabled = false;
 
         let path = map.calculatePath(0, 0, 5, 5);
@@ -419,6 +474,8 @@ describe('Path calculation tests', () => {
 
     test('Result undefined if path end not found', () => {
         let map = new WorldMap(50, 50);
+
+        map.initView(undefined, 1);
 
         map['cellsSquare'][5][5].movementEnabled = false;
 
@@ -432,11 +489,13 @@ describe('Rendering tests', () => {
     test('Render square call', () => {
         let map = new WorldMap(50, 50);
 
-        let canvas = document.createElement('canvas');
+        const canvas = document.createElement('canvas');
+
+        map.initView(canvas, 1);
 
         map['renderSquare'] = jest.fn();
 
-        map.render(canvas);
+        map.render();
 
         expect(map['renderSquare']).toBeCalled();
     });
@@ -444,7 +503,9 @@ describe('Rendering tests', () => {
     test('Render square implementation', () => {
         let map = new WorldMap(50, 50);
 
-        let canvas = document.createElement('canvas');
+        const canvas = document.createElement('canvas');
+
+        map.initView(canvas, 1);
 
         expect(map.render.bind(map, canvas)).not.toThrow();
     });
@@ -452,12 +513,14 @@ describe('Rendering tests', () => {
     test('Render hexagonal call', () => {
         let map = new WorldMap(50, 50);
 
+        const canvas = document.createElement('canvas');
+
+        map.initView(canvas, 1);
+
         map['scale'] = map['hexagonThresholdScale'];
         map['renderHexagonal'] = jest.fn();
 
-        let canvas = document.createElement('canvas');
-
-        map.render(canvas);
+        map.render();
 
         expect(map['renderHexagonal']).toBeCalled();
     });
@@ -466,23 +529,27 @@ describe('Rendering tests', () => {
     test('Render hexagonal implementation', () => {
         let map = new WorldMap(50, 50);
 
+        const canvas = document.createElement('canvas');
+
+        map.initView(canvas, 1);
+
         map['scale'] = map['hexagonThresholdScale'];
 
-        let canvas = document.createElement('canvas');
-
-        expect(map.render.bind(map, canvas)).not.toThrow();
+        expect(map.render).not.toThrow();
     });
 
 
     test('Render textures implementation', () => {
         let map = new WorldMap(50, 50);
 
+        const canvas = document.createElement('canvas');
+
+        map.initView(canvas, 1);
+
         map['scale'] = map['textureThresholdScale'];
 
-        let canvas = document.createElement('canvas');
+        map.render();
 
-        map.render(canvas); 
-
-        expect(map.render.bind(map, canvas)).not.toThrow();
+        expect(map.render).not.toThrow();
     });
 });

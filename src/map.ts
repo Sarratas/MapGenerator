@@ -78,6 +78,8 @@ export class WorldMap {
 
     private readonly placeholderCell: Cell;
 
+    private canvas?: HTMLCanvasElement;
+
     private readonly sprite: HTMLImageElement;
     private readonly spriteElementWidth = 155;
     private readonly spriteElementHeight = 185;
@@ -176,8 +178,15 @@ export class WorldMap {
         this.convertCells();
     }
 
-    public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d')!;
+    public initView(canvas: HTMLCanvasElement | undefined, scale: number = this.initialScale): void {
+        this.canvas = canvas;
+        this.scale = scale;
+    }
+
+    public render(): void {
+        if (this.canvas === undefined) return;
+
+        let ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
         ctx.clearRect(0, 0, this.width, this.height);
 
         if (this.scale >= this.hexagonThresholdScale) {
