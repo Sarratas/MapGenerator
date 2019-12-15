@@ -151,7 +151,7 @@ export class WorldMap {
         let lastX = this.position.x;
         let lastY = this.position.y;
 
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         this.position.x = Math.max(Math.min(newX, this.width - columnsInView), 0);
         this.position.y = Math.max(Math.min(newY, this.height - rowsInView), 0);
@@ -242,9 +242,12 @@ export class WorldMap {
         return path;
     }
 
-    private countVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
+    private getVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
         if (this.scale < this.hexagonThresholdScale) {
-            return { columnsInView: this.width / this.scale, rowsInView: this.height / this.scale };
+            return {
+                columnsInView: (this.canvas?.width ?? 0) / this.scale,
+                rowsInView: (this.canvas?.height ?? 0) / this.scale,
+            };
         }
 
         let hexRectangleWidth = this.scale;
@@ -253,10 +256,10 @@ export class WorldMap {
         let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
         let hexRectangleHeight = sideLength + hexHeight * 2;
 
-        let columnsInView = this.width / hexRectangleWidth;
-        let rowsInView = this.height / hexRectangleHeight / this.hexagonHeightFactor;
-
-        return { columnsInView, rowsInView };
+        return {
+            columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
+            rowsInView: (this.canvas?.height ?? 0) / hexRectangleHeight / this.hexagonHeightFactor,
+        };
     }
 
     private getCellCube(x: number, y: number, z: number): Cell | undefined {
@@ -264,7 +267,7 @@ export class WorldMap {
     }
 
     private renderSquare(ctx: CanvasRenderingContext2D): void {
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
             let lastFillColor: string = '';
@@ -302,7 +305,7 @@ export class WorldMap {
         let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
         let hexRectangleHeight = sideLength + hexHeight * 2;
 
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         ctx.lineWidth = this.hexagonBorderWidth;
 

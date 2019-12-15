@@ -339,9 +339,32 @@ describe('Map position operations tests', () => {
     test('Move position', () => {
         let map = new WorldMap(100, 100);
 
-        map.initView(undefined, 1);
+        map.initView(undefined, 2);
 
-        map['scale'] = 2;
+        map.movePosition(10, 10);
+        expect(map.getPosition()).toEqual({ x: 5, y: 5 });
+
+        map.movePosition(10, 10);
+        expect(map.getPosition()).toEqual({ x: 10, y: 10 });
+
+        map.movePosition(-10, -10);
+        expect(map.getPosition()).toEqual({ x: 5, y: 5 });
+
+        map.movePosition(200, 200);
+        expect(map.getPosition()).toEqual({ x: 100, y: 100 });
+
+        map.movePosition(-200, -200);
+        expect(map.getPosition()).toEqual({ x: 0, y: 0 });
+    });
+
+    test('Move within canvas boundaries', () => {
+        let map = new WorldMap(100, 100);
+
+        let canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+
+        map.initView(canvas, 2);
 
         map.movePosition(10, 10);
         expect(map.getPosition()).toEqual({ x: 5, y: 5 });
