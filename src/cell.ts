@@ -20,7 +20,7 @@ export enum CellColor {
     Highland        = '#D2BC8D',
     DeepWater       = '#1587BE',
 
-    Placeholder     = '#000000',
+    Placeholder     = '#336633',
 }
 
 enum OffsetRows {
@@ -123,6 +123,7 @@ export class PlaceholderCell extends Cell {
         super(posX, posY, CellTypes.Placeholder);
 
         this.movementEnabled = false;
+        this.color = CellColor.Placeholder;
     }
 }
 
