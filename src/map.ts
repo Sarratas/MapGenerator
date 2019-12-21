@@ -1,4 +1,4 @@
-import { Cell, CellTypes, CellColor } from './cell';
+import { Cell, CellTypes, CellColor, PlaceholderCell } from './cell';
 import Utils from './utils';
 import { Path } from './path';
 import Prando from 'prando';
@@ -15,6 +15,14 @@ enum Ranges {
     Close       = 2,
     Medium      = 4,
     Far         = 8,
+}
+
+enum HexConstants {
+    BonusOffsetX = 0.5,
+    BonusOffsetY = 1 / 3,
+    HeightFactor = 0.75,
+    WidthHeightRatio = 1.1547,
+    Angle = 0.523598776,
 }
 
 export interface IGenerationParams {
@@ -39,6 +47,7 @@ export class WorldMap {
     private width: number;
     private height: number;
     private scale: number;
+    private scaleIndex: number;
     private position: { x: number, y: number };
 
     private cellsSquare: Array<Array<Cell>>;
@@ -64,18 +73,21 @@ export class WorldMap {
         seed: undefined,
     };
 
-    private readonly minScale = 1;
-    private readonly maxScale = 100;
+    private readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
+
+    private readonly minScaleIndex = 0;
+    private readonly maxScaleIndex = this.scaleThresholds.length - 1;
+    private readonly initialScaleIndex = 9;
 
     private readonly minRenderInterval = 50;
     private readonly hexagonThresholdScale = 10;
     private readonly textureThresholdScale = 100;
 
-    private readonly hexagonAngle = 0.523598776;
     private readonly hexagonBorderWidth = 0.1;
-    private readonly hexagonHeightFactor = 0.75;
 
     private readonly placeholderCell: Cell;
+
+    private canvas?: HTMLCanvasElement;
 
     private readonly sprite: HTMLImageElement;
     private readonly spriteElementWidth = 155;
@@ -89,12 +101,13 @@ export class WorldMap {
         this.height = height;
         this.generationParams = { ...this.generationParams, ...params };
         this.rng = new Prando(this.generationParams.seed);
-        this.scale = 1;
+        this.scaleIndex = this.initialScaleIndex;
+        this.scale = this.scaleThresholds[this.scaleIndex];
         this.cellsSquare = [];
         this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
-        this.placeholderCell = new Cell(0, 0, CellTypes.Placeholder);
+        this.placeholderCell = new PlaceholderCell(0, 0);
 
         this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
@@ -108,10 +121,10 @@ export class WorldMap {
     }
 
     public zoomIn(posX: number, posY: number): boolean {
-        if (this.scale >= this.maxScale) return false;
+        if (this.scaleIndex >= this.maxScaleIndex) return false;
 
-        let scaleChange = Math.floor(Math.sqrt(this.scale));
-        let newScale = Math.min(this.scale + scaleChange, this.maxScale);
+        ++this.scaleIndex;
+        const newScale = this.scaleThresholds[this.scaleIndex];
 
         let newX = this.position.x + posX / this.scale - posX / newScale;
         let newY = this.position.y + posY / this.scale - posY / newScale;
@@ -123,10 +136,10 @@ export class WorldMap {
     }
 
     public zoomOut(posX: number, posY: number): boolean {
-        if (this.scale <= this.minScale) return false;
+        if (this.scaleIndex <= this.minScaleIndex) return false;
 
-        let scaleChange = Math.floor(Math.sqrt(this.scale));
-        let newScale = Math.max(this.scale - scaleChange, this.minScale);
+        --this.scaleIndex;
+        let newScale = this.scaleThresholds[this.scaleIndex];
 
         let newX = this.position.x + posX / this.scale - posX / newScale;
         let newY = this.position.y + posY / this.scale - posY / newScale;
@@ -148,10 +161,13 @@ export class WorldMap {
         let lastX = this.position.x;
         let lastY = this.position.y;
 
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
-        this.position.x = Math.max(Math.min(newX, this.width - columnsInView), 0);
-        this.position.y = Math.max(Math.min(newY, this.height - rowsInView), 0);
+        const bonusOffsetX = this.scale >= this.hexagonThresholdScale ? HexConstants.BonusOffsetX : 0;
+        const bonusOffsetY = this.scale >= this.hexagonThresholdScale ? HexConstants.BonusOffsetY : 0;
+
+        this.position.x = Math.max(Math.min(newX, this.width - columnsInView + bonusOffsetX), 0);
+        this.position.y = Math.max(Math.min(newY, this.height - rowsInView + bonusOffsetY), 0);
 
         return lastX !== this.position.x || lastY !== this.position.y;
     }
@@ -175,8 +191,16 @@ export class WorldMap {
         this.convertCells();
     }
 
-    public render(elem: HTMLCanvasElement): void {
-        let ctx: CanvasRenderingContext2D = elem.getContext('2d')!;
+    public initView(canvas: HTMLCanvasElement | undefined, scaleIndex: number = this.initialScaleIndex): void {
+        this.canvas = canvas;
+        this.scaleIndex = scaleIndex;
+        this.scale = this.scaleThresholds[this.scaleIndex];
+    }
+
+    public render(): void {
+        if (this.canvas === undefined) return;
+
+        let ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
         ctx.clearRect(0, 0, this.width, this.height);
 
         if (this.scale >= this.hexagonThresholdScale) {
@@ -232,21 +256,23 @@ export class WorldMap {
         return path;
     }
 
-    private countVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
+    private getVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
         if (this.scale < this.hexagonThresholdScale) {
-            return { columnsInView: this.width / this.scale, rowsInView: this.height / this.scale };
+            return {
+                columnsInView: (this.canvas?.width ?? 0) / this.scale,
+                rowsInView: (this.canvas?.height ?? 0) / this.scale,
+            };
         }
 
         let hexRectangleWidth = this.scale;
         let hexRadius = hexRectangleWidth / 2;
-        let sideLength = hexRadius / Math.cos(this.hexagonAngle);
-        let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
-        let hexRectangleHeight = sideLength + hexHeight * 2;
+        let sideLength = hexRadius / Math.cos(HexConstants.Angle);
+        let hexRectangleHeight = sideLength * 2;
 
-        let columnsInView = this.width / hexRectangleWidth;
-        let rowsInView = this.height / hexRectangleHeight / this.hexagonHeightFactor;
-
-        return { columnsInView, rowsInView };
+        return {
+            columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
+            rowsInView: (this.canvas?.height ?? 0) / hexRectangleHeight / HexConstants.HeightFactor,
+        };
     }
 
     private getCellCube(x: number, y: number, z: number): Cell | undefined {
@@ -254,7 +280,7 @@ export class WorldMap {
     }
 
     private renderSquare(ctx: CanvasRenderingContext2D): void {
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
             let lastFillColor: string = '';
@@ -288,26 +314,29 @@ export class WorldMap {
 
         let hexRectangleWidth = this.scale;
         let hexRadius = hexRectangleWidth / 2;
-        let sideLength = hexRadius / Math.cos(this.hexagonAngle);
-        let hexHeight = Math.sin(this.hexagonAngle) * sideLength;
-        let hexRectangleHeight = sideLength + hexHeight * 2;
+        let sideLength = hexRadius / Math.cos(HexConstants.Angle);
+        let hexHeight = sideLength / 2;
+        let hexRectangleHeight = hexHeight * 3;
 
-        let { columnsInView, rowsInView } = this.countVisibleCellsCount();
+        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         ctx.lineWidth = this.hexagonBorderWidth;
 
-        for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView; ++x, ++i) {
-            for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView; ++y, ++j) {
+        const offsetX = (this.position.x - Math.floor(this.position.x)) * this.scale;
+        const offsetY = (this.position.y - Math.floor(this.position.y)) * this.scale / HexConstants.WidthHeightRatio;
+
+        for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView + 1; ++x, ++i) {
+            for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView + 1; ++y, ++j) {
                 let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius);
-                let positionY = j * (sideLength + hexHeight);
+                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
+                let positionY = j * hexRectangleHeight - offsetY;
 
                 ctx.beginPath();
                 ctx.moveTo(positionX + hexRadius, positionY);
                 ctx.lineTo(positionX + hexRectangleWidth, positionY + hexHeight);
-                ctx.lineTo(positionX + hexRectangleWidth, positionY + hexHeight + sideLength);
-                ctx.lineTo(positionX + hexRadius, positionY + hexRectangleHeight);
-                ctx.lineTo(positionX, positionY + sideLength + hexHeight);
+                ctx.lineTo(positionX + hexRectangleWidth, positionY + hexHeight * 3);
+                ctx.lineTo(positionX + hexRadius, positionY + hexHeight * 4);
+                ctx.lineTo(positionX, positionY + hexHeight * 3);
                 ctx.lineTo(positionX, positionY + hexHeight);
                 ctx.closePath();
 
@@ -316,7 +345,7 @@ export class WorldMap {
                     ctx.fill();
                 } else {
                     ctx.drawImage(sprite, cell.offsetX, cell.offsetY, spriteWidth, spriteHeight,
-                        positionX, positionY, hexRectangleWidth, hexRectangleHeight);
+                        positionX, positionY, hexRectangleWidth, hexHeight * 4);
                 }
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();

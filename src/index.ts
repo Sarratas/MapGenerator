@@ -5,7 +5,8 @@ import { Path } from './path';
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;
 let activePath: Path | undefined;
-const mapSize = 1000;
+const mapWidth = 1000;
+const mapHeight = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
     let generateButton = document.getElementById('generate') as HTMLButtonElement;
@@ -70,7 +71,7 @@ window.addEventListener('DOMContentLoaded', function() {
             pathRealCostInput.value = pathRealCost.toString();
         }
 
-        map.render(canvas);
+        map.render();
     });
 });
 
@@ -95,11 +96,13 @@ function generateMap() {
         }
     }
 
-    map = new WorldMap(mapSize, mapSize, params);
+    map = new WorldMap(mapWidth, mapHeight, params);
 
     map.generate();
 
-    map.render(canvas);
+    map.initView(canvas);
+
+    map.render();
 }
 
 canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
@@ -122,7 +125,7 @@ canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
     }
 
     if (needsRendering) {
-        map.render(canvas);
+        map.render();
     }
 });
 
@@ -141,7 +144,7 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
         let currentY = mousePos.y;
 
         if (map.movePosition(lastX - currentX, lastY - currentY)) {
-            map.render(canvas);
+            map.render();
         }
 
         lastX = currentX;
@@ -156,7 +159,7 @@ canvas.addEventListener('mousedown', function(event: MouseEvent): void {
         let endY = mousePos.y;
 
         if (map.movePosition(lastX - endX, lastY - endY)) {
-            map.render(canvas);
+            map.render();
         }
 
         document.removeEventListener('mouseup', handleMouseUp);

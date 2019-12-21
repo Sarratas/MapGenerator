@@ -6,7 +6,10 @@ module.exports = {
     devServer: {
         contentBase: '.',
         publicPath: '/dist/',
-        watchContentBase: true
+        watchContentBase: true,
+        watchOptions: {
+            ignored: [ '/node_modules/', '/src/tests/'],
+        }
     },
     module: {
         rules: [
