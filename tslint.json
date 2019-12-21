@@ -23,7 +23,7 @@
         "member-access": true,
         "only-arrow-functions": false,
         "no-any": true,
-        "no-magic-numbers": [true, {"allowed-numbers": [0, 1, 2] }],
+        "no-magic-numbers": false,
         "no-non-null-assertion": false,
         "no-null-keyword": true,
         "no-require-imports": false,
