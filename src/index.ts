@@ -5,7 +5,8 @@ import { Path } from './path';
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;
 let activePath: Path | undefined;
-const mapSize = 1000;
+const mapWidth = 1000;
+const mapHeight = 1000;
 
 window.addEventListener('DOMContentLoaded', function() {
     let generateButton = document.getElementById('generate') as HTMLButtonElement;
@@ -95,7 +96,7 @@ function generateMap() {
         }
     }
 
-    map = new WorldMap(mapSize, mapSize, params);
+    map = new WorldMap(mapWidth, mapHeight, params);
 
     map.generate();
 
