@@ -43,6 +43,11 @@ export interface IGenerationParams {
     seed: string | undefined;
 }
 
+export interface IWorldMapParams {
+    onCellHover?: (event: MouseEvent) => void;
+    onCellClick?: (event: MouseEvent) => void;
+}
+
 export class WorldMap {
     private width: number;
     private height: number;
@@ -57,6 +62,7 @@ export class WorldMap {
 
     private lastMouseX: number;
     private lastMouseY: number;
+    private isMouseDown: boolean;
     private isDragging: boolean;
 
     private readonly generationParams: IGenerationParams = {
@@ -100,10 +106,18 @@ export class WorldMap {
     private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
     private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
 
-    constructor(width: number, height: number, params: Partial<IGenerationParams> = {}) {
+    private onCellHover?: (event: MouseEvent) => void;
+    private onCellClick?: (event: MouseEvent) => void;
+
+    constructor(
+        width: number,
+        height: number,
+        generationParams: Partial<IGenerationParams> = {},
+        worldMapParams: IWorldMapParams = {}
+    ) {
         this.width = width;
         this.height = height;
-        this.generationParams = { ...this.generationParams, ...params };
+        this.generationParams = { ...this.generationParams, ...generationParams };
         this.rng = new Prando(this.generationParams.seed);
         this.scaleIndex = this.initialScaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
@@ -113,9 +127,9 @@ export class WorldMap {
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new PlaceholderCell(0, 0);
 
-        this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
+        this.getAdjCellsForSmoothing = generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
-        this.getAdjCellsForGenerating = params.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
+        this.getAdjCellsForGenerating = generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
 
         this.sprite = new Image();
@@ -123,7 +137,11 @@ export class WorldMap {
 
         this.lastMouseX = 0;
         this.lastMouseY = 0;
+        this.isMouseDown = false;
         this.isDragging = false;
+
+        this.onCellHover = worldMapParams.onCellHover;
+        this.onCellClick = worldMapParams.onCellClick;
 
         this.generateEmptyCells();
     }
@@ -605,7 +623,8 @@ export class WorldMap {
         let initialMousePos = this.getMousePos(event);
         this.lastMouseX = initialMousePos.x;
         this.lastMouseY = initialMousePos.y;
-        this.isDragging = true;
+        this.isMouseDown = true;
+        this.isDragging = false;
     }
 
     private handleMouseMove(event: MouseEvent): void {
@@ -613,14 +632,15 @@ export class WorldMap {
         const currentX = mousePos.x;
         const currentY = mousePos.y;
 
-        if (this.isDragging) {
+        if (this.isMouseDown) {
+            this.isDragging = true;
             this.handleMouseDrag(currentX, currentY);
         } else {
             if (this.scale < this.hexagonThresholdScale) return;
 
             const cell = this.findCellFromCoords(currentX, currentY);
             if (cell !== undefined) {
-                cell.highlightColor = '#CCCCCC';
+                this.onCellHover?.call(cell, event);
                 this.render();
             }
         }
@@ -636,16 +656,28 @@ export class WorldMap {
     }
 
     private handleMouseUp(event: MouseEvent): void {
-        if (!this.isDragging) return;
+        this.isMouseDown = false;
 
-        this.isDragging = false;
+        if (this.isDragging) {
+            this.isDragging = false;
 
-        let mousePos = this.getMousePos(event);
-        let endX = mousePos.x;
-        let endY = mousePos.y;
+            let mousePos = this.getMousePos(event);
+            let endX = mousePos.x;
+            let endY = mousePos.y;
 
-        if (this.movePosition(this.lastMouseX - endX, this.lastMouseY - endY)) {
-            this.render();
+            this.handleMouseDrag(endX, endY);
+        } else {
+            if (this.scale < this.hexagonThresholdScale) return;
+
+            const mousePos = this.getMousePos(event);
+            const currentX = mousePos.x;
+            const currentY = mousePos.y;
+
+            const cell = this.findCellFromCoords(currentX, currentY);
+            if (cell !== undefined) {
+                this.onCellClick?.call(cell, event);
+                this.render();
+            }
         }
     }
 
