@@ -113,7 +113,7 @@ export class WorldMap {
         width: number,
         height: number,
         generationParams: Partial<IGenerationParams> = {},
-        worldMapParams: IWorldMapParams = {}
+        worldMapParams: IWorldMapParams = {},
     ) {
         this.width = width;
         this.height = height;
