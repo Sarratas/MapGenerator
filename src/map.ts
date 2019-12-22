@@ -55,6 +55,10 @@ export class WorldMap {
 
     private rng: Prando;
 
+    private lastMouseX: number;
+    private lastMouseY: number;
+    private isDragging: boolean;
+
     private readonly generationParams: IGenerationParams = {
         mountainFactor: 0.001,
         mountainSpreadFactor: 0.35,
@@ -116,6 +120,10 @@ export class WorldMap {
 
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
+
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+        this.isDragging = false;
 
         this.generateEmptyCells();
     }
@@ -195,6 +203,12 @@ export class WorldMap {
         this.canvas = canvas;
         this.scaleIndex = scaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
+
+        this.canvas?.addEventListener('wheel', (event: MouseWheelEvent) => this.handleMouseWheel(event));
+        this.canvas?.addEventListener('mousedown', (event: MouseEvent) => this.handleMouseDown(event));
+        this.canvas?.addEventListener('mouseup', (event: MouseEvent) => this.handleMouseUp(event));
+        this.canvas?.addEventListener('mousemove', (event: MouseEvent) => this.handleMouseMove(event));
+        this.canvas?.addEventListener('mouseenter', (event: MouseEvent) => this.handleMouseEnter(event));
     }
 
     public render(): void {
@@ -565,5 +579,77 @@ export class WorldMap {
 
     private checkBoundaries(x: number, y: number): boolean {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    }
+
+    private handleMouseWheel(event: MouseWheelEvent): void {
+        event.preventDefault();
+
+        let needsRendering = false;
+
+        let mousePos = this.getMousePos(event);
+        let currentX = mousePos.x;
+        let currentY = mousePos.y;
+
+        if (event.deltaY < 0) {
+            needsRendering = this.zoomIn(currentX, currentY);
+        } else if (event.deltaY > 0) {
+            needsRendering = this.zoomOut(currentX, currentY);
+        }
+
+        if (needsRendering) {
+            this.render();
+        }
+    }
+
+    private handleMouseDown(event: MouseEvent): void {
+        event.preventDefault();
+
+        let initialMousePos = this.getMousePos(event);
+        this.lastMouseX = initialMousePos.x;
+        this.lastMouseY = initialMousePos.y;
+        this.isDragging = true;
+    }
+
+    private handleMouseMove(event: MouseEvent): void {
+        if (!this.isDragging) return;
+
+        let mousePos = this.getMousePos(event);
+        let currentX = mousePos.x;
+        let currentY = mousePos.y;
+
+        if (this.movePosition(this.lastMouseX - currentX, this.lastMouseY - currentY)) {
+            this.render();
+        }
+
+        this.lastMouseX = currentX;
+        this.lastMouseY = currentY;
+    }
+
+    private handleMouseUp(event: MouseEvent): void {
+        if (!this.isDragging) return;
+
+        this.isDragging = false;
+
+        let mousePos = this.getMousePos(event);
+        let endX = mousePos.x;
+        let endY = mousePos.y;
+
+        if (this.movePosition(this.lastMouseX - endX, this.lastMouseY - endY)) {
+            this.render();
+        }
+    }
+
+    private handleMouseEnter(_event: MouseEvent): void {
+        this.isDragging = false;
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+    }
+
+    private getMousePos(event: MouseEvent) {
+        let rect = this.canvas?.getBoundingClientRect();
+        return {
+            x: event.clientX - (rect?.left ?? 0),
+            y: event.clientY - (rect?.top ?? 0),
+        };
     }
 }
