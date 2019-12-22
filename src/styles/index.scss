@@ -56,4 +56,29 @@ body {
             width: 50px;
         }
     }
+
+    #cellHoverInfo {
+        width: 230px;
+        position: absolute;
+        border: 2px solid black;
+        background-color: #cccccc;
+        color: black;
+        z-index: 999;
+        pointer-events: none;
+        padding-bottom: 20px;
+
+        table {
+            margin: 0 auto;
+        }
+
+        td {
+            text-align: left;
+            padding: 0px 5px;
+            border-bottom: 1px solid #aaa;
+        }
+
+        td:first-child {
+            text-align: right;
+        }
+    }
 }

@@ -8,7 +8,7 @@
         <table>
             <tr>
                 <td>
-                    <canvas id="canvas" width="1000" height="1000"></canvas>
+                    <canvas id="canvas" width="800" height="600"></canvas>
                 </td>
                 <td>
                     <form id="generateForm">
@@ -103,6 +103,40 @@
                 </td>
             </tr>
         </table>
+        <div id="cellHoverInfo" hidden>
+            <h3>Cell (<span class="tooltipContent" data-content="posX"></span>:<span class="tooltipContent" data-content="posY"></span>)</h3>
+            <img width="150px" height="100px">
+            <table>
+                <tr>
+                    <td>positionX:</td>
+                    <td class="tooltipContent" data-content="posX"></td>
+                </tr>
+                <tr>
+                    <td>positionY:</td>
+                    <td class="tooltipContent" data-content="posY"></td>
+                </tr>
+                <tr>
+                    <td>type:</td>
+                    <td class="tooltipContent" data-content="typeString"></td>
+                </tr>
+                <tr>
+                    <td>movementCost:</td>
+                    <td class="tooltipContent" data-content="movementCost"></td>
+                </tr>
+                <tr>
+                    <td>cubeX:</td>
+                    <td class="tooltipContent" data-content="cubeX"></td>
+                </tr>
+                <tr>
+                    <td>cubeY:</td>
+                    <td class="tooltipContent" data-content="cubeY"></td>
+                </tr>
+                <tr>
+                    <td>cubeZ:</td>
+                    <td class="tooltipContent" data-content="cubeZ"></td>
+                </tr>
+            </table>
+        </div>
         <script src="dist/bundle.js" type="module"></script>
     </body>
 </html>
