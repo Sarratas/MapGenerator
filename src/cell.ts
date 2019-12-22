@@ -67,6 +67,10 @@ export class Cell {
     public color: CellColor;
     public highlightColor?: string;
 
+    public get typeString() {
+        return CellTypes[this.type];
+    }
+
     constructor(posX: number, posY: number, type: CellTypes = CellTypes.None) {
         this.posX = posX;
         this.posY = posY;
