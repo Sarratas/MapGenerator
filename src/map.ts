@@ -279,9 +279,7 @@ export class WorldMap {
         }
 
         let hexRectangleWidth = this.scale;
-        let hexRadius = hexRectangleWidth / 2;
-        let sideLength = hexRadius / Math.cos(HexConstants.Angle);
-        let hexRectangleHeight = sideLength * 2;
+        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
 
         return {
             columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
@@ -327,10 +325,10 @@ export class WorldMap {
         let spriteHeight = this.spriteElementHeight;
 
         let hexRectangleWidth = this.scale;
+        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
         let hexRadius = hexRectangleWidth / 2;
         let sideLength = hexRadius / Math.cos(HexConstants.Angle);
         let hexHeight = sideLength / 2;
-        let hexRectangleHeight = hexHeight * 3;
 
         let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
@@ -611,12 +609,24 @@ export class WorldMap {
     }
 
     private handleMouseMove(event: MouseEvent): void {
-        if (!this.isDragging) return;
+        const mousePos = this.getMousePos(event);
+        const currentX = mousePos.x;
+        const currentY = mousePos.y;
 
-        let mousePos = this.getMousePos(event);
-        let currentX = mousePos.x;
-        let currentY = mousePos.y;
+        if (this.isDragging) {
+            this.handleMouseDrag(currentX, currentY);
+        } else {
+            if (this.scale < this.hexagonThresholdScale) return;
 
+            const cell = this.findCellFromCoords(currentX, currentY);
+            if (cell !== undefined) {
+                cell.highlightColor = '#CCCCCC';
+                this.render();
+            }
+        }
+    }
+
+    private handleMouseDrag(currentX: number, currentY: number): void {
         if (this.movePosition(this.lastMouseX - currentX, this.lastMouseY - currentY)) {
             this.render();
         }
@@ -645,11 +655,34 @@ export class WorldMap {
         this.lastMouseY = 0;
     }
 
-    private getMousePos(event: MouseEvent) {
-        let rect = this.canvas?.getBoundingClientRect();
-        return {
-            x: event.clientX - (rect?.left ?? 0),
-            y: event.clientY - (rect?.top ?? 0),
+    // Calculate mouse position in canvas.
+    // Returns same values for pixels on the canvas edges and for corresponding canvas borders
+    private getMousePos(event: MouseEvent): { x: number, y: number } {
+        const canvas = this.canvas;
+        if (canvas === undefined) {
+            return { x: 0, y: 0 };
+        }
+        let rect = canvas.getBoundingClientRect();
+        const borderStyle = getComputedStyle(canvas, undefined);
+        const topBorder = parseFloat(borderStyle.getPropertyValue('border-top-width'));
+        const leftBorder = parseFloat(borderStyle.getPropertyValue('border-left-width'));
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const pos = {
+            x: event.clientX - leftBorder - rect.left,
+            y: event.clientY - topBorder - rect.top,
         };
+        return {
+            x: Math.max(0, Math.min(canvasWidth - 1, pos.x)),
+            y: Math.max(0, Math.min(canvasHeight - 1, pos.y)),
+        };
+    }
+
+    private findCellFromCoords(x: number, y: number): Cell | undefined {
+        const hexRectangleWidth = this.scale;
+        const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
+        const posY = Math.floor(this.position.y + y / hexRectangleHeight);
+        const posX = Math.floor(this.position.x + x / hexRectangleWidth - posY % 2 / 2);
+        return this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
     }
 }
