@@ -222,11 +222,19 @@ export class WorldMap {
         this.scaleIndex = scaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
 
-        this.canvas?.addEventListener('wheel', (event: MouseWheelEvent) => this.handleMouseWheel(event));
-        this.canvas?.addEventListener('mousedown', (event: MouseEvent) => this.handleMouseDown(event));
-        this.canvas?.addEventListener('mouseup', (event: MouseEvent) => this.handleMouseUp(event));
-        this.canvas?.addEventListener('mousemove', (event: MouseEvent) => this.handleMouseMove(event));
-        this.canvas?.addEventListener('mouseenter', (event: MouseEvent) => this.handleMouseEnter(event));
+        this.canvas?.addEventListener('wheel', this.handleMouseWheel);
+        this.canvas?.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas?.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas?.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas?.addEventListener('mouseenter', this.handleMouseEnter);
+    }
+
+    public unbindView() {
+        this.canvas?.removeEventListener('wheel', this.handleMouseWheel);
+        this.canvas?.removeEventListener('mousedown', this.handleMouseDown);
+        this.canvas?.removeEventListener('mouseup', this.handleMouseUp);
+        this.canvas?.removeEventListener('mousemove', this.handleMouseMove);
+        this.canvas?.removeEventListener('mouseenter', this.handleMouseEnter);
     }
 
     public render(): void {
@@ -597,7 +605,7 @@ export class WorldMap {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
     }
 
-    private handleMouseWheel(event: MouseWheelEvent): void {
+    private handleMouseWheel = (event: MouseWheelEvent): void => {
         event.preventDefault();
 
         let needsRendering = false;
@@ -617,7 +625,7 @@ export class WorldMap {
         }
     }
 
-    private handleMouseDown(event: MouseEvent): void {
+    private handleMouseDown = (event: MouseEvent): void => {
         event.preventDefault();
 
         let initialMousePos = this.getMousePos(event);
@@ -627,7 +635,7 @@ export class WorldMap {
         this.isDragging = false;
     }
 
-    private handleMouseMove(event: MouseEvent): void {
+    private handleMouseMove = (event: MouseEvent): void => {
         const mousePos = this.getMousePos(event);
         const currentX = mousePos.x;
         const currentY = mousePos.y;
@@ -646,7 +654,7 @@ export class WorldMap {
         }
     }
 
-    private handleMouseDrag(currentX: number, currentY: number): void {
+    private handleMouseDrag = (currentX: number, currentY: number): void => {
         if (this.movePosition(this.lastMouseX - currentX, this.lastMouseY - currentY)) {
             this.render();
         }
@@ -655,7 +663,7 @@ export class WorldMap {
         this.lastMouseY = currentY;
     }
 
-    private handleMouseUp(event: MouseEvent): void {
+    private handleMouseUp = (event: MouseEvent): void => {
         this.isMouseDown = false;
 
         if (this.isDragging) {
@@ -681,7 +689,7 @@ export class WorldMap {
         }
     }
 
-    private handleMouseEnter(_event: MouseEvent): void {
+    private handleMouseEnter = (_event: MouseEvent): void => {
         this.isDragging = false;
         this.lastMouseX = 0;
         this.lastMouseY = 0;

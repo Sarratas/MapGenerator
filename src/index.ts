@@ -110,6 +110,10 @@ function generateMap() {
         onCellClick: onCellClick,
     };
 
+    if (map !== undefined) {
+        map.unbindView();
+        map = undefined;
+    }
     map = new WorldMap(mapWidth, mapHeight, generationParams, worldMapParams);
 
     map.generate();
