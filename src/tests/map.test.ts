@@ -54,8 +54,8 @@ describe('Map generation tests', () => {
     test('Generate empty cells', () => {
         const map = new WorldMap(50, 50);
 
-        let cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        let emptyCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
+        const emptyCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.None).length, 0);
 
         expect(cellsCount).toBe(50 * 50);
@@ -67,8 +67,8 @@ describe('Map generation tests', () => {
 
         map['generateLakes']();
 
-        let cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        let waterCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
+        const waterCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.ShallowWater).length, 0);
 
         expect(cellsCount).toBe(50 * 50);
@@ -80,10 +80,10 @@ describe('Map generation tests', () => {
 
         map['generateMountains']();
 
-        let cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        let mountainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
+        const mountainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.Mountain).length, 0);
-        let highlandCellCount = map['cellsSquare'].reduce((acc, elems) => 
+        const highlandCellCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.Highland).length, 0);
 
         expect(cellsCount).toBe(50 * 50);
@@ -96,8 +96,8 @@ describe('Map generation tests', () => {
 
         map['generatePlains']();
 
-        let cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        let plainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
+        const plainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.Plain).length, 0);
 
         expect(cellsCount).toBe(50 * 50);
@@ -111,7 +111,7 @@ describe('Map generation tests', () => {
 
         map['smoothingPass']();
 
-        let waterCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const waterCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.ShallowWater).length, 0);
         
         expect(waterCellsCount).toBe(0);
@@ -122,7 +122,7 @@ describe('Map generation tests', () => {
 
         expect(map.generate.bind(map)).not.toThrow();
 
-        let plainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
+        const plainCellsCount = map['cellsSquare'].reduce((acc, elems) => 
             acc += elems.filter(cell => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None).length, 0);
 
         expect(plainCellsCount).toBe(0);
@@ -133,7 +133,7 @@ describe('Map generation tests', () => {
 
         map['generatePlains']();
 
-        let fun = jest.spyOn(Cell.prototype, 'convert').mockImplementation(() => new Cell(0, 0));
+        const fun = jest.spyOn(Cell.prototype, 'convert').mockImplementation(() => new Cell(0, 0));
 
         map['convertCells']();
 
@@ -148,10 +148,10 @@ describe('Map generation tests', () => {
             smoothingNeighborAlgorithm: NeighborAlgorithms.Cube
         });
     
-        let initCell = map['cellsSquare'][5][5];
+        const initCell = map['cellsSquare'][5][5];
     
-        let adjacentCells1 = map['getAdjCellsForGenerating'](initCell, 1);
-        let adjacentCells2 = map['getAdjCellsForSmoothing'](initCell, 1);
+        const adjacentCells1 = map['getAdjCellsForGenerating'](initCell, 1);
+        const adjacentCells2 = map['getAdjCellsForSmoothing'](initCell, 1);
     
         expect(adjacentCells1.length).toBe(6);
         expect(adjacentCells2.length).toBe(6);
@@ -267,7 +267,7 @@ describe('Zoom in tests', () => {
 
         expect(map['scaleIndex']).toBe(0);
 
-        let maxScaleIndex = map['maxScaleIndex'];
+        const maxScaleIndex = map['maxScaleIndex'];
 
         for (let i = 0; i < maxScaleIndex + 1; ++i) {
             map.zoomIn(0, 0);
@@ -286,7 +286,7 @@ describe('Zoom out tests', () => {
 
         map.initView(canvas, 0);
 
-        let minScaleIndex = map['minScaleIndex'];
+        const minScaleIndex = map['minScaleIndex'];
 
         expect(map['scaleIndex']).toBe(minScaleIndex);
 
@@ -306,7 +306,7 @@ describe('Zoom out tests', () => {
 
         map.zoomOut(0, 0);
 
-        let pos = map.getPosition();
+        const pos = map.getPosition();
 
         expect(pos.x).toBeCloseTo(37.5);
         expect(pos.y).toBeCloseTo(37.5);
@@ -323,7 +323,7 @@ describe('Zoom out tests', () => {
 
         map.zoomOut(100, 0);
 
-        let pos = map.getPosition();
+        const pos = map.getPosition();
 
         expect(pos.x).toBeCloseTo(12.5);
         expect(pos.y).toBeCloseTo(37.5);
@@ -340,7 +340,7 @@ describe('Zoom out tests', () => {
 
         map.zoomOut(0, 100);
 
-        let pos = map.getPosition();
+        const pos = map.getPosition();
 
         expect(pos.x).toBeCloseTo(37.5);
         expect(pos.y).toBeCloseTo(12.5);
@@ -357,7 +357,7 @@ describe('Zoom out tests', () => {
 
         map.zoomOut(100, 100);
 
-        let pos = map.getPosition();
+        const pos = map.getPosition();
 
         expect(pos.x).toBeCloseTo(12.5);
         expect(pos.y).toBeCloseTo(12.5);
@@ -445,11 +445,11 @@ describe('Adjacent cells algorithm tests', () => {
 
         map.initView(canvas, 0);
 
-        let initCell = map['cellsSquare'][5][5];
+        const initCell = map['cellsSquare'][5][5];
         map['cellsSquare'][5][6].type = CellTypes.Plain;
 
-        let adjacentCellsAll = map['getAdjacentCellsSquare'](initCell, 1);
-        let adjacentCellsPlain = map['getAdjacentCellsSquare'](initCell, 1, CellTypes.Plain);
+        const adjacentCellsAll = map['getAdjacentCellsSquare'](initCell, 1);
+        const adjacentCellsPlain = map['getAdjacentCellsSquare'](initCell, 1, CellTypes.Plain);
 
         expect(adjacentCellsAll.length).toBe(8);
         expect(adjacentCellsPlain.length).toBe(1);
@@ -473,11 +473,11 @@ describe('Adjacent cells algorithm tests', () => {
 
         map.initView(canvas, 0);
 
-        let initCell = map['getCellCube'](10, -20, 10)!;
+        const initCell = map['getCellCube'](10, -20, 10)!;
         map['getCellCube'](10, -21, 11)!.type = CellTypes.Plain;
 
-        let adjacentCellsAll = map['getAdjacentCellsCube'](initCell, 1);
-        let adjacentCellsPlain = map['getAdjacentCellsCube'](initCell, 1, CellTypes.Plain);
+        const adjacentCellsAll = map['getAdjacentCellsCube'](initCell, 1);
+        const adjacentCellsPlain = map['getAdjacentCellsCube'](initCell, 1, CellTypes.Plain);
 
         expect(adjacentCellsAll.length).toBe(6);
         expect(adjacentCellsPlain.length).toBe(1);
@@ -503,11 +503,11 @@ describe('Path calculation tests', () => {
 
         map.initView(canvas, 0);
 
-        let path = map.calculatePath(0, 0, 5, 5)!;
+        const path = map.calculatePath(0, 0, 5, 5)!;
 
         expect(path.getCost()).toBe(9);
 
-        let pathCells = path['cells'];
+        const pathCells = path['cells'];
 
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 0, cubeY: 0, cubeZ: 0 })]));
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 0, cubeY: -1, cubeZ: 1 })]));
@@ -528,7 +528,7 @@ describe('Path calculation tests', () => {
 
         map['cellsSquare'][0][0].movementEnabled = false;
 
-        let path = map.calculatePath(0, 0, 5, 5);
+        const path = map.calculatePath(0, 0, 5, 5);
 
         expect(path).toBeUndefined();
     });
@@ -541,7 +541,7 @@ describe('Path calculation tests', () => {
 
         map['cellsSquare'][5][5].movementEnabled = false;
 
-        let path = map.calculatePath(0, 0, 5, 5);
+        const path = map.calculatePath(0, 0, 5, 5);
 
         expect(path).toBeUndefined();
     });

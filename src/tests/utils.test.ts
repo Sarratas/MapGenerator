@@ -12,8 +12,8 @@ test('Utils.range', () => {
 test('Utils.throttle without this', () => {
     jest.useFakeTimers();
 
-    let fn = jest.fn();
-    let throttledFunc = Utils.throttle(fn, 1000);
+    const fn = jest.fn();
+    const throttledFunc = Utils.throttle(fn, 1000);
     
     throttledFunc('a');
     throttledFunc('a');
@@ -31,10 +31,10 @@ test('Utils.throttle without this', () => {
 test('Utils.throttle with this', () => {
     jest.useFakeTimers();
 
-    let obj = {
+    const obj = {
         fn: jest.fn()
     }
-    let throttledFunc = Utils.throttle(obj.fn, 1000);
+    const throttledFunc = Utils.throttle(obj.fn, 1000);
     
     throttledFunc();
     throttledFunc();

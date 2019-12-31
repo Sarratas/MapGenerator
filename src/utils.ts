@@ -1,6 +1,6 @@
 export default class Utils {
     public static range(min: number, max: number): Array<number> {
-        let result: Array<number> = [];
+        const result: Array<number> = [];
         for (let i = min; i <= max; ++i) {
             result.push(i);
         }

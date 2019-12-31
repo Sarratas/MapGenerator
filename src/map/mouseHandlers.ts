@@ -6,9 +6,9 @@ export default class MouseHandlers {
 
         let needsRendering = false;
 
-        let mousePos = this.getMousePos(event);
-        let currentX = mousePos.x;
-        let currentY = mousePos.y;
+        const mousePos = this.getMousePos(event);
+        const currentX = mousePos.x;
+        const currentY = mousePos.y;
 
         if (event.deltaY < 0) {
             needsRendering = this.zoomIn(currentX, currentY);
@@ -24,7 +24,7 @@ export default class MouseHandlers {
     public static handleMouseDown(this: WorldMap, event: MouseEvent): void {
         event.preventDefault();
 
-        let initialMousePos = this.getMousePos(event);
+        const initialMousePos = this.getMousePos(event);
         this.lastMouseX = initialMousePos.x;
         this.lastMouseY = initialMousePos.y;
         this.isMouseDown = true;
@@ -74,9 +74,9 @@ export default class MouseHandlers {
         if (this.isDragging) {
             this.isDragging = false;
 
-            let mousePos = this.getMousePos(event);
-            let endX = mousePos.x;
-            let endY = mousePos.y;
+            const mousePos = this.getMousePos(event);
+            const endX = mousePos.x;
+            const endY = mousePos.y;
 
             this.handleMouseDrag(endX, endY);
         } else {

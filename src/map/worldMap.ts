@@ -169,8 +169,8 @@ export class WorldMap {
         ++this.scaleIndex;
         const newScale = this.scaleThresholds[this.scaleIndex];
 
-        let newX = this.position.x + posX / this.scale - posX / newScale;
-        let newY = this.position.y + posY / this.scale - posY / newScale;
+        const newX = this.position.x + posX / this.scale - posX / newScale;
+        const newY = this.position.y + posY / this.scale - posY / newScale;
 
         this.scale = newScale;
         this.setPosition(newX, newY);
@@ -182,10 +182,10 @@ export class WorldMap {
         if (this.scaleIndex <= this.minScaleIndex) return false;
 
         --this.scaleIndex;
-        let newScale = this.scaleThresholds[this.scaleIndex];
+        const newScale = this.scaleThresholds[this.scaleIndex];
 
-        let newX = this.position.x + posX / this.scale - posX / newScale;
-        let newY = this.position.y + posY / this.scale - posY / newScale;
+        const newX = this.position.x + posX / this.scale - posX / newScale;
+        const newY = this.position.y + posY / this.scale - posY / newScale;
 
         if (newScale < this.hexagonThresholdScale) {
             getHoverTooltip().hidden = true;
@@ -199,17 +199,17 @@ export class WorldMap {
     }
 
     public movePosition(changeX: number, changeY: number): boolean {
-        let newX = this.position.x + changeX / this.scale;
-        let newY = this.position.y + changeY / this.scale;
+        const newX = this.position.x + changeX / this.scale;
+        const newY = this.position.y + changeY / this.scale;
 
         return this.setPosition(newX, newY);
     }
 
     public setPosition(newX: number, newY: number): boolean {
-        let lastX = this.position.x;
-        let lastY = this.position.y;
+        const lastX = this.position.x;
+        const lastY = this.position.y;
 
-        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
+        const { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         const bonusOffsetX = this.scale >= this.hexagonThresholdScale ? HexConstants.BonusOffsetX : 0;
         const bonusOffsetY = this.scale >= this.hexagonThresholdScale ? HexConstants.BonusOffsetY : 0;
@@ -266,7 +266,7 @@ export class WorldMap {
     public render(): void {
         if (this.canvas === undefined) return;
 
-        let ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
+        const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')!;
         ctx.clearRect(0, 0, this.width, this.height);
 
         if (this.scale >= this.hexagonThresholdScale) {
@@ -277,30 +277,30 @@ export class WorldMap {
     }
 
     public calculatePath(startX: number, startY: number, endX: number, endY: number): Path | undefined {
-        let startCell = this.cellsSquare[startX][startY];
-        let endCell = this.cellsSquare[endX][endY];
+        const startCell = this.cellsSquare[startX][startY];
+        const endCell = this.cellsSquare[endX][endY];
 
         if (!startCell.movementEnabled || !endCell.movementEnabled) {
             return undefined;
         }
 
-        let queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
+        const queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
         queue.add({cell: startCell, priority: 0});
 
-        let cellsMap = new Map<Cell, Cell | undefined>();
-        let currCost = new Map<Cell, number>();
+        const cellsMap = new Map<Cell, Cell | undefined>();
+        const currCost = new Map<Cell, number>();
         cellsMap.set(startCell, undefined);
         currCost.set(startCell, 0);
 
         while (!queue.isEmpty()) {
-            let current = queue.poll()!;
+            const current = queue.poll()!;
             if (current.cell === endCell) break;
-            for (let next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
+            for (const next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
                 if (!next.movementEnabled) continue;
-                let newCost = currCost.get(current.cell)! + next.movementCost;
+                const newCost = currCost.get(current.cell)! + next.movementCost;
                 if (!currCost.has(next) || newCost < currCost.get(next)!) {
                     currCost.set(next, newCost);
-                    let priority = newCost + next.getDistanceFrom(endCell);
+                    const priority = newCost + next.getDistanceFrom(endCell);
                     queue.add({cell: next, priority: priority});
                     cellsMap.set(next, current.cell);
                 }
@@ -313,7 +313,7 @@ export class WorldMap {
             return undefined;
         }
 
-        let path: Path = new Path();
+        const path: Path = new Path();
         path.add(endCell);
         do {
             path.add(current);
@@ -346,8 +346,8 @@ export class WorldMap {
             };
         }
 
-        let hexRectangleWidth = this.scale;
-        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
+        const hexRectangleWidth = this.scale;
+        const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
 
         return {
             columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
@@ -360,15 +360,15 @@ export class WorldMap {
     }
 
     protected renderSquare(ctx: CanvasRenderingContext2D): void {
-        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
+        const { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
             let lastFillColor: string = '';
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                let fillColor = (cell.highlightModifier & HighlightModifiers.Path) !== 0 ?
+                const cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
+                const fillColor = (cell.highlightModifier & HighlightModifiers.Path) !== 0 ?
                     cell.getHighlightColor() : cell.color;
                 if (fillColor !== lastFillColor) {
                     if (lastFillColor !== CellColor.None) {
@@ -389,17 +389,17 @@ export class WorldMap {
     }
 
     protected renderHexagonal(ctx: CanvasRenderingContext2D): void {
-        let sprite = this.sprite;
-        let spriteWidth = this.spriteElementWidth;
-        let spriteHeight = this.spriteElementHeight;
+        const sprite = this.sprite;
+        const spriteWidth = this.spriteElementWidth;
+        const spriteHeight = this.spriteElementHeight;
 
-        let hexRectangleWidth = this.scale;
-        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
-        let hexRadius = hexRectangleWidth / 2;
-        let sideLength = hexRadius / Math.cos(HexConstants.Angle);
-        let hexHeight = sideLength / 2;
+        const hexRectangleWidth = this.scale;
+        const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
+        const hexRadius = hexRectangleWidth / 2;
+        const sideLength = hexRadius / Math.cos(HexConstants.Angle);
+        const hexHeight = sideLength / 2;
 
-        let { columnsInView, rowsInView } = this.getVisibleCellsCount();
+        const { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         ctx.lineWidth = this.hexagonBorderWidth;
 
@@ -408,9 +408,9 @@ export class WorldMap {
 
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView + 1; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView + 1; ++y, ++j) {
-                let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                let positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
-                let positionY = j * hexRectangleHeight - offsetY;
+                const cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
+                const positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
+                const positionY = j * hexRectangleHeight - offsetY;
 
                 ctx.beginPath();
                 ctx.moveTo(positionX + hexRadius, positionY);
@@ -438,7 +438,7 @@ export class WorldMap {
         for (let x = 0; x < this.width; ++x) {
             this.cellsSquare.push([]);
             for (let y = 0; y < this.height; ++y) {
-                let newCell = new Cell(x, y);
+                const newCell = new Cell(x, y);
                 this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
                 this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
             }
@@ -446,22 +446,22 @@ export class WorldMap {
     }
 
     protected generateLakes() {
-        let seedsNumber = this.generationParams.lakeFactor * this.size;
-        let cellsToProcess: Array<Cell> = [];
-        let spreadFactor = this.generationParams.lakeSpreadFactor;
+        const seedsNumber = this.generationParams.lakeFactor * this.size;
+        const cellsToProcess: Array<Cell> = [];
+        const spreadFactor = this.generationParams.lakeSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
-            let x = this.rng.nextInt(0, this.width - 1);
-            let y = this.rng.nextInt(0, this.height - 1);
-            let seedCell = this.cellsSquare[x][y];
+            const x = this.rng.nextInt(0, this.width - 1);
+            const y = this.rng.nextInt(0, this.height - 1);
+            const seedCell = this.cellsSquare[x][y];
 
             seedCell.type = CellTypes.ShallowWater;
             cellsToProcess.push(this.cellsSquare[x][y]);
         }
         while (cellsToProcess.length > 0) {
-            let cell = cellsToProcess.shift()!;
+            const cell = cellsToProcess.shift()!;
 
-            let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
+            const adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
             adjacentCells.forEach((cell: Cell) => {
                 if (cell.type !== CellTypes.None) return;
 
@@ -474,14 +474,14 @@ export class WorldMap {
     }
 
     protected generateMountains() {
-        let seedsNumber = this.generationParams.mountainFactor * this.size;
-        let cellsToProcess: Array<Cell> = [];
-        let spreadFactor = this.generationParams.mountainSpreadFactor;
+        const seedsNumber = this.generationParams.mountainFactor * this.size;
+        const cellsToProcess: Array<Cell> = [];
+        const spreadFactor = this.generationParams.mountainSpreadFactor;
 
         for (let i = 0; i < seedsNumber; ++i) {
-            let x = this.rng.nextInt(0, this.width - 1);
-            let y = this.rng.nextInt(0, this.height - 1);
-            let seedCell = this.cellsSquare[x][y];
+            const x = this.rng.nextInt(0, this.width - 1);
+            const y = this.rng.nextInt(0, this.height - 1);
+            const seedCell = this.cellsSquare[x][y];
 
             // prevent mountain generation right next to lakes
             if (this.getAdjCellsForGenerating(seedCell, Ranges.Immediate, CellTypes.Water).length > 0) {
@@ -493,9 +493,9 @@ export class WorldMap {
         }
 
         while (cellsToProcess.length > 0) {
-            let cell = cellsToProcess.shift()!;
+            const cell = cellsToProcess.shift()!;
 
-            let adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
+            const adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
             adjacentCells.forEach((cell: Cell) => {
                 if (cell.type !== CellTypes.None) return;
 
@@ -583,7 +583,7 @@ export class WorldMap {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellTypes.ShallowWater:
-                    let adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Medium);
+                    const adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Medium);
                     if (adjacentCells.every(cell => cell.type & CellTypes.Water)) {
                         currentCell.type = CellTypes.DeepWater;
                         break;
@@ -598,7 +598,7 @@ export class WorldMap {
     protected convertCells() {
         for (let x = 0; x < this.width; ++x) {
             for (let y = 0; y < this.height; ++y) {
-                let newCell = this.cellsSquare[x][y].convert();
+                const newCell = this.cellsSquare[x][y].convert();
 
                 this.cellsSquare[x][y] = newCell;
                 this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
@@ -607,14 +607,14 @@ export class WorldMap {
     }
 
     protected getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
-        let result: Array<Cell> = [];
-        let arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
-        let arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
+        const result: Array<Cell> = [];
+        const arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
+        const arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
         arrayX.forEach(posX => arrayY.forEach(posY => {
             // don't include source cell in result array
             if (cell.posX === posX && cell.posY === posY) return;
 
-            let neighborCell = this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
+            const neighborCell = this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
             if (neighborCell === undefined) return;
 
             if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
@@ -625,16 +625,16 @@ export class WorldMap {
     }
 
     protected getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
-        let result: Array<Cell> = [];
-        let arrayX = Utils.range(cell.cubeX - radius, cell.cubeX + radius);
-        let arrayY = Utils.range(cell.cubeY - radius, cell.cubeY + radius);
+        const result: Array<Cell> = [];
+        const arrayX = Utils.range(cell.cubeX - radius, cell.cubeX + radius);
+        const arrayY = Utils.range(cell.cubeY - radius, cell.cubeY + radius);
         arrayX.forEach(cubeX => arrayY.forEach(cubeY => {
-            let cubeZ = -cubeX - cubeY;
+            const cubeZ = -cubeX - cubeY;
             if (cell.cubeZ - cubeZ < -radius || cell.cubeZ - cubeZ > radius) return;
             // don't include source cell in result array
             if (cell.cubeX === cubeX && cell.cubeY === cubeY && cell.cubeZ === cubeZ) return;
 
-            let neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
+            const neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
             if (neighborCell === undefined) return;
 
             if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
@@ -655,7 +655,7 @@ export class WorldMap {
         if (canvas === undefined) {
             return { x: 0, y: 0 };
         }
-        let rect = canvas.getBoundingClientRect();
+        const rect = canvas.getBoundingClientRect();
         const borderStyle = getComputedStyle(canvas, undefined);
         const topBorder = parseFloat(borderStyle.getPropertyValue('border-top-width'));
         const leftBorder = parseFloat(borderStyle.getPropertyValue('border-left-width'));

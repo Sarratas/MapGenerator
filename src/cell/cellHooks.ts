@@ -8,7 +8,7 @@ export default class CellHooks {
 
         hoverTooltip.hidden = false;
         const elemsToUpdate = hoverTooltip.querySelectorAll('.tooltipHoverContent') as NodeListOf<HTMLElement>;
-        for (let elem of elemsToUpdate) {
+        for (const elem of elemsToUpdate) {
             const content = elem.dataset['content']! as keyof Cell;
             elem.innerHTML = this[content]?.toString() ?? '';
         }
@@ -30,7 +30,7 @@ export default class CellHooks {
 
         selectTooltip.hidden = false;
         const elemsToUpdate = selectTooltip.querySelectorAll('.tooltipSelectContent') as NodeListOf<HTMLElement>;
-        for (let elem of elemsToUpdate) {
+        for (const elem of elemsToUpdate) {
             const content = elem.dataset['content']! as keyof Cell;
             elem.innerHTML = this[content]?.toString() ?? '';
         }
