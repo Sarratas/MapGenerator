@@ -1,51 +1,4 @@
-export enum CellTypes {
-    None            = 0,
-    Plain           = 1,
-    Highland        = 2,
-    Mountain        = 4,
-    Land            = Plain | Highland | Mountain,
-
-    ShallowWater    = 128,
-    DeepWater       = 256,
-    Water           = ShallowWater | DeepWater,
-
-    Placeholder     = 4096,
-}
-
-export enum CellColor {
-    None            = '#FFFFFF',
-    Mountain        = '#A47666',
-    ShallowWater    = '#1A9DCE',
-    Plain           = '#64815C',
-    Highland        = '#D2BC8D',
-    DeepWater       = '#1587BE',
-
-    Placeholder     = '#336633',
-}
-
-enum OffsetRows {
-    First   = 65,
-    Second  = 244,
-    Third   = 430,
-}
-
-enum OffsetColumns {
-    First   = 45,
-    Second  = 135,
-    Third   = 230,
-    Fourth  = 323,
-    Fifth   = 418,
-    Sixth   = 512,
-    Seventh = 605,
-    Eight   = 700,
-}
-
-enum MovementCosts {
-    Easy        = 1,
-    Medium      = 2,
-    Hard        = 4,
-    Impossible  = Infinity,
-}
+import { CellTypes, CellColor, OffsetRows, OffsetColumns, MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
 
 export class Cell {
     public type: CellTypes;
@@ -66,6 +19,7 @@ export class Cell {
 
     public color: CellColor;
     public highlightColor?: string;
+    public highlightModifier: number;
 
     public get typeString() {
         return CellTypes[this.type];
@@ -92,6 +46,8 @@ export class Cell {
 
         this.color = CellColor.None;
         this.type = type;
+
+        this.highlightModifier = HighlightModifiers.None;
     }
 
     public getDistanceFrom(target: Cell): number {
@@ -119,6 +75,22 @@ export class Cell {
             default:
                 throw new TypeError('Unexpected cell type');
         }
+    }
+
+    public getHighlightColor(): string {
+        if ((this.highlightModifier & HighlightModifiers.Hover) !== 0) {
+            return HighlightColors.Hover;
+        }
+
+        if ((this.highlightModifier & HighlightModifiers.Select) !== 0) {
+            return HighlightColors.Select;
+        }
+
+        if ((this.highlightModifier & HighlightModifiers.Path) !== 0) {
+            return HighlightColors.Path;
+        }
+
+        return HighlightColors.None;
     }
 }
 

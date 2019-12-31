@@ -1,5 +1,5 @@
 import { Path } from '../path';
-import { Cell, MountainCell, PlainCell, HighlandCell, ShallowWaterCell } from '../cell';
+import { Cell, MountainCell, PlainCell, HighlandCell, ShallowWaterCell } from '../cell/cell';
 
 test('Add element to path', () => {
     let path = new Path();
