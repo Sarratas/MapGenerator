@@ -35,6 +35,7 @@
             ]
         },
         "prefer-function-over-method": true,
+        "prefer-const": true,
         "strict-comparisons": [
             true,
             {
