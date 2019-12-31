@@ -1,10 +1,28 @@
 import './canvasContext.mock';
-import { WorldMap, NeighborAlgorithms } from '../map';
-import { CellTypes, ShallowWaterCell, Cell } from '../cell';
+import { WorldMap, NeighborAlgorithms } from '../map/worldMap';
+import { ShallowWaterCell, Cell } from '../cell/cell';
+import { CellTypes } from '../cell/cellDefines';
+
+function prepareDomBeforeTest() {
+    document.body.innerHTML =
+        '<div>' +
+        '  <div id="cellHoverInfo" />' +
+        '  <div id="cellSelectInfo" />' +
+        '</div>';
+}
+
+function createTestCanvas(width: number, height: number): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+}
 
 describe('Map generation tests', () => {
+    beforeEach(() => prepareDomBeforeTest());
+
     test('Creating map with given size', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
 
         expect(map['width']).toBe(100);
         expect(map['height']).toBe(100);
@@ -12,7 +30,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generate map functions', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['generateLakes'] = jest.fn();
         map['generateMountains'] = jest.fn();
@@ -34,7 +52,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generate empty cells', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         let cellsCount = map['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
         let emptyCellsCount = map['cellsSquare'].reduce((acc, elems) => 
@@ -45,7 +63,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generate lakes', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['generateLakes']();
 
@@ -58,7 +76,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generate highlands', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['generateMountains']();
 
@@ -74,7 +92,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generate plains', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['generatePlains']();
 
@@ -87,7 +105,7 @@ describe('Map generation tests', () => {
     });
 
     test('Smoothing pass', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['cellsSquare'][1][1] = new ShallowWaterCell(1, 1);
 
@@ -100,7 +118,7 @@ describe('Map generation tests', () => {
     });
 
     test('Generating full map', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         expect(map.generate.bind(map)).not.toThrow();
 
@@ -111,7 +129,7 @@ describe('Map generation tests', () => {
     });
 
     test('Converting cells', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
 
         map['generatePlains']();
 
@@ -125,7 +143,7 @@ describe('Map generation tests', () => {
     });
 
     test('Setting different generation algorith', () => {
-        let map = new WorldMap(50, 50, {
+        const map = new WorldMap(50, 50, {
             generationNeighborAlgorithm: NeighborAlgorithms.Cube,
             smoothingNeighborAlgorithm: NeighborAlgorithms.Cube
         });
@@ -140,17 +158,20 @@ describe('Map generation tests', () => {
     });
 
     test('Generate full scale', () => {
-        let map = new WorldMap(1000, 1000);
+        const map = new WorldMap(1000, 1000);
     
         expect(map.generate.bind(map)).not.toThrow();
     });
 });
 
 describe('Zoom in tests', () => {
-    test('Zoom in to top left corner', () => {
-        let map = new WorldMap(100, 100);
+    beforeEach(() => prepareDomBeforeTest());
 
-        map.initView(undefined, 0);
+    test('Zoom in to top left corner', () => {
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
+
+        map.initView(canvas, 0);
 
         expect(map['scale']).toBe(1);
 
@@ -166,9 +187,10 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to bottom left corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         expect(map['scale']).toBe(1);
 
@@ -184,9 +206,10 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to top right corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         expect(map['scale']).toBe(1);
 
@@ -202,9 +225,10 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to bottom right corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         expect(map['scale']).toBe(1);
 
@@ -220,9 +244,10 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to random direction', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         expect(map['scale']).toBe(1);
 
@@ -235,9 +260,10 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in limit', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         expect(map['scaleIndex']).toBe(0);
 
@@ -252,10 +278,13 @@ describe('Zoom in tests', () => {
 });
 
 describe('Zoom out tests', () => {
-    test('Zoom out limit', () => {
-        let map = new WorldMap(100, 100);
+    beforeEach(() => prepareDomBeforeTest());
 
-        map.initView(undefined, 0);
+    test('Zoom out limit', () => {
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
+
+        map.initView(canvas, 0);
 
         let minScaleIndex = map['minScaleIndex'];
 
@@ -267,9 +296,10 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to top left corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -283,9 +313,10 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to top right corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -299,9 +330,10 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to bottom left corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -315,9 +347,10 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to bottom right corner', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map.zoomIn(50, 50);
         map.zoomIn(50, 50);
@@ -332,10 +365,13 @@ describe('Zoom out tests', () => {
 });
 
 describe('Map position operations tests', () => {
-    test('Move position', () => {
-        let map = new WorldMap(100, 100);
+    beforeEach(() => prepareDomBeforeTest());
 
-        map.initView(undefined, 1);
+    test('Move position', () => {
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
+
+        map.initView(canvas, 1);
 
         map.movePosition(10, 10);
         expect(map.getPosition()).toEqual({ x: 5, y: 5 });
@@ -347,18 +383,15 @@ describe('Map position operations tests', () => {
         expect(map.getPosition()).toEqual({ x: 5, y: 5 });
 
         map.movePosition(200, 200);
-        expect(map.getPosition()).toEqual({ x: 100, y: 100 });
+        expect(map.getPosition()).toEqual({ x: 50, y: 50 });
 
         map.movePosition(-200, -200);
         expect(map.getPosition()).toEqual({ x: 0, y: 0 });
     });
 
     test('Move within canvas boundaries', () => {
-        let map = new WorldMap(100, 100);
-
-        let canvas = document.createElement('canvas');
-        canvas.width = 100;
-        canvas.height = 100;
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 1);
 
@@ -379,9 +412,10 @@ describe('Map position operations tests', () => {
     });
 
     test('Close movement', () => {
-        let map = new WorldMap(100, 100);
+        const map = new WorldMap(100, 100);
+        const canvas = createTestCanvas(100, 100);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map['scale'] = 2;
 
@@ -403,10 +437,13 @@ describe('Map position operations tests', () => {
 });
 
 describe('Adjacent cells algorithm tests', () => {
-    test('Adjacent cells for square coords', () => {
-        let map = new WorldMap(50, 50);
+    beforeEach(() => prepareDomBeforeTest());
 
-        map.initView(undefined, 0);
+    test('Adjacent cells for square coords', () => {
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
+
+        map.initView(canvas, 0);
 
         let initCell = map['cellsSquare'][5][5];
         map['cellsSquare'][5][6].type = CellTypes.Plain;
@@ -431,9 +468,10 @@ describe('Adjacent cells algorithm tests', () => {
     });
 
     test('Adjacent cells for cube coords', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         let initCell = map['getCellCube'](10, -20, 10)!;
         map['getCellCube'](10, -21, 11)!.type = CellTypes.Plain;
@@ -457,10 +495,13 @@ describe('Adjacent cells algorithm tests', () => {
 });
 
 describe('Path calculation tests', () => {
-    test('Calculate straight path', () => {
-        let map = new WorldMap(50, 50);
+    beforeEach(() => prepareDomBeforeTest());
 
-        map.initView(undefined, 0);
+    test('Calculate straight path', () => {
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
+
+        map.initView(canvas, 0);
 
         let path = map.calculatePath(0, 0, 5, 5)!;
 
@@ -480,9 +521,10 @@ describe('Path calculation tests', () => {
     });
 
     test('Result undefined if path start not found', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map['cellsSquare'][0][0].movementEnabled = false;
 
@@ -492,9 +534,10 @@ describe('Path calculation tests', () => {
     });
 
     test('Result undefined if path end not found', () => {
-        let map = new WorldMap(50, 50);
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
-        map.initView(undefined, 0);
+        map.initView(canvas, 0);
 
         map['cellsSquare'][5][5].movementEnabled = false;
 
@@ -505,10 +548,11 @@ describe('Path calculation tests', () => {
 });
 
 describe('Rendering tests', () => {
-    test('Render square call', () => {
-        let map = new WorldMap(50, 50);
+    beforeEach(() => prepareDomBeforeTest());
 
-        const canvas = document.createElement('canvas');
+    test('Render square call', () => {
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
         map.initView(canvas, 0);
 
@@ -520,9 +564,8 @@ describe('Rendering tests', () => {
     });
 
     test('Render square implementation', () => {
-        let map = new WorldMap(50, 50);
-
-        const canvas = document.createElement('canvas');
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
         map.initView(canvas, 0);
 
@@ -530,9 +573,8 @@ describe('Rendering tests', () => {
     });
 
     test('Render hexagonal call', () => {
-        let map = new WorldMap(50, 50);
-
-        const canvas = document.createElement('canvas');
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
         map.initView(canvas, 0);
 
@@ -546,9 +588,8 @@ describe('Rendering tests', () => {
 
 
     test('Render hexagonal implementation', () => {
-        let map = new WorldMap(50, 50);
-
-        const canvas = document.createElement('canvas');
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
         map.initView(canvas, 0);
 
@@ -559,9 +600,8 @@ describe('Rendering tests', () => {
 
 
     test('Render textures implementation', () => {
-        let map = new WorldMap(50, 50);
-
-        const canvas = document.createElement('canvas');
+        const map = new WorldMap(50, 50);
+        const canvas = createTestCanvas(50, 50);
 
         map.initView(canvas, 0);
 

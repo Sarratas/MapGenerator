@@ -1,4 +1,5 @@
-import { Cell, CellTypes, PlaceholderCell, PlainCell, LandCell, HighlandCell, DeepWaterCell, WaterCell, ShallowWaterCell, MountainCell } from '../cell';
+import { Cell, PlaceholderCell, PlainCell, LandCell, HighlandCell, DeepWaterCell, WaterCell, ShallowWaterCell, MountainCell } from '../cell/cell';
+import { CellTypes } from '../cell/cellDefines';
 
 test('Square cell coords', () => {
     let cell1 = new Cell(0, 0);

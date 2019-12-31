@@ -1,9 +1,13 @@
-import { Cell, CellTypes, CellColor, PlaceholderCell } from './cell';
-import Utils from './utils';
-import { Path } from './path';
+import { CellTypes, CellColor, HighlightModifiers } from '../cell/cellDefines';
+import { Cell, PlaceholderCell } from '../cell/cell';
+import Utils from '../utils';
+import { Path } from '../path';
 import Prando from 'prando';
+import MouseHandlers from './mouseHandlers';
+import CellHooks from '../cell/cellHooks';
+import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
 
-import FastPriorityQueue = require('../node_modules/fastpriorityqueue/FastPriorityQueue');
+import FastPriorityQueue = require('fastpriorityqueue');
 
 export enum NeighborAlgorithms {
     Square,
@@ -44,18 +48,35 @@ export interface IGenerationParams {
 }
 
 export class WorldMap {
-    private width: number;
-    private height: number;
-    private scale: number;
-    private scaleIndex: number;
-    private position: { x: number, y: number };
+    protected lastMouseX: number;
+    protected lastMouseY: number;
+    protected isMouseDown: boolean;
+    protected isDragging: boolean;
+    protected isMouseInside: boolean;
 
-    private cellsSquare: Array<Array<Cell>>;
-    private cellsCube: Map<string, Cell>;
+    protected handleMouseWheel!: (event: MouseWheelEvent) => void;
+    protected handleMouseDown!: (event: MouseEvent) => void;
+    protected handleMouseMove!: (event: MouseEvent) => void;
+    protected handleMouseDrag!: (x: number, y: number) => void;
+    protected handleMouseUp!: (event: MouseEvent) => void;
+    protected handleMouseEnter!: (event: MouseEvent) => void;
+    protected handleMouseLeave!: (event: MouseEvent) => void;
 
-    private rng: Prando;
+    protected selectedCell?: Cell;
+    protected hoveredCell?: Cell;
 
-    private readonly generationParams: IGenerationParams = {
+    protected width: number;
+    protected height: number;
+    protected scale: number;
+    protected scaleIndex: number;
+    protected position: { x: number, y: number };
+
+    protected cellsSquare: Array<Array<Cell>>;
+    protected cellsCube: Map<string, Cell>;
+
+    protected rng: Prando;
+
+    protected readonly generationParams: IGenerationParams = {
         mountainFactor: 0.001,
         mountainSpreadFactor: 0.35,
 
@@ -73,33 +94,42 @@ export class WorldMap {
         seed: undefined,
     };
 
-    private readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
+    protected readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
 
-    private readonly minScaleIndex = 0;
-    private readonly maxScaleIndex = this.scaleThresholds.length - 1;
-    private readonly initialScaleIndex = 9;
+    protected readonly minScaleIndex = 0;
+    protected readonly maxScaleIndex = this.scaleThresholds.length - 1;
+    protected readonly initialScaleIndex = 9;
 
-    private readonly minRenderInterval = 50;
-    private readonly hexagonThresholdScale = 10;
-    private readonly textureThresholdScale = 100;
+    protected readonly minRenderInterval = 50;
+    protected readonly hexagonThresholdScale = 10;
+    protected readonly textureThresholdScale = 100;
 
-    private readonly hexagonBorderWidth = 0.1;
+    protected readonly hexagonBorderWidth = 0.1;
 
-    private readonly placeholderCell: Cell;
+    protected readonly placeholderCell: Cell;
 
-    private canvas?: HTMLCanvasElement;
+    protected canvas?: HTMLCanvasElement;
 
-    private readonly sprite: HTMLImageElement;
-    private readonly spriteElementWidth = 155;
-    private readonly spriteElementHeight = 185;
+    protected readonly sprite: HTMLImageElement;
+    protected readonly spriteElementWidth = 155;
+    protected readonly spriteElementHeight = 185;
 
-    private getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
-    private getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
+    protected getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
+    protected getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
 
-    constructor(width: number, height: number, params: Partial<IGenerationParams> = {}) {
+    protected onCellHoverIn?: (event: MouseEvent) => void;
+    protected onCellHoverOut?: (event: MouseEvent) => void;
+    protected onCellSelect?: (event: MouseEvent) => void;
+    protected onCellDeselect?: (event: MouseEvent) => void;
+
+    constructor(
+        width: number,
+        height: number,
+        generationParams: Partial<IGenerationParams> = {},
+    ) {
         this.width = width;
         this.height = height;
-        this.generationParams = { ...this.generationParams, ...params };
+        this.generationParams = { ...this.generationParams, ...generationParams };
         this.rng = new Prando(this.generationParams.seed);
         this.scaleIndex = this.initialScaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
@@ -109,13 +139,26 @@ export class WorldMap {
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new PlaceholderCell(0, 0);
 
-        this.getAdjCellsForSmoothing = params.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
+        this.getAdjCellsForSmoothing = generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
-        this.getAdjCellsForGenerating = params.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
+        this.getAdjCellsForGenerating = generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
 
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
+
+        this.lastMouseX = 0;
+        this.lastMouseY = 0;
+        this.isMouseDown = false;
+        this.isDragging = false;
+        this.isMouseInside = false;
+
+        this.onCellHoverIn = CellHooks.onCellHoverIn;
+        this.onCellHoverOut = CellHooks.onCellHoverOut;
+        this.onCellSelect = CellHooks.onCellSelect;
+        this.onCellDeselect = CellHooks.onCellDeselect;
+
+        this.setAndBindMouseHandlers();
 
         this.generateEmptyCells();
     }
@@ -143,6 +186,11 @@ export class WorldMap {
 
         let newX = this.position.x + posX / this.scale - posX / newScale;
         let newY = this.position.y + posY / this.scale - posY / newScale;
+
+        if (newScale < this.hexagonThresholdScale) {
+            getHoverTooltip().hidden = true;
+            getSelectTooltip().hidden = true;
+        }
 
         this.scale = newScale;
         this.setPosition(newX, newY);
@@ -195,6 +243,24 @@ export class WorldMap {
         this.canvas = canvas;
         this.scaleIndex = scaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
+
+        this.canvas?.addEventListener('wheel', this.handleMouseWheel);
+        this.canvas?.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas?.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas?.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas?.addEventListener('mouseenter', this.handleMouseEnter);
+        this.canvas?.addEventListener('mouseleave', this.handleMouseLeave);
+
+        this.positionTooltips();
+    }
+
+    public unbindView() {
+        this.canvas?.removeEventListener('wheel', this.handleMouseWheel);
+        this.canvas?.removeEventListener('mousedown', this.handleMouseDown);
+        this.canvas?.removeEventListener('mouseup', this.handleMouseUp);
+        this.canvas?.removeEventListener('mousemove', this.handleMouseMove);
+        this.canvas?.removeEventListener('mouseenter', this.handleMouseEnter);
+        this.canvas?.removeEventListener('mouseleave', this.handleMouseLeave);
     }
 
     public render(): void {
@@ -256,7 +322,23 @@ export class WorldMap {
         return path;
     }
 
-    private getVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
+    protected positionTooltips() {
+        const hoverTooltip = getHoverTooltip();
+        const selectTooltip = getSelectTooltip();
+
+        hoverTooltip.hidden = false;
+        const canvasRect = this.canvas!.getBoundingClientRect();
+        const tooltipLeft = canvasRect.left + this.canvas!.offsetWidth - hoverTooltip.offsetWidth;
+        const tooltipTop = canvasRect.top + this.canvas!.offsetHeight - hoverTooltip.offsetHeight;
+        hoverTooltip.hidden = true;
+        hoverTooltip.style.left = tooltipLeft + 'px';
+        hoverTooltip.style.top = tooltipTop + 'px';
+
+        selectTooltip.style.left = tooltipLeft + 'px';
+        selectTooltip.style.top = canvasRect.top + 'px';
+    }
+
+    protected getVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
         if (this.scale < this.hexagonThresholdScale) {
             return {
                 columnsInView: (this.canvas?.width ?? 0) / this.scale,
@@ -265,21 +347,19 @@ export class WorldMap {
         }
 
         let hexRectangleWidth = this.scale;
-        let hexRadius = hexRectangleWidth / 2;
-        let sideLength = hexRadius / Math.cos(HexConstants.Angle);
-        let hexRectangleHeight = sideLength * 2;
+        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
 
         return {
             columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
-            rowsInView: (this.canvas?.height ?? 0) / hexRectangleHeight / HexConstants.HeightFactor,
+            rowsInView: (this.canvas?.height ?? 0) / hexRectangleHeight,
         };
     }
 
-    private getCellCube(x: number, y: number, z: number): Cell | undefined {
+    protected getCellCube(x: number, y: number, z: number): Cell | undefined {
         return this.cellsCube.get(x + '.' + y + '.' + z);
     }
 
-    private renderSquare(ctx: CanvasRenderingContext2D): void {
+    protected renderSquare(ctx: CanvasRenderingContext2D): void {
         let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
@@ -288,7 +368,8 @@ export class WorldMap {
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
                 let cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
-                let fillColor = cell.highlightColor !== undefined ? cell.highlightColor : cell.color;
+                let fillColor = (cell.highlightModifier & HighlightModifiers.Path) !== 0 ?
+                    cell.getHighlightColor() : cell.color;
                 if (fillColor !== lastFillColor) {
                     if (lastFillColor !== CellColor.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
@@ -307,16 +388,16 @@ export class WorldMap {
         }
     }
 
-    private renderHexagonal(ctx: CanvasRenderingContext2D): void {
+    protected renderHexagonal(ctx: CanvasRenderingContext2D): void {
         let sprite = this.sprite;
         let spriteWidth = this.spriteElementWidth;
         let spriteHeight = this.spriteElementHeight;
 
         let hexRectangleWidth = this.scale;
+        let hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
         let hexRadius = hexRectangleWidth / 2;
         let sideLength = hexRadius / Math.cos(HexConstants.Angle);
         let hexHeight = sideLength / 2;
-        let hexRectangleHeight = hexHeight * 3;
 
         let { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
@@ -341,7 +422,7 @@ export class WorldMap {
                 ctx.closePath();
 
                 if (this.scale < this.textureThresholdScale) {
-                    ctx.fillStyle = cell.highlightColor !== undefined ? cell.highlightColor : cell.color;
+                    ctx.fillStyle = cell.highlightModifier !== 0 ? cell.getHighlightColor() : cell.color;
                     ctx.fill();
                 } else {
                     ctx.drawImage(sprite, cell.offsetX, cell.offsetY, spriteWidth, spriteHeight,
@@ -353,7 +434,7 @@ export class WorldMap {
         }
     }
 
-    private generateEmptyCells() {
+    protected generateEmptyCells() {
         for (let x = 0; x < this.width; ++x) {
             this.cellsSquare.push([]);
             for (let y = 0; y < this.height; ++y) {
@@ -364,7 +445,7 @@ export class WorldMap {
         }
     }
 
-    private generateLakes() {
+    protected generateLakes() {
         let seedsNumber = this.generationParams.lakeFactor * this.size;
         let cellsToProcess: Array<Cell> = [];
         let spreadFactor = this.generationParams.lakeSpreadFactor;
@@ -392,7 +473,7 @@ export class WorldMap {
         }
     }
 
-    private generateMountains() {
+    protected generateMountains() {
         let seedsNumber = this.generationParams.mountainFactor * this.size;
         let cellsToProcess: Array<Cell> = [];
         let spreadFactor = this.generationParams.mountainSpreadFactor;
@@ -428,7 +509,7 @@ export class WorldMap {
         }
     }
 
-    private generatePlains() {
+    protected generatePlains() {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             if (currentCell.type === CellTypes.None) {
                 currentCell.type = CellTypes.Plain;
@@ -436,7 +517,7 @@ export class WorldMap {
         }));
     }
 
-    private smoothingPass() {
+    protected smoothingPass() {
         let adjacentCells: Array<Cell> = [];
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
@@ -472,7 +553,7 @@ export class WorldMap {
         }));
     }
 
-    private smoothingPass2() {
+    protected smoothingPass2() {
         let adjacentCells: Array<Cell> = [];
         for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
             this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
@@ -498,7 +579,7 @@ export class WorldMap {
         }
     }
 
-    private smoothingPass3() {
+    protected smoothingPass3() {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellTypes.ShallowWater:
@@ -514,7 +595,7 @@ export class WorldMap {
         }));
     }
 
-    private convertCells() {
+    protected convertCells() {
         for (let x = 0; x < this.width; ++x) {
             for (let y = 0; y < this.height; ++y) {
                 let newCell = this.cellsSquare[x][y].convert();
@@ -525,7 +606,7 @@ export class WorldMap {
         }
     }
 
-    private getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
+    protected getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         let result: Array<Cell> = [];
         let arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
         let arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
@@ -543,7 +624,7 @@ export class WorldMap {
         return result;
     }
 
-    private getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
+    protected getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         let result: Array<Cell> = [];
         let arrayX = Utils.range(cell.cubeX - radius, cell.cubeX + radius);
         let arrayY = Utils.range(cell.cubeY - radius, cell.cubeY + radius);
@@ -563,7 +644,48 @@ export class WorldMap {
         return result;
     }
 
-    private checkBoundaries(x: number, y: number): boolean {
+    protected checkBoundaries(x: number, y: number): boolean {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    }
+
+    // Calculate mouse position in canvas.
+    // Returns same values for pixels on the canvas edges and for corresponding canvas borders
+    protected getMousePos(event: MouseEvent): { x: number, y: number } {
+        const canvas = this.canvas;
+        if (canvas === undefined) {
+            return { x: 0, y: 0 };
+        }
+        let rect = canvas.getBoundingClientRect();
+        const borderStyle = getComputedStyle(canvas, undefined);
+        const topBorder = parseFloat(borderStyle.getPropertyValue('border-top-width'));
+        const leftBorder = parseFloat(borderStyle.getPropertyValue('border-left-width'));
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const pos = {
+            x: event.clientX - leftBorder - rect.left,
+            y: event.clientY - topBorder - rect.top,
+        };
+        return {
+            x: Math.max(0, Math.min(canvasWidth - 1, pos.x)),
+            y: Math.max(0, Math.min(canvasHeight - 1, pos.y)),
+        };
+    }
+
+    protected findCellFromCoords(x: number, y: number): Cell | undefined {
+        const hexRectangleWidth = this.scale;
+        const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
+        const posY = Math.floor(this.position.y + y / hexRectangleHeight);
+        const posX = Math.floor(this.position.x + x / hexRectangleWidth - posY % 2 / 2);
+        return this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
+    }
+
+    private setAndBindMouseHandlers(): void {
+        this.handleMouseWheel = MouseHandlers.handleMouseWheel.bind(this);
+        this.handleMouseDown = MouseHandlers.handleMouseDown.bind(this);
+        this.handleMouseMove = Utils.throttle(MouseHandlers.handleMouseMove.bind(this), 50);
+        this.handleMouseDrag = MouseHandlers.handleMouseDrag.bind(this);
+        this.handleMouseUp = MouseHandlers.handleMouseUp.bind(this);
+        this.handleMouseEnter = MouseHandlers.handleMouseEnter.bind(this);
+        this.handleMouseLeave = MouseHandlers.handleMouseLeave.bind(this);
     }
 }

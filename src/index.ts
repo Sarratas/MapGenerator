@@ -1,4 +1,4 @@
-import { WorldMap, IGenerationParams } from './map';
+import { WorldMap, IGenerationParams } from './map/worldMap';
 import './styles/index.scss';
 import { Path } from './path';
 
@@ -7,6 +7,7 @@ let map: WorldMap | undefined;
 let activePath: Path | undefined;
 const mapWidth = 1000;
 const mapHeight = 1000;
+type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 
 window.addEventListener('DOMContentLoaded', function() {
     let generateButton = document.getElementById('generate') as HTMLButtonElement;
@@ -76,12 +77,10 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function generateMap() {
-    let params: Partial<IGenerationParams> = {};
+    let generationParams: Partial<IGenerationParams> = {};
     type NodeListOfInputs = NodeListOf<HTMLInputElement | HTMLSelectElement>;
     type StrOrUndef = string | undefined;
     let inputs = document.querySelectorAll('#generateForm input, #generateForm select') as NodeListOfInputs;
-
-    type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 
     for (let input of inputs) {
         let nameN: KeysOfType<IGenerationParams, number> = input.name as KeysOfType<IGenerationParams, number>;
@@ -90,90 +89,21 @@ function generateMap() {
         if (input.value === '') continue;
 
         if (isNaN(+input.value)) {
-            params[nameS] = input.value;
+            generationParams[nameS] = input.value;
         } else {
-            params[nameN] = parseFloat(input.value);
+            generationParams[nameN] = parseFloat(input.value);
         }
     }
 
-    map = new WorldMap(mapWidth, mapHeight, params);
+    if (map !== undefined) {
+        map.unbindView();
+        map = undefined;
+    }
+    map = new WorldMap(mapWidth, mapHeight, generationParams);
 
     map.generate();
 
     map.initView(canvas);
 
     map.render();
-}
-
-canvas.addEventListener('wheel', function(event: MouseWheelEvent) {
-    if (map === undefined) {
-        return;
-    }
-
-    event.preventDefault();
-
-    let needsRendering = false;
-
-    let mousePos = getMousePos(canvas, event);
-    let currentX = mousePos.x;
-    let currentY = mousePos.y;
-
-    if (event.deltaY < 0) {
-        needsRendering = map.zoomIn(currentX, currentY);
-    } else if (event.deltaY > 0) {
-        needsRendering = map.zoomOut(currentX, currentY);
-    }
-
-    if (needsRendering) {
-        map.render();
-    }
-});
-
-canvas.addEventListener('mousedown', function(event: MouseEvent): void {
-    if (map === undefined) return;
-
-    let initialMousePos = getMousePos(canvas, event);
-    let lastX = initialMousePos.x;
-    let lastY = initialMousePos.y;
-
-    let handleMouseMove = function(event: MouseEvent): void {
-        if (map === undefined) return;
-
-        let mousePos = getMousePos(canvas, event);
-        let currentX = mousePos.x;
-        let currentY = mousePos.y;
-
-        if (map.movePosition(lastX - currentX, lastY - currentY)) {
-            map.render();
-        }
-
-        lastX = currentX;
-        lastY = currentY;
-    };
-
-    let handleMouseUp = function(event: MouseEvent): void {
-        if (map === undefined) return;
-
-        let mousePos = getMousePos(canvas, event);
-        let endX = mousePos.x;
-        let endY = mousePos.y;
-
-        if (map.movePosition(lastX - endX, lastY - endY)) {
-            map.render();
-        }
-
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('mousemove', handleMouseMove);
-    };
-
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mousemove', handleMouseMove);
-});
-
-function getMousePos(canvas: HTMLCanvasElement, event: MouseEvent) {
-    let rect = canvas.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
 }
