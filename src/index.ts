@@ -9,11 +9,11 @@ const mapWidth = 1000;
 const mapHeight = 1000;
 type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 
-window.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('DOMContentLoaded', function(): void {
     const generateButton = document.getElementById('generate') as HTMLButtonElement;
     const calcPathButton = document.getElementById('calcPath') as HTMLButtonElement;
 
-    generateButton.addEventListener('click', function(event) {
+    generateButton.addEventListener('click', function(event: MouseEvent): void {
         event.preventDefault();
 
         const ctx = canvas.getContext('2d')!;
@@ -34,7 +34,7 @@ window.addEventListener('DOMContentLoaded', function() {
         setTimeout(generateMap, generationTimeout);
     });
 
-    calcPathButton.addEventListener('click', function(event) {
+    calcPathButton.addEventListener('click', function(event: MouseEvent): void {
         if (map === undefined) return;
 
         event.preventDefault();
@@ -76,7 +76,7 @@ window.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function generateMap() {
+function generateMap(): void {
     const generationParams: Partial<IGenerationParams> = {};
     type NodeListOfInputs = NodeListOf<HTMLInputElement | HTMLSelectElement>;
     type StrOrUndef = string | undefined;

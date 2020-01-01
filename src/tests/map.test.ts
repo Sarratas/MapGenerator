@@ -107,7 +107,7 @@ describe('Map generation tests', () => {
     test('Smoothing pass', () => {
         const map = new WorldMap(50, 50);
 
-        map['cellsSquare'][1][1] = new ShallowWaterCell(1, 1);
+        map['cellsSquare'][1][1] = new ShallowWaterCell({ x: 1, y: 1 });
 
         map['smoothingPass']();
 
@@ -133,7 +133,7 @@ describe('Map generation tests', () => {
 
         map['generatePlains']();
 
-        const fun = jest.spyOn(Cell.prototype, 'convert').mockImplementation(() => new Cell(0, 0));
+        const fun = jest.spyOn(Cell.prototype, 'convert').mockImplementation(() => new Cell({ x: 0, y: 0 }));
 
         map['convertCells']();
 
@@ -175,12 +175,12 @@ describe('Zoom in tests', () => {
 
         expect(map['scale']).toBe(1);
 
-        map.zoomIn(0, 0);
+        map.zoomIn({ x: 0, y: 0 });
 
         expect(map['scale']).toBe(2);
         expect(map.getPosition()).toEqual({ x: 0, y: 0 });
 
-        map.zoomIn(0, 0);
+        map.zoomIn({ x: 0, y: 0 });
 
         expect(map['scale']).toBe(4);
         expect(map.getPosition()).toEqual({ x: 0, y: 0 });
@@ -194,12 +194,12 @@ describe('Zoom in tests', () => {
 
         expect(map['scale']).toBe(1);
 
-        map.zoomIn(0, 100);
+        map.zoomIn({ x: 0, y: 100 });
 
         expect(map['scale']).toBe(2);
         expect(map.getPosition()).toEqual({ x: 0, y: 50 });
 
-        map.zoomIn(0, 100);
+        map.zoomIn({ x: 0, y: 100 });
 
         expect(map['scale']).toBe(4);
         expect(map.getPosition()).toEqual({ x: 0, y: 75 });
@@ -213,12 +213,12 @@ describe('Zoom in tests', () => {
 
         expect(map['scale']).toBe(1);
 
-        map.zoomIn(100, 0);
+        map.zoomIn({ x: 100, y: 0 });
 
         expect(map['scale']).toBe(2);
         expect(map.getPosition()).toEqual({ x: 50, y: 0 });
 
-        map.zoomIn(100, 0);
+        map.zoomIn({ x: 100, y: 0 });
 
         expect(map['scale']).toBe(4);
         expect(map.getPosition()).toEqual({ x: 75, y: 0 });
@@ -232,12 +232,12 @@ describe('Zoom in tests', () => {
 
         expect(map['scale']).toBe(1);
 
-        map.zoomIn(100, 100);
+        map.zoomIn({ x: 100, y: 100 });
 
         expect(map['scale']).toBe(2);
         expect(map.getPosition()).toEqual({ x: 50, y: 50 });
 
-        map.zoomIn(100, 100);
+        map.zoomIn({ x: 100, y: 100 });
 
         expect(map['scale']).toBe(4);
         expect(map.getPosition()).toEqual({ x: 75, y: 75 });
@@ -251,9 +251,9 @@ describe('Zoom in tests', () => {
 
         expect(map['scale']).toBe(1);
 
-        map.zoomIn(15, 0);
-        map.zoomIn(0, 15);
-        map.zoomIn(20, 20);
+        map.zoomIn({ x: 15, y: 0 });
+        map.zoomIn({ x: 0, y: 15 });
+        map.zoomIn({ x: 20, y: 20 });
 
         expect(map['scale']).toBe(8);
         expect(map.getPosition()).toEqual({ x: 10, y: 6.25 });
@@ -270,7 +270,7 @@ describe('Zoom in tests', () => {
         const maxScaleIndex = map['maxScaleIndex'];
 
         for (let i = 0; i < maxScaleIndex + 1; ++i) {
-            map.zoomIn(0, 0);
+            map.zoomIn({ x: 0, y: 0 });
         }
 
         expect(map['scaleIndex']).toBe(maxScaleIndex);
@@ -290,7 +290,7 @@ describe('Zoom out tests', () => {
 
         expect(map['scaleIndex']).toBe(minScaleIndex);
 
-        map.zoomOut(0, 0);
+        map.zoomOut({ x: 0, y: 0 });
 
         expect(map['scaleIndex']).toBe(minScaleIndex);
     });
@@ -301,10 +301,10 @@ describe('Zoom out tests', () => {
 
         map.initView(canvas, 0);
 
-        map.zoomIn(50, 50);
-        map.zoomIn(50, 50);
+        map.zoomIn({ x: 50, y: 50 });
+        map.zoomIn({ x: 50, y: 50 });
 
-        map.zoomOut(0, 0);
+        map.zoomOut({ x: 0, y: 0 });
 
         const pos = map.getPosition();
 
@@ -318,10 +318,10 @@ describe('Zoom out tests', () => {
 
         map.initView(canvas, 0);
 
-        map.zoomIn(50, 50);
-        map.zoomIn(50, 50);
+        map.zoomIn({ x: 50, y: 50 });
+        map.zoomIn({ x: 50, y: 50 });
 
-        map.zoomOut(100, 0);
+        map.zoomOut({ x: 100, y: 0 });
 
         const pos = map.getPosition();
 
@@ -335,10 +335,10 @@ describe('Zoom out tests', () => {
 
         map.initView(canvas, 0);
 
-        map.zoomIn(50, 50);
-        map.zoomIn(50, 50);
+        map.zoomIn({ x: 50, y: 50 });
+        map.zoomIn({ x: 50, y: 50 });
 
-        map.zoomOut(0, 100);
+        map.zoomOut({ x: 0, y: 100 });
 
         const pos = map.getPosition();
 
@@ -352,10 +352,10 @@ describe('Zoom out tests', () => {
 
         map.initView(canvas, 0);
 
-        map.zoomIn(50, 50);
-        map.zoomIn(50, 50);
+        map.zoomIn({ x: 50, y: 50 });
+        map.zoomIn({ x: 50, y: 50 });
 
-        map.zoomOut(100, 100);
+        map.zoomOut({ x: 100, y: 100 });
 
         const pos = map.getPosition();
 
@@ -454,17 +454,17 @@ describe('Adjacent cells algorithm tests', () => {
         expect(adjacentCellsAll.length).toBe(8);
         expect(adjacentCellsPlain.length).toBe(1);
 
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 4, posY: 4 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 4, posY: 5 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 4, posY: 6 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 5, posY: 4 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 5, posY: 6 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 6, posY: 4 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 6, posY: 5 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 6, posY: 6 })]));
-        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ posX: 5, posY: 5 })]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 4, y: 4 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 4, y: 5 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 4, y: 6 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 5, y: 4 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 5, y: 6 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 6, y: 4 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 6, y: 5 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 6, y: 6 }})]));
+        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 5, y: 5 }})]));
 
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ posX: 5, posY: 6 })]));
+        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 5, y: 6 }})]));
     });
 
     test('Adjacent cells for cube coords', () => {
@@ -473,8 +473,8 @@ describe('Adjacent cells algorithm tests', () => {
 
         map.initView(canvas, 0);
 
-        const initCell = map['getCellCube'](10, -20, 10)!;
-        map['getCellCube'](10, -21, 11)!.type = CellTypes.Plain;
+        const initCell = map['getCellCube']({ x: 10, y: -20, z: 10 })!;
+        map['getCellCube']({ x: 10, y: -21, z: 11 })!.type = CellTypes.Plain;
 
         const adjacentCellsAll = map['getAdjacentCellsCube'](initCell, 1);
         const adjacentCellsPlain = map['getAdjacentCellsCube'](initCell, 1, CellTypes.Plain);
@@ -482,15 +482,15 @@ describe('Adjacent cells algorithm tests', () => {
         expect(adjacentCellsAll.length).toBe(6);
         expect(adjacentCellsPlain.length).toBe(1);
 
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 10, cubeY: -21, cubeZ: 11 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 10, cubeY: -19, cubeZ: 9 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 11, cubeY: -20, cubeZ: 9 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 11, cubeY: -21, cubeZ: 10 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 9, cubeY: -20, cubeZ: 11 })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 9, cubeY: -19, cubeZ: 10 })]));
-        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 10, cubeY: -20, cubeZ: 10 })]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 10, y: -21, z: 11 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 10, y: -19, z: 9 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 11, y: -20, z: 9 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 11, y: -21, z: 10 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 9, y: -20, z: 11 }})]));
+        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 9, y: -19, z: 10 }})]));
+        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 10, y: -20, z: 10 }})]));
 
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 10, cubeY: -21, cubeZ: 11 })]));
+        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 10, y: -21, z: 11 }})]));
     });
 });
 
@@ -509,15 +509,15 @@ describe('Path calculation tests', () => {
 
         const pathCells = path['cells'];
 
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 0, cubeY: 0, cubeZ: 0 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 0, cubeY: -1, cubeZ: 1 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 1, cubeY: -2, cubeZ: 1 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 2, cubeY: -3, cubeZ: 1 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 2, cubeY: -4, cubeZ: 2 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 2, cubeY: -5, cubeZ: 3 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 2, cubeY: -6, cubeZ: 4 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 3, cubeY: -7, cubeZ: 4 })]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ cubeX: 3, cubeY: -8, cubeZ: 5 })]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: 0, z: 0 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 2, y: -3, z: 1 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 2, y: -4, z: 2 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 2, y: -5, z: 3 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 2, y: -6, z: 4 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 3, y: -7, z: 4 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 3, y: -8, z: 5 }})]));
     });
 
     test('Result undefined if path start not found', () => {

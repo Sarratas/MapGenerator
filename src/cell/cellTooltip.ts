@@ -1,2 +1,2 @@
-export const getHoverTooltip = () => document.getElementById('cellHoverInfo')!;
-export const getSelectTooltip = () => document.getElementById('cellSelectInfo')!;
+export const getHoverTooltip = (): HTMLElement => document.getElementById('cellHoverInfo')!;
+export const getSelectTooltip = (): HTMLElement => document.getElementById('cellSelectInfo')!;

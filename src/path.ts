@@ -21,14 +21,14 @@ export class Path {
         });
     }
 
-    public hide() {
+    public hide(): void {
         this.cells.forEach(cell => {
             cell.highlightColor = undefined;
             cell.highlightModifier &= ~HighlightModifiers.Path;
         });
     }
 
-    public add(cell: Cell) {
+    public add(cell: Cell): void {
         this.cells.push(cell);
         this.cost += 1;
         this.realCost += cell.movementCost;

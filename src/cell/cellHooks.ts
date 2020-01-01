@@ -3,7 +3,7 @@ import { hoverImages, HighlightModifiers } from './cellDefines';
 import { getHoverTooltip, getSelectTooltip } from './cellTooltip';
 
 export default class CellHooks {
-    public static onCellHoverIn(this: Cell, _event: MouseEvent) {
+    public static onCellHoverIn(this: Cell, _event: MouseEvent): void {
         const hoverTooltip = getHoverTooltip();
 
         hoverTooltip.hidden = false;
@@ -17,7 +17,7 @@ export default class CellHooks {
         this.highlightModifier |= HighlightModifiers.Hover;
     }
 
-    public static onCellHoverOut(this: Cell, _event: MouseEvent) {
+    public static onCellHoverOut(this: Cell, _event: MouseEvent): void {
         const hoverTooltip = getHoverTooltip();
 
         hoverTooltip.hidden = true;
@@ -25,7 +25,7 @@ export default class CellHooks {
         this.highlightModifier &= ~HighlightModifiers.Hover;
     }
 
-    public static onCellSelect(this: Cell, _event: MouseEvent) {
+    public static onCellSelect(this: Cell, _event: MouseEvent): void {
         const selectTooltip = getSelectTooltip();
 
         selectTooltip.hidden = false;
@@ -40,7 +40,7 @@ export default class CellHooks {
 
     }
 
-    public static onCellDeselect(this: Cell, _event: MouseEvent) {
+    public static onCellDeselect(this: Cell, _event: MouseEvent): void {
         const selectTooltip = getSelectTooltip();
 
         selectTooltip.hidden = true;

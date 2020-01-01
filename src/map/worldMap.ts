@@ -8,6 +8,7 @@ import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
 
 import FastPriorityQueue = require('fastpriorityqueue');
+import { IPosition2d, IPositionCube } from '../position';
 
 export enum NeighborAlgorithms {
     Square,
@@ -47,9 +48,13 @@ export interface IGenerationParams {
     seed: string | undefined;
 }
 
+interface ICellWithPriority {
+    cell: Cell;
+    priority: number;
+}
+
 export class WorldMap {
-    protected lastMouseX: number;
-    protected lastMouseY: number;
+    protected lastMousePos: IPosition2d;
     protected isMouseDown: boolean;
     protected isDragging: boolean;
     protected isMouseInside: boolean;
@@ -57,7 +62,7 @@ export class WorldMap {
     protected handleMouseWheel!: (event: MouseWheelEvent) => void;
     protected handleMouseDown!: (event: MouseEvent) => void;
     protected handleMouseMove!: (event: MouseEvent) => void;
-    protected handleMouseDrag!: (x: number, y: number) => void;
+    protected handleMouseDrag!: (pos: IPosition2d) => void;
     protected handleMouseUp!: (event: MouseEvent) => void;
     protected handleMouseEnter!: (event: MouseEvent) => void;
     protected handleMouseLeave!: (event: MouseEvent) => void;
@@ -69,7 +74,7 @@ export class WorldMap {
     protected height: number;
     protected scale: number;
     protected scaleIndex: number;
-    protected position: { x: number, y: number };
+    protected position: IPosition2d;
 
     protected cellsSquare: Array<Array<Cell>>;
     protected cellsCube: Map<string, Cell>;
@@ -137,7 +142,7 @@ export class WorldMap {
         this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
-        this.placeholderCell = new PlaceholderCell(0, 0);
+        this.placeholderCell = new PlaceholderCell({ x: 0, y: 0 });
 
         this.getAdjCellsForSmoothing = generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
@@ -147,8 +152,7 @@ export class WorldMap {
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
 
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
+        this.lastMousePos = { x: 0, y: 0 };
         this.isMouseDown = false;
         this.isDragging = false;
         this.isMouseInside = false;
@@ -163,29 +167,29 @@ export class WorldMap {
         this.generateEmptyCells();
     }
 
-    public zoomIn(posX: number, posY: number): boolean {
+    public zoomIn(pos: IPosition2d): boolean {
         if (this.scaleIndex >= this.maxScaleIndex) return false;
 
         ++this.scaleIndex;
         const newScale = this.scaleThresholds[this.scaleIndex];
 
-        const newX = this.position.x + posX / this.scale - posX / newScale;
-        const newY = this.position.y + posY / this.scale - posY / newScale;
+        const newX = this.position.x + pos.x / this.scale - pos.x / newScale;
+        const newY = this.position.y + pos.y / this.scale - pos.y / newScale;
 
         this.scale = newScale;
-        this.setPosition(newX, newY);
+        this.setPosition({ x: newX, y: newY });
 
         return true;
     }
 
-    public zoomOut(posX: number, posY: number): boolean {
+    public zoomOut(pos: IPosition2d): boolean {
         if (this.scaleIndex <= this.minScaleIndex) return false;
 
         --this.scaleIndex;
         const newScale = this.scaleThresholds[this.scaleIndex];
 
-        const newX = this.position.x + posX / this.scale - posX / newScale;
-        const newY = this.position.y + posY / this.scale - posY / newScale;
+        const newX = this.position.x + pos.x / this.scale - pos.x / newScale;
+        const newY = this.position.y + pos.y / this.scale - pos.y / newScale;
 
         if (newScale < this.hexagonThresholdScale) {
             getHoverTooltip().hidden = true;
@@ -193,7 +197,7 @@ export class WorldMap {
         }
 
         this.scale = newScale;
-        this.setPosition(newX, newY);
+        this.setPosition({ x: newX, y: newY });
 
         return true;
     }
@@ -202,12 +206,12 @@ export class WorldMap {
         const newX = this.position.x + changeX / this.scale;
         const newY = this.position.y + changeY / this.scale;
 
-        return this.setPosition(newX, newY);
+        return this.setPosition({ x: newX, y: newY });
     }
 
-    public setPosition(newX: number, newY: number): boolean {
-        const lastX = this.position.x;
-        const lastY = this.position.y;
+    public setPosition(pos: IPosition2d): boolean {
+        const { x: newX, y: newY } = pos;
+        const { x: lastX, y: lastY } = this.position;
 
         const { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
@@ -220,15 +224,15 @@ export class WorldMap {
         return lastX !== this.position.x || lastY !== this.position.y;
     }
 
-    public getPosition(): { x: number, y: number } {
+    public getPosition(): IPosition2d {
         return this.position;
     }
 
-    public get size() {
+    public get size(): number {
         return this.width * this.height;
     }
 
-    public generate() {
+    public generate(): void {
         this.generateLakes();
         this.generateMountains();
         this.smoothingPass();
@@ -254,7 +258,7 @@ export class WorldMap {
         this.positionTooltips();
     }
 
-    public unbindView() {
+    public unbindView(): void {
         this.canvas?.removeEventListener('wheel', this.handleMouseWheel);
         this.canvas?.removeEventListener('mousedown', this.handleMouseDown);
         this.canvas?.removeEventListener('mouseup', this.handleMouseUp);
@@ -284,7 +288,7 @@ export class WorldMap {
             return undefined;
         }
 
-        const queue = new FastPriorityQueue<{cell: Cell, priority: number}>((a, b) => a.priority < b.priority);
+        const queue = new FastPriorityQueue<ICellWithPriority>(this.priorityComparator);
         queue.add({cell: startCell, priority: 0});
 
         const cellsMap = new Map<Cell, Cell | undefined>();
@@ -300,8 +304,8 @@ export class WorldMap {
                 const newCost = currCost.get(current.cell)! + next.movementCost;
                 if (!currCost.has(next) || newCost < currCost.get(next)!) {
                     currCost.set(next, newCost);
-                    const priority = newCost + next.getDistanceFrom(endCell);
-                    queue.add({cell: next, priority: priority});
+                    const cost = newCost + next.getDistanceFrom(endCell);
+                    queue.add({ cell: next, priority: cost });
                     cellsMap.set(next, current.cell);
                 }
             }
@@ -322,7 +326,11 @@ export class WorldMap {
         return path;
     }
 
-    protected positionTooltips() {
+    protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
+        return a.priority < b.priority;
+    }
+
+    protected positionTooltips(): void {
         const hoverTooltip = getHoverTooltip();
         const selectTooltip = getSelectTooltip();
 
@@ -355,8 +363,8 @@ export class WorldMap {
         };
     }
 
-    protected getCellCube(x: number, y: number, z: number): Cell | undefined {
-        return this.cellsCube.get(x + '.' + y + '.' + z);
+    protected getCellCube(pos: IPositionCube): Cell | undefined {
+        return this.cellsCube.get(pos.x + '.' + pos.y + '.' + pos.z);
     }
 
     protected renderSquare(ctx: CanvasRenderingContext2D): void {
@@ -367,7 +375,7 @@ export class WorldMap {
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
-                const cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
+                const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
                 const fillColor = (cell.highlightModifier & HighlightModifiers.Path) !== 0 ?
                     cell.getHighlightColor() : cell.color;
                 if (fillColor !== lastFillColor) {
@@ -408,7 +416,7 @@ export class WorldMap {
 
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView + 1; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView + 1; ++y, ++j) {
-                const cell = this.checkBoundaries(x, y) ? this.cellsSquare[x][y] : this.placeholderCell;
+                const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
                 const positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
                 const positionY = j * hexRectangleHeight - offsetY;
 
@@ -425,7 +433,7 @@ export class WorldMap {
                     ctx.fillStyle = cell.highlightModifier !== 0 ? cell.getHighlightColor() : cell.color;
                     ctx.fill();
                 } else {
-                    ctx.drawImage(sprite, cell.offsetX, cell.offsetY, spriteWidth, spriteHeight,
+                    ctx.drawImage(sprite, cell.offset.x, cell.offset.y, spriteWidth, spriteHeight,
                         positionX, positionY, hexRectangleWidth, hexHeight * 4);
                 }
                 ctx.strokeStyle = '#FFFFFF';
@@ -434,18 +442,18 @@ export class WorldMap {
         }
     }
 
-    protected generateEmptyCells() {
+    protected generateEmptyCells(): void {
         for (let x = 0; x < this.width; ++x) {
             this.cellsSquare.push([]);
             for (let y = 0; y < this.height; ++y) {
-                const newCell = new Cell(x, y);
+                const newCell = new Cell({ x, y });
                 this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
-                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
+                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
             }
         }
     }
 
-    protected generateLakes() {
+    protected generateLakes(): void {
         const seedsNumber = this.generationParams.lakeFactor * this.size;
         const cellsToProcess: Array<Cell> = [];
         const spreadFactor = this.generationParams.lakeSpreadFactor;
@@ -473,7 +481,7 @@ export class WorldMap {
         }
     }
 
-    protected generateMountains() {
+    protected generateMountains(): void {
         const seedsNumber = this.generationParams.mountainFactor * this.size;
         const cellsToProcess: Array<Cell> = [];
         const spreadFactor = this.generationParams.mountainSpreadFactor;
@@ -509,7 +517,7 @@ export class WorldMap {
         }
     }
 
-    protected generatePlains() {
+    protected generatePlains(): void {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             if (currentCell.type === CellTypes.None) {
                 currentCell.type = CellTypes.Plain;
@@ -517,7 +525,7 @@ export class WorldMap {
         }));
     }
 
-    protected smoothingPass() {
+    protected smoothingPass(): void {
         let adjacentCells: Array<Cell> = [];
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
@@ -553,7 +561,7 @@ export class WorldMap {
         }));
     }
 
-    protected smoothingPass2() {
+    protected smoothingPass2(): void {
         let adjacentCells: Array<Cell> = [];
         for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
             this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
@@ -579,7 +587,7 @@ export class WorldMap {
         }
     }
 
-    protected smoothingPass3() {
+    protected smoothingPass3(): void {
         this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
             switch (currentCell.type) {
                 case CellTypes.ShallowWater:
@@ -595,26 +603,26 @@ export class WorldMap {
         }));
     }
 
-    protected convertCells() {
+    protected convertCells(): void {
         for (let x = 0; x < this.width; ++x) {
             for (let y = 0; y < this.height; ++y) {
                 const newCell = this.cellsSquare[x][y].convert();
 
                 this.cellsSquare[x][y] = newCell;
-                this.cellsCube.set(newCell.cubeX + '.' + newCell.cubeY + '.' + newCell.cubeZ, newCell);
+                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
             }
         }
     }
 
     protected getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         const result: Array<Cell> = [];
-        const arrayX = Utils.range(cell.posX - radius, cell.posX + radius);
-        const arrayY = Utils.range(cell.posY - radius, cell.posY + radius);
+        const arrayX = Utils.range(cell.pos.x - radius, cell.pos.x + radius);
+        const arrayY = Utils.range(cell.pos.y - radius, cell.pos.y + radius);
         arrayX.forEach(posX => arrayY.forEach(posY => {
             // don't include source cell in result array
-            if (cell.posX === posX && cell.posY === posY) return;
+            if (cell.pos.x === posX && cell.pos.y === posY) return;
 
-            const neighborCell = this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
+            const neighborCell = this.checkBoundaries({ x: posX, y: posY }) ? this.cellsSquare[posX][posY] : undefined;
             if (neighborCell === undefined) return;
 
             if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
@@ -626,15 +634,15 @@ export class WorldMap {
 
     protected getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
         const result: Array<Cell> = [];
-        const arrayX = Utils.range(cell.cubeX - radius, cell.cubeX + radius);
-        const arrayY = Utils.range(cell.cubeY - radius, cell.cubeY + radius);
+        const arrayX = Utils.range(cell.posCube.x - radius, cell.posCube.x + radius);
+        const arrayY = Utils.range(cell.posCube.y - radius, cell.posCube.y + radius);
         arrayX.forEach(cubeX => arrayY.forEach(cubeY => {
             const cubeZ = -cubeX - cubeY;
-            if (cell.cubeZ - cubeZ < -radius || cell.cubeZ - cubeZ > radius) return;
+            if (cell.posCube.z - cubeZ < -radius || cell.posCube.z - cubeZ > radius) return;
             // don't include source cell in result array
-            if (cell.cubeX === cubeX && cell.cubeY === cubeY && cell.cubeZ === cubeZ) return;
+            if (cell.posCube.x === cubeX && cell.posCube.y === cubeY && cell.posCube.z === cubeZ) return;
 
-            const neighborCell = this.getCellCube(cubeX, cubeY, cubeZ);
+            const neighborCell = this.getCellCube({ x: cubeX, y: cubeY, z: cubeZ });
             if (neighborCell === undefined) return;
 
             if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
@@ -644,13 +652,13 @@ export class WorldMap {
         return result;
     }
 
-    protected checkBoundaries(x: number, y: number): boolean {
-        return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    protected checkBoundaries(pos: IPosition2d): boolean {
+        return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
 
     // Calculate mouse position in canvas.
     // Returns same values for pixels on the canvas edges and for corresponding canvas borders
-    protected getMousePos(event: MouseEvent): { x: number, y: number } {
+    protected getMousePos(event: MouseEvent): IPosition2d {
         const canvas = this.canvas;
         if (canvas === undefined) {
             return { x: 0, y: 0 };
@@ -661,7 +669,7 @@ export class WorldMap {
         const leftBorder = parseFloat(borderStyle.getPropertyValue('border-left-width'));
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-        const pos = {
+        const pos: IPosition2d = {
             x: event.clientX - leftBorder - rect.left,
             y: event.clientY - topBorder - rect.top,
         };
@@ -671,12 +679,12 @@ export class WorldMap {
         };
     }
 
-    protected findCellFromCoords(x: number, y: number): Cell | undefined {
+    protected findCellFromPos({ x, y }: IPosition2d): Cell | undefined {
         const hexRectangleWidth = this.scale;
         const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
         const posY = Math.floor(this.position.y + y / hexRectangleHeight);
         const posX = Math.floor(this.position.x + x / hexRectangleWidth - posY % 2 / 2);
-        return this.checkBoundaries(posX, posY) ? this.cellsSquare[posX][posY] : undefined;
+        return this.checkBoundaries({ x: posX, y: posY }) ? this.cellsSquare[posX][posY] : undefined;
     }
 
     private setAndBindMouseHandlers(): void {

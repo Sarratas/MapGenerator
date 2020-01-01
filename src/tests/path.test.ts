@@ -4,8 +4,8 @@ import { Cell, MountainCell, PlainCell, HighlandCell, ShallowWaterCell } from '.
 test('Add element to path', () => {
     const path = new Path();
 
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(1, 1);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 1, y: 1 });
 
     path.add(cell1);
     expect(path.getCost()).toBe(1);
@@ -21,10 +21,10 @@ test('Calculating path real cost', () => {
     const path4 = new Path();
     const path5 = new Path();
 
-    const cell1 = new PlainCell(0, 0);
-    const cell2 = new MountainCell(0, 0);
-    const cell3 = new HighlandCell(0, 0);
-    const cell4 = new ShallowWaterCell(0, 0);
+    const cell1 = new PlainCell({ x: 0, y: 0 });
+    const cell2 = new MountainCell({ x: 0, y: 0 });
+    const cell3 = new HighlandCell({ x: 0, y: 0 });
+    const cell4 = new ShallowWaterCell({ x: 0, y: 0 });
 
     path1.add(cell1);
 
@@ -61,8 +61,8 @@ test('Calculating path real cost', () => {
 test('Highlighting path with default color', () => {
     const path = new Path();
 
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(0, 0);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 0, y: 0 });
 
     path.add(cell1);
     path.add(cell2);
@@ -85,8 +85,8 @@ test('Highlighting path with specified color', () => {
     const color = '#FFFFFF';
     const path = new Path(color);
 
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(0, 0);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 0, y: 0 });
 
     path.add(cell1);
     path.add(cell2);

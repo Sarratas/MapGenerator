@@ -1,4 +1,5 @@
 import { WorldMap } from './worldMap';
+import { IPosition2d } from '../position';
 
 export default class MouseHandlers {
     public static handleMouseWheel(this: WorldMap, event: MouseWheelEvent): void {
@@ -6,14 +7,12 @@ export default class MouseHandlers {
 
         let needsRendering = false;
 
-        const mousePos = this.getMousePos(event);
-        const currentX = mousePos.x;
-        const currentY = mousePos.y;
+        const { x: currentX, y: currentY } = this.getMousePos(event);
 
         if (event.deltaY < 0) {
-            needsRendering = this.zoomIn(currentX, currentY);
+            needsRendering = this.zoomIn({ x: currentX, y: currentY });
         } else if (event.deltaY > 0) {
-            needsRendering = this.zoomOut(currentX, currentY);
+            needsRendering = this.zoomOut({ x: currentX, y: currentY });
         }
 
         if (needsRendering) {
@@ -25,8 +24,7 @@ export default class MouseHandlers {
         event.preventDefault();
 
         const initialMousePos = this.getMousePos(event);
-        this.lastMouseX = initialMousePos.x;
-        this.lastMouseY = initialMousePos.y;
+        this.lastMousePos = initialMousePos;
         this.isMouseDown = true;
         this.isDragging = false;
     }
@@ -37,16 +35,14 @@ export default class MouseHandlers {
         if (!this.isMouseInside) return;
 
         const mousePos = this.getMousePos(event);
-        const currentX = mousePos.x;
-        const currentY = mousePos.y;
 
         if (this.isMouseDown) {
             this.isDragging = true;
-            this.handleMouseDrag(currentX, currentY);
+            this.handleMouseDrag(mousePos);
         } else {
             if (this.scale < this.hexagonThresholdScale) return;
 
-            const cell = this.findCellFromCoords(currentX, currentY);
+            const cell = this.findCellFromPos(mousePos);
             if (this.hoveredCell !== undefined && this.hoveredCell !== cell) {
                 this.onCellHoverOut?.call(this.hoveredCell, event);
                 this.hoveredCell = undefined;
@@ -59,13 +55,12 @@ export default class MouseHandlers {
         this.render();
     }
 
-    public static handleMouseDrag(this: WorldMap, currentX: number, currentY: number): void {
-        if (this.movePosition(this.lastMouseX - currentX, this.lastMouseY - currentY)) {
+    public static handleMouseDrag(this: WorldMap, pos: IPosition2d): void {
+        if (this.movePosition(this.lastMousePos.x - pos.x, this.lastMousePos.y - pos.y)) {
             this.render();
         }
 
-        this.lastMouseX = currentX;
-        this.lastMouseY = currentY;
+        this.lastMousePos = pos;
     }
 
     public static handleMouseUp(this: WorldMap, event: MouseEvent): void {
@@ -75,18 +70,14 @@ export default class MouseHandlers {
             this.isDragging = false;
 
             const mousePos = this.getMousePos(event);
-            const endX = mousePos.x;
-            const endY = mousePos.y;
 
-            this.handleMouseDrag(endX, endY);
+            this.handleMouseDrag(mousePos);
         } else {
             if (this.scale < this.hexagonThresholdScale) return;
 
             const mousePos = this.getMousePos(event);
-            const currentX = mousePos.x;
-            const currentY = mousePos.y;
 
-            const cell = this.findCellFromCoords(currentX, currentY);
+            const cell = this.findCellFromPos(mousePos);
             const selectedCell = this.selectedCell;
 
             if (selectedCell !== undefined) {
@@ -103,15 +94,13 @@ export default class MouseHandlers {
 
     public static handleMouseEnter(this: WorldMap, _event: MouseEvent): void {
         this.isDragging = false;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
+        this.lastMousePos = { x: 0, y: 0 };
         this.isMouseInside = true;
     }
 
     public static handleMouseLeave(this: WorldMap, event: MouseEvent): void {
         this.isDragging = false;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
+        this.lastMousePos = { x: 0, y: 0 };
         if (this.hoveredCell !== undefined) {
             this.onCellHoverOut?.call(this.hoveredCell, event);
             this.hoveredCell = undefined;

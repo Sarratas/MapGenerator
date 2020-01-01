@@ -1,17 +1,13 @@
 import { CellTypes, CellColor, OffsetRows, OffsetColumns, MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
+import { IPosition2d, IPositionCube } from '../position';
 
 export class Cell {
     public type: CellTypes;
 
-    public posX: number;
-    public posY: number;
+    public pos: IPosition2d;
+    public posCube: IPositionCube;
 
-    public offsetX: number;
-    public offsetY: number;
-
-    public cubeX: number;
-    public cubeY: number;
-    public cubeZ: number;
+    public offset: IPosition2d;
 
     public movementCost: number;
 
@@ -21,25 +17,30 @@ export class Cell {
     public highlightColor?: string;
     public highlightModifier: number;
 
-    public get typeString() {
+    public get typeString(): string {
         return CellTypes[this.type];
     }
 
-    constructor(posX: number, posY: number, type: CellTypes = CellTypes.None) {
-        this.posX = posX;
-        this.posY = posY;
+    constructor(pos: IPosition2d, type: CellTypes = CellTypes.None) {
+        this.pos = pos;
         this.type = type;
 
-        this.cubeX = posX - (posY - (posY & 1)) / 2;
-        this.cubeZ = posY;
-        this.cubeY = -this.cubeX - this.cubeZ;
+        const cubeX = pos.x - (pos.y - (pos.y & 1)) / 2;
+        const cubeZ = pos.y;
+        const cubeY = -cubeX - cubeZ;
+
+        this.posCube = {
+            x: cubeX,
+            z: cubeZ,
+            y: cubeY,
+        };
+
         // eliminate negative zero for jest
-        if (this.cubeY === 0) {
-            this.cubeY = 0;
+        if (this.posCube.y === 0) {
+            this.posCube.y = 0;
         }
 
-        this.offsetX = OffsetColumns.Sixth;
-        this.offsetY = OffsetRows.Second;
+        this.offset = { x: OffsetColumns.Sixth, y: OffsetRows.Second };
 
         this.movementCost = MovementCosts.Easy;
         this.movementEnabled = true;
@@ -51,27 +52,30 @@ export class Cell {
     }
 
     public getDistanceFrom(target: Cell): number {
+        const { x: thisX, y: thisY, z: thisZ } = this.posCube;
+        const { x: targetX, y: targetY, z: targetZ } = target.posCube;
+
         return Math.max(
-            Math.abs(this.cubeX - target.cubeX),
-            Math.abs(this.cubeY - target.cubeY),
-            Math.abs(this.cubeZ - target.cubeZ));
+            Math.abs(thisX - targetX),
+            Math.abs(thisY - targetY),
+            Math.abs(thisZ - targetZ));
     }
 
     public convert(): Cell {
         switch (this.type) {
             case CellTypes.Mountain:
-                return new MountainCell(this.posX, this.posY);
+                return new MountainCell(this.pos);
             case CellTypes.DeepWater:
-                return new DeepWaterCell(this.posX, this.posY);
+                return new DeepWaterCell(this.pos);
             case CellTypes.ShallowWater:
-                return new ShallowWaterCell(this.posX, this.posY);
+                return new ShallowWaterCell(this.pos);
             case CellTypes.Plain:
-                return new PlainCell(this.posX, this.posY);
+                return new PlainCell(this.pos);
             case CellTypes.Highland:
-                return new HighlandCell(this.posX, this.posY);
+                return new HighlandCell(this.pos);
             case CellTypes.None:
             case CellTypes.Placeholder:
-                return new PlaceholderCell(this.posX, this.posY);
+                return new PlaceholderCell(this.pos);
             default:
                 throw new TypeError('Unexpected cell type');
         }
@@ -95,8 +99,8 @@ export class Cell {
 }
 
 export class PlaceholderCell extends Cell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.Placeholder);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.Placeholder);
 
         this.movementEnabled = false;
         this.color = CellColor.Placeholder;
@@ -104,52 +108,49 @@ export class PlaceholderCell extends Cell {
 }
 
 export class LandCell extends Cell {
-    constructor(posX: number, posY: number, type: CellTypes) {
-        super(posX, posY, type);
+    constructor(pos: IPosition2d, type: CellTypes) {
+        super(pos, type);
 
         this.movementEnabled = true;
     }
 }
 
 export class MountainCell extends LandCell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.Mountain);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.Mountain);
 
         this.movementCost = MovementCosts.Hard;
         this.color = CellColor.Mountain;
 
-        this.offsetX = OffsetColumns.Seventh;
-        this.offsetY = OffsetRows.Third;
+        this.offset = { x: OffsetColumns.Seventh, y: OffsetRows.Third };
     }
 }
 
 export class HighlandCell extends LandCell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.Highland);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.Highland);
 
         this.movementCost = MovementCosts.Medium;
         this.color = CellColor.Highland;
 
-        this.offsetX = OffsetColumns.Fifth;
-        this.offsetY = OffsetRows.Third;
+        this.offset = { x: OffsetColumns.Fifth, y: OffsetRows.Third };
     }
 }
 
 export class PlainCell extends LandCell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.Plain);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.Plain);
 
         this.movementCost = MovementCosts.Easy;
         this.color = CellColor.Plain;
 
-        this.offsetX = OffsetColumns.First;
-        this.offsetY = OffsetRows.First;
+        this.offset = { x: OffsetColumns.First, y: OffsetRows.First };
     }
 }
 
 export class WaterCell extends Cell {
-    constructor(posX: number, posY: number, type: CellTypes) {
-        super(posX, posY, type);
+    constructor(pos: IPosition2d, type: CellTypes) {
+        super(pos, type);
 
         this.movementCost = MovementCosts.Impossible;
         this.movementEnabled = false;
@@ -157,23 +158,21 @@ export class WaterCell extends Cell {
 }
 
 export class ShallowWaterCell extends WaterCell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.Water);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.Water);
 
         this.color = CellColor.ShallowWater;
 
-        this.offsetX = OffsetColumns.Fifth;
-        this.offsetY = OffsetRows.First;
+        this.offset = { x: OffsetColumns.Fifth, y: OffsetRows.First };
     }
 }
 
 export class DeepWaterCell extends WaterCell {
-    constructor(posX: number, posY: number) {
-        super(posX, posY, CellTypes.DeepWater);
+    constructor(pos: IPosition2d) {
+        super(pos, CellTypes.DeepWater);
 
         this.color = CellColor.DeepWater;
 
-        this.offsetX = OffsetColumns.Seventh;
-        this.offsetY = OffsetRows.First;
+        this.offset = { x: OffsetColumns.Seventh, y: OffsetRows.First };
     }
 }

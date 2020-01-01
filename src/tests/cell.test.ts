@@ -2,56 +2,42 @@ import { Cell, PlaceholderCell, PlainCell, LandCell, HighlandCell, DeepWaterCell
 import { CellTypes } from '../cell/cellDefines';
 
 test('Square cell coords', () => {
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(500, 500);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 500, y: 500 });
 
-    expect(cell1.posX).toBe(0);
-    expect(cell1.posY).toBe(0);
+    expect(cell1.pos.x).toBe(0);
+    expect(cell1.pos.y).toBe(0);
 
-    expect(cell2.posX).toBe(500);
-    expect(cell2.posY).toBe(500);
+    expect(cell2.pos.x).toBe(500);
+    expect(cell2.pos.y).toBe(500);
 });
 
 test('Cube cell coords', () => {
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(0, 100);
-    const cell3 = new Cell(100, 0);
-    const cell4 = new Cell(100, 100);
-    const cell5 = new Cell(99, 99);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 0, y: 100 });
+    const cell3 = new Cell({ x: 100, y: 0 });
+    const cell4 = new Cell({ x: 100, y: 100 });
+    const cell5 = new Cell({ x: 99, y: 99 });
 
-    expect(cell1.cubeX).toBe(0);
-    expect(cell1.cubeY).toBe(0);
-    expect(cell1.cubeZ).toBe(0);
+    expect(cell1.posCube).toEqual({ x: 0, y: 0, z: 0 });
+    expect(cell2.posCube).toEqual({ x: -50, y: -50, z: 100 });
+    expect(cell3.posCube).toEqual({ x: 100, y: -100, z: 0 });
+    expect(cell4.posCube).toEqual({ x: 50, y: -150, z: 100 });
+    expect(cell5.posCube).toEqual({ x: 50, y: -149, z: 99 });
 
-    expect(cell2.cubeX).toBe(-50);
-    expect(cell2.cubeY).toBe(-50);
-    expect(cell2.cubeZ).toBe(100);
-
-    expect(cell3.cubeX).toBe(100);
-    expect(cell3.cubeY).toBe(-100);
-    expect(cell3.cubeZ).toBe(0);
-
-    expect(cell4.cubeX).toBe(50);
-    expect(cell4.cubeY).toBe(-150);
-    expect(cell4.cubeZ).toBe(100);
-
-    expect(cell5.cubeX).toBe(50);
-    expect(cell5.cubeY).toBe(-149);
-    expect(cell5.cubeZ).toBe(99);
-
-    expect(cell1.cubeX + cell1.cubeY + cell1.cubeZ).toBe(0);
-    expect(cell2.cubeX + cell2.cubeY + cell2.cubeZ).toBe(0);
-    expect(cell3.cubeX + cell3.cubeY + cell3.cubeZ).toBe(0);
-    expect(cell4.cubeX + cell4.cubeY + cell4.cubeZ).toBe(0);
-    expect(cell5.cubeX + cell5.cubeY + cell5.cubeZ).toBe(0);
+    expect(cell1.posCube.x + cell1.posCube.y + cell1.posCube.z).toBe(0);
+    expect(cell2.posCube.x + cell2.posCube.y + cell2.posCube.z).toBe(0);
+    expect(cell3.posCube.x + cell3.posCube.y + cell3.posCube.z).toBe(0);
+    expect(cell4.posCube.x + cell4.posCube.y + cell4.posCube.z).toBe(0);
+    expect(cell5.posCube.x + cell5.posCube.y + cell5.posCube.z).toBe(0);
 });
 
 test('Calculating distance between cells', () => {
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(0, 0);
-    const cell3 = new Cell(0, 100);
-    const cell4 = new Cell(100, 0);
-    const cell5 = new Cell(100, 100);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 0, y: 0 });
+    const cell3 = new Cell({ x: 0, y: 100 });
+    const cell4 = new Cell({ x: 100, y: 0 });
+    const cell5 = new Cell({ x: 100, y: 100 });
 
     expect(cell1.getDistanceFrom(cell2)).toBe(0);
     expect(cell1.getDistanceFrom(cell3)).toBe(100);
@@ -65,7 +51,7 @@ test('Calculating distance between cells', () => {
 });
 
 test('Converting cell to None', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     const convertedCell = cell.convert();
 
@@ -73,7 +59,7 @@ test('Converting cell to None', () => {
 });
 
 test('Converting cell to Placeholder', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.Placeholder;
 
@@ -83,7 +69,7 @@ test('Converting cell to Placeholder', () => {
 });
 
 test('Converting cell to ShallowWater', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.ShallowWater;
 
@@ -94,7 +80,7 @@ test('Converting cell to ShallowWater', () => {
 });
 
 test('Converting cell to DeepWater', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.DeepWater;
 
@@ -105,7 +91,7 @@ test('Converting cell to DeepWater', () => {
 });
 
 test('Converting cell to Plain', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.Plain;
 
@@ -116,7 +102,7 @@ test('Converting cell to Plain', () => {
 });
 
 test('Converting cell to Highland', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.Highland;
 
@@ -127,7 +113,7 @@ test('Converting cell to Highland', () => {
 });
 
 test('Converting cell to Mountains', () => {
-    const cell = new Cell(0, 0);
+    const cell = new Cell({ x: 0, y: 0 });
 
     cell.type = CellTypes.Mountain;
 
@@ -138,8 +124,8 @@ test('Converting cell to Mountains', () => {
 });
 
 test('Converting cell to abstract type', () => {
-    const cell1 = new Cell(0, 0);
-    const cell2 = new Cell(0, 0);
+    const cell1 = new Cell({ x: 0, y: 0 });
+    const cell2 = new Cell({ x: 0, y: 0 });
 
     cell1.type = CellTypes.Water;
     cell2.type = CellTypes.Land;
@@ -149,23 +135,23 @@ test('Converting cell to abstract type', () => {
 });
 
 test('Movement disabled through water', () => {
-    const cell1 = new ShallowWaterCell(0, 0);
-    const cell2 = new DeepWaterCell(0, 0);
+    const cell1 = new ShallowWaterCell({ x: 0, y: 0 });
+    const cell2 = new DeepWaterCell({ x: 0, y: 0 });
 
     expect(cell1.movementEnabled).toBe(false);
     expect(cell2.movementEnabled).toBe(false);
 });
 
 test('Movement disabled through placeholder cells', () => {
-    const cell = new PlaceholderCell(0, 0);
+    const cell = new PlaceholderCell({ x: 0, y: 0 });
 
     expect(cell.movementEnabled).toBe(false);
 });
 
 test('Movement enabled through land', () => {
-    const cell1 = new PlainCell(0, 0);
-    const cell2 = new HighlandCell(0, 0);
-    const cell3 = new MountainCell(0, 0);
+    const cell1 = new PlainCell({ x: 0, y: 0 });
+    const cell2 = new HighlandCell({ x: 0, y: 0 });
+    const cell3 = new MountainCell({ x: 0, y: 0 });
 
     expect(cell1.movementEnabled).toBe(true);
     expect(cell2.movementEnabled).toBe(true);
@@ -173,9 +159,9 @@ test('Movement enabled through land', () => {
 });
 
 test('Movement harder through highlands and mountains', () => {
-    const cell1 = new PlainCell(0, 0);
-    const cell2 = new HighlandCell(0, 0);
-    const cell3 = new MountainCell(0, 0);
+    const cell1 = new PlainCell({ x: 0, y: 0 });
+    const cell2 = new HighlandCell({ x: 0, y: 0 });
+    const cell3 = new MountainCell({ x: 0, y: 0 });
 
     expect(cell1.movementCost).toBeLessThan(cell2.movementCost);
     expect(cell1.movementCost).toBeLessThan(cell3.movementCost);
