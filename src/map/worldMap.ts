@@ -1,26 +1,15 @@
-import { CellTypes, CellColor, HighlightModifiers } from '../cell/cellDefines';
+import { CellColor, HighlightModifiers } from '../cell/cellDefines';
 import { Cell, PlaceholderCell } from '../cell/cell';
 import Utils from '../utils';
 import { Path } from '../path';
-import Prando from 'prando';
 import MouseHandlers from './mouseHandlers';
 import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
 
 import FastPriorityQueue = require('fastpriorityqueue');
-import { IPosition2d, IPositionCube } from '../shared/position';
-
-export enum NeighborAlgorithms {
-    Square,
-    Cube,
-}
-
-enum Ranges {
-    Immediate   = 1,
-    Close       = 2,
-    Medium      = 4,
-    Far         = 8,
-}
+import { IPosition2d } from '../shared/position';
+import { CellsContainer, MapRanges } from './mapBase';
+import { CellFactory } from '../cell/cellFactory';
 
 enum HexConstants {
     BonusOffsetX = 0.5,
@@ -30,30 +19,12 @@ enum HexConstants {
     Angle = 0.523598776,
 }
 
-export interface IGenerationParams {
-    mountainFactor: number;
-    mountainSpreadFactor: number;
-
-    lakeFactor: number;
-    lakeSpreadFactor: number;
-
-    smoothingMountainFactor: number;
-    smoothingLakeFactor: number;
-    waterSmoothingPasses: number;
-    waterSmoothingPass3Factor: number;
-
-    generationNeighborAlgorithm: NeighborAlgorithms;
-    smoothingNeighborAlgorithm: NeighborAlgorithms;
-
-    seed: string | undefined;
-}
-
 interface ICellWithPriority {
     cell: Cell;
     priority: number;
 }
 
-export class WorldMap {
+export class WorldMap extends CellsContainer {
     protected lastMousePos: IPosition2d;
     protected isMouseDown: boolean;
     protected isDragging: boolean;
@@ -70,34 +41,9 @@ export class WorldMap {
     protected selectedCell?: Cell;
     protected hoveredCell?: Cell;
 
-    protected width: number;
-    protected height: number;
     protected scale: number;
     protected scaleIndex: number;
     protected position: IPosition2d;
-
-    protected cellsSquare: Array<Array<Cell>>;
-    protected cellsCube: Map<string, Cell>;
-
-    protected rng: Prando;
-
-    protected readonly generationParams: IGenerationParams = {
-        mountainFactor: 0.001,
-        mountainSpreadFactor: 0.35,
-
-        lakeFactor: 0.0001,
-        lakeSpreadFactor: 0.064,
-
-        smoothingMountainFactor: 5,
-        smoothingLakeFactor: 11,
-        waterSmoothingPasses: 3,
-        waterSmoothingPass3Factor: 3,
-
-        generationNeighborAlgorithm: NeighborAlgorithms.Square,
-        smoothingNeighborAlgorithm: NeighborAlgorithms.Square,
-
-        seed: undefined,
-    };
 
     protected readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
 
@@ -119,9 +65,6 @@ export class WorldMap {
     protected readonly spriteElementWidth = 155;
     protected readonly spriteElementHeight = 185;
 
-    protected getAdjCellsForSmoothing: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
-    protected getAdjCellsForGenerating: (cell: Cell, radius: Ranges, filterTypes?: CellTypes) => Array<Cell>;
-
     protected onCellHoverIn?: (event: MouseEvent) => void;
     protected onCellHoverOut?: (event: MouseEvent) => void;
     protected onCellSelect?: (event: MouseEvent) => void;
@@ -130,24 +73,15 @@ export class WorldMap {
     constructor(
         width: number,
         height: number,
-        generationParams: Partial<IGenerationParams> = {},
+        cells: Cell[][],
     ) {
-        this.width = width;
-        this.height = height;
-        this.generationParams = { ...this.generationParams, ...generationParams };
-        this.rng = new Prando(this.generationParams.seed);
+        super(width, height);
+
         this.scaleIndex = this.initialScaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
-        this.cellsSquare = [];
-        this.cellsCube = new Map<string, Cell>();
         this.position = { x: 0, y: 0 };
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new PlaceholderCell({ x: 0, y: 0 });
-
-        this.getAdjCellsForSmoothing = generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
-            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
-        this.getAdjCellsForGenerating = generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
-            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
 
         this.sprite = new Image();
         this.sprite.src = 'sprite.png';
@@ -162,9 +96,9 @@ export class WorldMap {
         this.onCellSelect = CellHooks.onCellSelect;
         this.onCellDeselect = CellHooks.onCellDeselect;
 
-        this.setAndBindMouseHandlers();
+        this.loadCellsData(cells);
 
-        this.generateEmptyCells();
+        this.setAndBindMouseHandlers();
     }
 
     public zoomIn(pos: IPosition2d): boolean {
@@ -228,21 +162,6 @@ export class WorldMap {
         return this.position;
     }
 
-    public get size(): number {
-        return this.width * this.height;
-    }
-
-    public generate(): void {
-        this.generateLakes();
-        this.generateMountains();
-        this.smoothingPass();
-        this.smoothingPass2();
-        this.smoothingPass3();
-        this.generatePlains();
-
-        this.convertCells();
-    }
-
     public initView(canvas: HTMLCanvasElement | undefined, scaleIndex: number = this.initialScaleIndex): void {
         this.canvas = canvas;
         this.scaleIndex = scaleIndex;
@@ -299,7 +218,7 @@ export class WorldMap {
         while (!queue.isEmpty()) {
             const current = queue.poll()!;
             if (current.cell === endCell) break;
-            for (const next of this.getAdjacentCellsCube(current.cell, Ranges.Immediate)) {
+            for (const next of this.getAdjacentCellsCube(current.cell, MapRanges.Immediate)) {
                 if (!next.movementEnabled) continue;
                 const newCost = currCost.get(current.cell)! + next.movementCost;
                 if (!currCost.has(next) || newCost < currCost.get(next)!) {
@@ -328,6 +247,20 @@ export class WorldMap {
 
     protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
         return a.priority < b.priority;
+    }
+
+    protected loadCellsData(cells: Cell[][]): void {
+        const cellFactory = new CellFactory();
+        cells.forEach(elems => {
+            this.cellsSquare.push([]);
+            elems.forEach(cell => {
+                const newCell = cellFactory.createCell(cell.pos, cell.type);
+
+                this.cellsSquare[newCell.pos.x][newCell.pos.y] = newCell;
+                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
+            });
+        });
+        console.log(this.cellsSquare);
     }
 
     protected positionTooltips(): void {
@@ -361,10 +294,6 @@ export class WorldMap {
             columnsInView: (this.canvas?.width ?? 0) / hexRectangleWidth,
             rowsInView: (this.canvas?.height ?? 0) / hexRectangleHeight,
         };
-    }
-
-    protected getCellCube(pos: IPositionCube): Cell | undefined {
-        return this.cellsCube.get(pos.x + '.' + pos.y + '.' + pos.z);
     }
 
     protected renderSquare(ctx: CanvasRenderingContext2D): void {
@@ -440,220 +369,6 @@ export class WorldMap {
                 ctx.stroke();
             }
         }
-    }
-
-    protected generateEmptyCells(): void {
-        for (let x = 0; x < this.width; ++x) {
-            this.cellsSquare.push([]);
-            for (let y = 0; y < this.height; ++y) {
-                const newCell = new Cell({ x, y });
-                this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
-                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
-            }
-        }
-    }
-
-    protected generateLakes(): void {
-        const seedsNumber = this.generationParams.lakeFactor * this.size;
-        const cellsToProcess: Array<Cell> = [];
-        const spreadFactor = this.generationParams.lakeSpreadFactor;
-
-        for (let i = 0; i < seedsNumber; ++i) {
-            const x = this.rng.nextInt(0, this.width - 1);
-            const y = this.rng.nextInt(0, this.height - 1);
-            const seedCell = this.cellsSquare[x][y];
-
-            seedCell.type = CellTypes.ShallowWater;
-            cellsToProcess.push(this.cellsSquare[x][y]);
-        }
-        while (cellsToProcess.length > 0) {
-            const cell = cellsToProcess.shift()!;
-
-            const adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Close);
-            adjacentCells.forEach((cell: Cell) => {
-                if (cell.type !== CellTypes.None) return;
-
-                if (this.rng.next() < spreadFactor) {
-                    cell.type = CellTypes.ShallowWater;
-                    cellsToProcess.push(cell);
-                }
-            });
-        }
-    }
-
-    protected generateMountains(): void {
-        const seedsNumber = this.generationParams.mountainFactor * this.size;
-        const cellsToProcess: Array<Cell> = [];
-        const spreadFactor = this.generationParams.mountainSpreadFactor;
-
-        for (let i = 0; i < seedsNumber; ++i) {
-            const x = this.rng.nextInt(0, this.width - 1);
-            const y = this.rng.nextInt(0, this.height - 1);
-            const seedCell = this.cellsSquare[x][y];
-
-            // prevent mountain generation right next to lakes
-            if (this.getAdjCellsForGenerating(seedCell, Ranges.Immediate, CellTypes.Water).length > 0) {
-                continue;
-            }
-
-            seedCell.type = CellTypes.Mountain;
-            cellsToProcess.push(this.cellsSquare[x][y]);
-        }
-
-        while (cellsToProcess.length > 0) {
-            const cell = cellsToProcess.shift()!;
-
-            const adjacentCells = this.getAdjCellsForGenerating(cell, Ranges.Immediate);
-            adjacentCells.forEach((cell: Cell) => {
-                if (cell.type !== CellTypes.None) return;
-
-                if (this.rng.next() < spreadFactor) {
-                    cell.type = CellTypes.Mountain;
-                    cellsToProcess.push(cell);
-                } else {
-                    cell.type = CellTypes.Highland;
-                }
-            });
-        }
-    }
-
-    protected generatePlains(): void {
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            if (currentCell.type === CellTypes.None) {
-                currentCell.type = CellTypes.Plain;
-            }
-        }));
-    }
-
-    protected smoothingPass(): void {
-        let adjacentCells: Array<Cell> = [];
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            switch (currentCell.type) {
-                case CellTypes.ShallowWater:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Water);
-                    if (adjacentCells.length < 2) {
-                        currentCell.type = CellTypes.None;
-                        break;
-                    }
-                    break;
-                case CellTypes.Highland:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Mountain);
-                    if (adjacentCells.length > this.generationParams.smoothingMountainFactor) {
-                        currentCell.type = CellTypes.Mountain;
-                    }
-                    /* falls through */
-                case CellTypes.Mountain:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
-                    if (adjacentCells.length > 0) {
-                        currentCell.type = CellTypes.None;
-                    }
-                    break;
-                case CellTypes.None:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
-                    if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
-                        currentCell.type = CellTypes.ShallowWater;
-                        break;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }));
-    }
-
-    protected smoothingPass2(): void {
-        let adjacentCells: Array<Cell> = [];
-        for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
-            this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-                switch (currentCell.type) {
-                    case CellTypes.ShallowWater:
-                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Immediate, CellTypes.Water);
-                        if (adjacentCells.length < i + this.generationParams.waterSmoothingPass3Factor) {
-                            currentCell.type = CellTypes.None;
-                            break;
-                        }
-                        break;
-                    case CellTypes.None:
-                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Close, CellTypes.Water);
-                        if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
-                            currentCell.type = CellTypes.ShallowWater;
-                            break;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }));
-        }
-    }
-
-    protected smoothingPass3(): void {
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            switch (currentCell.type) {
-                case CellTypes.ShallowWater:
-                    const adjacentCells = this.getAdjCellsForSmoothing(currentCell, Ranges.Medium);
-                    if (adjacentCells.every(cell => cell.type & CellTypes.Water)) {
-                        currentCell.type = CellTypes.DeepWater;
-                        break;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }));
-    }
-
-    protected convertCells(): void {
-        for (let x = 0; x < this.width; ++x) {
-            for (let y = 0; y < this.height; ++y) {
-                const newCell = this.cellsSquare[x][y].convert();
-
-                this.cellsSquare[x][y] = newCell;
-                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
-            }
-        }
-    }
-
-    protected getAdjacentCellsSquare(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
-        const result: Array<Cell> = [];
-        const arrayX = Utils.range(cell.pos.x - radius, cell.pos.x + radius);
-        const arrayY = Utils.range(cell.pos.y - radius, cell.pos.y + radius);
-        arrayX.forEach(posX => arrayY.forEach(posY => {
-            // don't include source cell in result array
-            if (cell.pos.x === posX && cell.pos.y === posY) return;
-
-            const neighborCell = this.checkBoundaries({ x: posX, y: posY }) ? this.cellsSquare[posX][posY] : undefined;
-            if (neighborCell === undefined) return;
-
-            if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
-                result.push(neighborCell);
-            }
-        }));
-        return result;
-    }
-
-    protected getAdjacentCellsCube(cell: Cell, radius: number, filterType?: CellTypes): Array<Cell> {
-        const result: Array<Cell> = [];
-        const arrayX = Utils.range(cell.posCube.x - radius, cell.posCube.x + radius);
-        const arrayY = Utils.range(cell.posCube.y - radius, cell.posCube.y + radius);
-        arrayX.forEach(cubeX => arrayY.forEach(cubeY => {
-            const cubeZ = -cubeX - cubeY;
-            if (cell.posCube.z - cubeZ < -radius || cell.posCube.z - cubeZ > radius) return;
-            // don't include source cell in result array
-            if (cell.posCube.x === cubeX && cell.posCube.y === cubeY && cell.posCube.z === cubeZ) return;
-
-            const neighborCell = this.getCellCube({ x: cubeX, y: cubeY, z: cubeZ });
-            if (neighborCell === undefined) return;
-
-            if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
-                result.push(neighborCell);
-            }
-        }));
-        return result;
-    }
-
-    protected checkBoundaries(pos: IPosition2d): boolean {
-        return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
 
     // Calculate mouse position in canvas.

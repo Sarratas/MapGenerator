@@ -61,26 +61,6 @@ export class Cell {
             Math.abs(thisZ - targetZ));
     }
 
-    public convert(): Cell {
-        switch (this.type) {
-            case CellTypes.Mountain:
-                return new MountainCell(this.pos);
-            case CellTypes.DeepWater:
-                return new DeepWaterCell(this.pos);
-            case CellTypes.ShallowWater:
-                return new ShallowWaterCell(this.pos);
-            case CellTypes.Plain:
-                return new PlainCell(this.pos);
-            case CellTypes.Highland:
-                return new HighlandCell(this.pos);
-            case CellTypes.None:
-            case CellTypes.Placeholder:
-                return new PlaceholderCell(this.pos);
-            default:
-                throw new TypeError('Unexpected cell type');
-        }
-    }
-
     public getHighlightColor(): string {
         if ((this.highlightModifier & HighlightModifiers.Hover) !== 0) {
             return HighlightColors.Hover;

@@ -1,6 +1,8 @@
-import { WorldMap, IGenerationParams } from './map/worldMap';
+import { WorldMap } from './map/worldMap';
+import { IGenerationParams } from './map/worldMapGenerator';
 import './styles/index.scss';
 import { Path } from './path';
+import { WorldMapGenerator } from './map/worldMapGenerator';
 
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;
@@ -99,9 +101,9 @@ function generateMap(): void {
         map.unbindView();
         map = undefined;
     }
-    map = new WorldMap(mapWidth, mapHeight, generationParams);
 
-    map.generate();
+    const generator = new WorldMapGenerator(generationParams);
+    map = generator.generate(mapWidth, mapHeight);
 
     map.initView(canvas);
 
