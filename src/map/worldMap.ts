@@ -8,7 +8,7 @@ import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
 
 import FastPriorityQueue = require('fastpriorityqueue');
-import { IPosition2d, IPositionCube } from '../position';
+import { IPosition2d, IPositionCube } from '../shared/position';
 
 export enum NeighborAlgorithms {
     Square,

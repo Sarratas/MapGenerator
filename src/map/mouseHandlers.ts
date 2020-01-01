@@ -1,5 +1,5 @@
 import { WorldMap } from './worldMap';
-import { IPosition2d } from '../position';
+import { IPosition2d } from '../shared/position';
 
 export default class MouseHandlers {
     public static handleMouseWheel(this: WorldMap, event: MouseWheelEvent): void {

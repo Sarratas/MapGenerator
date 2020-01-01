@@ -1,5 +1,5 @@
 import { CellTypes, CellColor, OffsetRows, OffsetColumns, MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
-import { IPosition2d, IPositionCube } from '../position';
+import { IPosition2d, IPositionCube } from '../shared/position';
 
 export class Cell {
     public type: CellTypes;
