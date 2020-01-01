@@ -94,12 +94,14 @@ export default class MouseHandlers {
 
     public static handleMouseEnter(this: WorldMap, _event: MouseEvent): void {
         this.isDragging = false;
+        this.isMouseDown = false;
         this.lastMousePos = { x: 0, y: 0 };
         this.isMouseInside = true;
     }
 
     public static handleMouseLeave(this: WorldMap, event: MouseEvent): void {
         this.isDragging = false;
+        this.isMouseDown = false;
         this.lastMousePos = { x: 0, y: 0 };
         if (this.hoveredCell !== undefined) {
             this.onCellHoverOut?.call(this.hoveredCell, event);
