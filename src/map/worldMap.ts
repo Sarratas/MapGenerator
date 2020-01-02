@@ -260,7 +260,6 @@ export class WorldMap extends CellsContainer {
                 this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
             });
         });
-        console.log(this.cellsSquare);
     }
 
     protected positionTooltips(): void {
