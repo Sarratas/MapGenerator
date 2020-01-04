@@ -257,7 +257,7 @@ export class WorldMap extends CellsContainer {
                 const newCell = cellFactory.createCell(cell.pos, cell.type);
 
                 this.cellsSquare[newCell.pos.x][newCell.pos.y] = newCell;
-                this.cellsCube.set(newCell.posCube.x + '.' + newCell.posCube.y + '.' + newCell.posCube.z, newCell);
+                this.setCellCube(newCell);
             });
         });
     }

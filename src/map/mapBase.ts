@@ -38,6 +38,10 @@ export abstract class CellsContainer {
         return this.cellsCube.get(pos.x + '.' + pos.y + '.' + pos.z);
     }
 
+    protected setCellCube(cell: Cell): void {
+        this.cellsCube.set(cell.posCube.x + '.' + cell.posCube.y + '.' + cell.posCube.z, cell);
+    }
+
     protected checkBoundaries(pos: IPosition2d): boolean {
         return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
