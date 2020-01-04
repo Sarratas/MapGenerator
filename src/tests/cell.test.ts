@@ -1,5 +1,5 @@
-import { Cell, PlaceholderCell, PlainCell, LandCell, HighlandCell, DeepWaterCell, WaterCell, ShallowWaterCell, MountainCell } from '../cell/cell';
-import { CellTypes } from '../cell/cellDefines';
+import { Cell, PlaceholderCell, PlainCell, HighlandCell, DeepWaterCell, ShallowWaterCell, MountainCell } from '../cell/cell';
+import { HighlightModifiers, HighlightColors } from '../cell/cellDefines';
 
 test('Square cell coords', () => {
     const cell1 = new Cell({ x: 0, y: 0 });
@@ -50,90 +50,6 @@ test('Calculating distance between cells', () => {
     expect(cell4.getDistanceFrom(cell5)).toBe(100);
 });
 
-test('Converting cell to None', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(PlaceholderCell);
-});
-
-test('Converting cell to Placeholder', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.Placeholder;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(PlaceholderCell);
-});
-
-test('Converting cell to ShallowWater', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.ShallowWater;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(ShallowWaterCell);
-    expect(convertedCell).toBeInstanceOf(WaterCell);
-});
-
-test('Converting cell to DeepWater', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.DeepWater;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(DeepWaterCell);
-    expect(convertedCell).toBeInstanceOf(WaterCell);
-});
-
-test('Converting cell to Plain', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.Plain;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(PlainCell);
-    expect(convertedCell).toBeInstanceOf(LandCell);
-});
-
-test('Converting cell to Highland', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.Highland;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(HighlandCell);
-    expect(convertedCell).toBeInstanceOf(LandCell);
-});
-
-test('Converting cell to Mountains', () => {
-    const cell = new Cell({ x: 0, y: 0 });
-
-    cell.type = CellTypes.Mountain;
-
-    const convertedCell = cell.convert();
-
-    expect(convertedCell).toBeInstanceOf(MountainCell);
-    expect(convertedCell).toBeInstanceOf(LandCell);
-});
-
-test('Converting cell to abstract type', () => {
-    const cell1 = new Cell({ x: 0, y: 0 });
-    const cell2 = new Cell({ x: 0, y: 0 });
-
-    cell1.type = CellTypes.Water;
-    cell2.type = CellTypes.Land;
-
-    expect(() => cell1.convert()).toThrow('Unexpected cell type');
-    expect(() => cell2.convert()).toThrow('Unexpected cell type');
-});
-
 test('Movement disabled through water', () => {
     const cell1 = new ShallowWaterCell({ x: 0, y: 0 });
     const cell2 = new DeepWaterCell({ x: 0, y: 0 });
@@ -166,4 +82,28 @@ test('Movement harder through highlands and mountains', () => {
     expect(cell1.movementCost).toBeLessThan(cell2.movementCost);
     expect(cell1.movementCost).toBeLessThan(cell3.movementCost);
     expect(cell2.movementCost).toBeLessThan(cell3.movementCost);
+});
+
+test('Get highlight color returns hover before select', () => {
+    const cell = new Cell({ x: 0, y: 0 });
+
+    cell.highlightModifier = HighlightModifiers.Select | HighlightModifiers.Hover;
+
+    expect(cell.getHighlightColor()).toEqual(HighlightColors.Hover);
+});
+
+test('Get highlight color returns select before path', () => {
+    const cell = new Cell({ x: 0, y: 0 });
+
+    cell.highlightModifier = HighlightModifiers.Path | HighlightModifiers.Select;
+
+    expect(cell.getHighlightColor()).toEqual(HighlightColors.Select);
+});
+
+test('Get highligh color returns path if exists', () => {
+    const cell = new Cell({ x: 0, y: 0 });
+
+    cell.highlightModifier = HighlightModifiers.Path;
+
+    expect(cell.getHighlightColor()).toEqual(HighlightColors.Path);
 });

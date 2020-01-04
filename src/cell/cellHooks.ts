@@ -7,12 +7,7 @@ export default class CellHooks {
         const hoverTooltip = getHoverTooltip();
 
         hoverTooltip.hidden = false;
-        const elemsToUpdate = hoverTooltip.querySelectorAll('.tooltipHoverContent') as NodeListOf<HTMLElement>;
-        for (const elem of elemsToUpdate) {
-            const content = elem.dataset['content']! as keyof Cell;
-            elem.innerHTML = this[content]?.toString() ?? '';
-        }
-        hoverTooltip.querySelector('img')!.src = hoverImages[this.type];
+        CellHooks.updateTooltipContent.call(this, hoverTooltip, '.tooltipHoverContent');
 
         this.highlightModifier |= HighlightModifiers.Hover;
     }
@@ -29,15 +24,9 @@ export default class CellHooks {
         const selectTooltip = getSelectTooltip();
 
         selectTooltip.hidden = false;
-        const elemsToUpdate = selectTooltip.querySelectorAll('.tooltipSelectContent') as NodeListOf<HTMLElement>;
-        for (const elem of elemsToUpdate) {
-            const content = elem.dataset['content']! as keyof Cell;
-            elem.innerHTML = this[content]?.toString() ?? '';
-        }
-        selectTooltip.querySelector('img')!.src = hoverImages[this.type];
+        CellHooks.updateTooltipContent.call(this, selectTooltip, '.tooltipSelectContent');
 
         this.highlightModifier ^= HighlightModifiers.Select;
-
     }
 
     public static onCellDeselect(this: Cell, _event: MouseEvent): void {
@@ -46,5 +35,14 @@ export default class CellHooks {
         selectTooltip.hidden = true;
 
         this.highlightModifier &= ~HighlightModifiers.Select;
+    }
+
+    public static updateTooltipContent(this: Cell, tooltip: HTMLElement, selector: string): void {
+        const elemsToUpdate = tooltip.querySelectorAll(selector) as NodeListOf<HTMLElement>;
+        for (const elem of elemsToUpdate) {
+            const content = elem.dataset['content']! as keyof Cell;
+            elem.innerHTML = this[content]?.toString() ?? '';
+        }
+        tooltip.querySelector('img')!.src = hoverImages[this.type];
     }
 }
