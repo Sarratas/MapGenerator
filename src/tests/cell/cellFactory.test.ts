@@ -1,6 +1,6 @@
-import { PlaceholderCell, ShallowWaterCell, DeepWaterCell, PlainCell, HighlandCell, MountainCell } from '../cell/cell';
-import { CellTypes } from '../cell/cellDefines';
-import { CellFactory } from '../cell/cellFactory';
+import { PlaceholderCell, ShallowWaterCell, DeepWaterCell, PlainCell, HighlandCell, MountainCell } from '../../cell/cell';
+import { CellTypes } from '../../cell/cellDefines';
+import { CellFactory } from '../../cell/cellFactory';
 
 describe('Create cell with different types', () => {
     it('Should create placeholder cell', () => {

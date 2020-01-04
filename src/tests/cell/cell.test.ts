@@ -1,5 +1,5 @@
-import { Cell, PlaceholderCell, PlainCell, HighlandCell, DeepWaterCell, ShallowWaterCell, MountainCell } from '../cell/cell';
-import { HighlightModifiers, HighlightColors } from '../cell/cellDefines';
+import { Cell, PlaceholderCell, PlainCell, HighlandCell, DeepWaterCell, ShallowWaterCell, MountainCell } from '../../cell/cell';
+import { HighlightModifiers, HighlightColors } from '../../cell/cellDefines';
 
 test('Square cell coords', () => {
     const cell1 = new Cell({ x: 0, y: 0 });

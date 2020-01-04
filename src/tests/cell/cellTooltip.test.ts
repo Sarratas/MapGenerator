@@ -1,4 +1,4 @@
-import { getHoverTooltip, getSelectTooltip } from "../cell/cellTooltip";
+import { getHoverTooltip, getSelectTooltip } from "../../cell/cellTooltip";
 
 const hoverTooltipMock = document.createElement('div');
 hoverTooltipMock.id = 'cellHoverInfo';

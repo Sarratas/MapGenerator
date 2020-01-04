@@ -1,11 +1,11 @@
-import CellHooks from '../cell/cellHooks';
-import { Cell } from '../cell/cell';
-import { HighlightModifiers } from '../cell/cellDefines';
+import CellHooks from '../../cell/cellHooks';
+import { Cell } from '../../cell/cell';
+import { HighlightModifiers } from '../../cell/cellDefines';
 
 const hoverTooltipMock = document.createElement('div');
 const selectTooltipMock = document.createElement('div');
 
-jest.mock('../cell/cellTooltip', () => ({
+jest.mock('../../cell/cellTooltip', () => ({
     getHoverTooltip: jest.fn(() => hoverTooltipMock),
     getSelectTooltip: jest.fn(() => selectTooltipMock),
 }));

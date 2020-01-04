@@ -1,8 +1,8 @@
-import { CellTypes } from '../cell/cellDefines';
-import { ShallowWaterCell } from '../cell/cell';
-import { NeighborAlgorithms } from '../map/mapBase';
-import { IGenerationParams, WorldMapGenerator } from '../map/worldMapGenerator';
-import { WorldMap } from '../map/worldMap';
+import { CellTypes } from '../../cell/cellDefines';
+import { ShallowWaterCell } from '../../cell/cell';
+import { NeighborAlgorithms } from '../../map/mapBase';
+import { IGenerationParams, WorldMapGenerator } from '../../map/worldMapGenerator';
+import { WorldMap } from '../../map/worldMap';
 
 describe('Generator tests', () => {
     it('Should use given size', () => {

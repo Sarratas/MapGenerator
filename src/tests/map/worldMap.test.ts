@@ -1,7 +1,7 @@
 import './canvasContext.mock';
-import { WorldMap, NeighborAlgorithms } from '../map/worldMap';
-import { ShallowWaterCell, Cell } from '../cell/cell';
-import { CellTypes } from '../cell/cellDefines';
+import { WorldMap, NeighborAlgorithms } from '../../map/worldMap';
+import { ShallowWaterCell, Cell } from '../../cell/cell';
+import { CellTypes } from '../../cell/cellDefines';
 
 function prepareDomBeforeTest() {
     document.body.innerHTML =
