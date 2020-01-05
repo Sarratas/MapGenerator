@@ -1,7 +1,7 @@
 import { WorldMap, MapMode } from './map/worldMap';
 import { IGenerationParams, WorldMapGenerator } from './map/worldMapGenerator';
 import './styles/index.scss';
-import { Path } from './path';
+import { Path } from './map/path';
 
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;

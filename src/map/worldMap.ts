@@ -1,7 +1,7 @@
 import { CellTerrainColor } from '../cell/cellDefines';
 import { Cell, PlaceholderCell } from '../cell/cell';
 import Utils from '../utils';
-import { Path } from '../path';
+import { Path } from './path';
 import MouseHandlers from './mouseHandlers';
 import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';

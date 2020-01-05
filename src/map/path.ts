@@ -1,5 +1,5 @@
-import { Cell } from './cell/cell';
-import { HighlightModifiers } from './cell/cellDefines';
+import { Cell } from '../cell/cell';
+import { HighlightModifiers } from '../cell/cellDefines';
 
 export class Path {
     private cells: Array<Cell>;
