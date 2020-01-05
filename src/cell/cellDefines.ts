@@ -12,7 +12,7 @@ export enum CellTypes {
     Placeholder = 4096,
 }
 
-export enum CellColor {
+export enum CellTerrainColor {
     None = '#FFFFFF',
     Mountain = '#A47666',
     ShallowWater = '#1A9DCE',

@@ -1,8 +1,7 @@
-import { WorldMap } from './map/worldMap';
-import { IGenerationParams } from './map/worldMapGenerator';
+import { WorldMap, MapMode } from './map/worldMap';
+import { IGenerationParams, WorldMapGenerator } from './map/worldMapGenerator';
 import './styles/index.scss';
 import { Path } from './path';
-import { WorldMapGenerator } from './map/worldMapGenerator';
 
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;
@@ -14,6 +13,7 @@ type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 window.addEventListener('DOMContentLoaded', function(): void {
     const generateButton = document.getElementById('generate') as HTMLButtonElement;
     const calcPathButton = document.getElementById('calcPath') as HTMLButtonElement;
+    const changeModeForm = document.getElementById('changeMode') as HTMLFormElement;
 
     generateButton.addEventListener('click', function(event: MouseEvent): void {
         event.preventDefault();
@@ -75,6 +75,21 @@ window.addEventListener('DOMContentLoaded', function(): void {
         }
 
         map.render();
+    });
+
+    changeModeForm.addEventListener('click', function(event: MouseEvent): void {
+        const target = event.target as HTMLButtonElement;
+
+        switch (target.id) {
+            case 'modeTerrain':
+                map?.setMapMode(MapMode.Terrain);
+                break;
+            case 'modePolitical':
+                map?.setMapMode(MapMode.Political);
+                break;
+            default:
+                break;
+        }
     });
 });
 

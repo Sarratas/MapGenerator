@@ -1,4 +1,4 @@
-import { CellColor, HighlightModifiers } from '../cell/cellDefines';
+import { CellTerrainColor } from '../cell/cellDefines';
 import { Cell, PlaceholderCell } from '../cell/cell';
 import Utils from '../utils';
 import { Path } from '../path';
@@ -24,6 +24,11 @@ interface ICellWithPriority {
     priority: number;
 }
 
+export enum MapMode {
+    Terrain     = 1,
+    Political   = 2,
+}
+
 export class WorldMap extends CellsContainer {
     protected lastMousePos: IPosition2d;
     protected isMouseDown: boolean;
@@ -44,6 +49,8 @@ export class WorldMap extends CellsContainer {
     protected scale: number;
     protected scaleIndex: number;
     protected position: IPosition2d;
+
+    protected mode: MapMode;
 
     protected readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
 
@@ -80,6 +87,8 @@ export class WorldMap extends CellsContainer {
         this.scaleIndex = this.initialScaleIndex;
         this.scale = this.scaleThresholds[this.scaleIndex];
         this.position = { x: 0, y: 0 };
+        this.mode = MapMode.Terrain;
+
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new PlaceholderCell({ x: 0, y: 0 });
 
@@ -245,6 +254,13 @@ export class WorldMap extends CellsContainer {
         return path;
     }
 
+    public setMapMode(newMode: MapMode): void {
+        if (newMode !== this.mode) {
+            this.mode = newMode;
+            this.render();
+        }
+    }
+
     protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
         return a.priority < b.priority;
     }
@@ -297,16 +313,17 @@ export class WorldMap extends CellsContainer {
     protected renderSquare(ctx: CanvasRenderingContext2D): void {
         const { columnsInView, rowsInView } = this.getVisibleCellsCount();
 
+        const mode = this.mode;
+
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
             let lastFillColor: string = '';
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
                 const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
-                const fillColor = (cell.highlightModifier & HighlightModifiers.Path) !== 0 ?
-                    cell.getHighlightColor() : cell.color;
+                const fillColor = cell.getFillColorForMode(mode);
                 if (fillColor !== lastFillColor) {
-                    if (lastFillColor !== CellColor.None) {
+                    if (lastFillColor !== CellTerrainColor.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
                     }
 
@@ -341,6 +358,8 @@ export class WorldMap extends CellsContainer {
         const offsetX = (this.position.x - Math.floor(this.position.x)) * this.scale;
         const offsetY = (this.position.y - Math.floor(this.position.y)) * this.scale / HexConstants.WidthHeightRatio;
 
+        const mode = this.mode;
+
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView + 1; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView + 1; ++y, ++j) {
                 const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
@@ -357,7 +376,7 @@ export class WorldMap extends CellsContainer {
                 ctx.closePath();
 
                 if (this.scale < this.textureThresholdScale) {
-                    ctx.fillStyle = cell.highlightModifier !== 0 ? cell.getHighlightColor() : cell.color;
+                    ctx.fillStyle = cell.getFillColorForMode(mode);
                     ctx.fill();
                 } else {
                     ctx.drawImage(sprite, cell.offset.x, cell.offset.y, spriteWidth, spriteHeight,

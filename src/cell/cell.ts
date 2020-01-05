@@ -1,5 +1,8 @@
-import { CellTypes, CellColor, OffsetRows, OffsetColumns, MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
+import { CellTypes, CellTerrainColor, OffsetRows, OffsetColumns,
+    MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
 import { IPosition2d, IPositionCube } from '../shared/position';
+import { MapMode } from '../map/worldMap';
+import { Nation } from '../map/nation';
 
 export class Cell {
     public type: CellTypes;
@@ -13,9 +16,11 @@ export class Cell {
 
     public movementEnabled: boolean;
 
-    public color: CellColor;
+    public terrainColor: CellTerrainColor;
     public highlightColor?: string;
     public highlightModifier: number;
+
+    public nation: Nation | undefined;
 
     public get typeString(): string {
         return CellTypes[this.type];
@@ -45,10 +50,30 @@ export class Cell {
         this.movementCost = MovementCosts.Easy;
         this.movementEnabled = true;
 
-        this.color = CellColor.None;
+        this.terrainColor = CellTerrainColor.None;
+
         this.type = type;
 
         this.highlightModifier = HighlightModifiers.None;
+    }
+
+    public getFillColorForMode(mode: MapMode): string {
+        if (this.highlightModifier !== 0) {
+            return this.getHighlightColor();
+        }
+        return this.getStandardFillColor(mode);
+    }
+
+    public getStandardFillColor(mode: MapMode): string {
+        switch (mode) {
+            case MapMode.Terrain:
+                return this.terrainColor;
+            case MapMode.Political:
+                return this.nation?.color ?? '#AAA';
+            default:
+                const c: never = mode;
+                throw new Error('Unexpected map mode' + c);
+        }
     }
 
     public getDistanceFrom(target: Cell): number {
@@ -83,7 +108,11 @@ export class PlaceholderCell extends Cell {
         super(pos, CellTypes.Placeholder);
 
         this.movementEnabled = false;
-        this.color = CellColor.Placeholder;
+        this.terrainColor = CellTerrainColor.Placeholder;
+    }
+
+    public getStandardFillColor(_mode: MapMode): string {
+        return this.terrainColor;
     }
 }
 
@@ -100,7 +129,7 @@ export class MountainCell extends LandCell {
         super(pos, CellTypes.Mountain);
 
         this.movementCost = MovementCosts.Hard;
-        this.color = CellColor.Mountain;
+        this.terrainColor = CellTerrainColor.Mountain;
 
         this.offset = { x: OffsetColumns.Seventh, y: OffsetRows.Third };
     }
@@ -111,7 +140,7 @@ export class HighlandCell extends LandCell {
         super(pos, CellTypes.Highland);
 
         this.movementCost = MovementCosts.Medium;
-        this.color = CellColor.Highland;
+        this.terrainColor = CellTerrainColor.Highland;
 
         this.offset = { x: OffsetColumns.Fifth, y: OffsetRows.Third };
     }
@@ -122,7 +151,7 @@ export class PlainCell extends LandCell {
         super(pos, CellTypes.Plain);
 
         this.movementCost = MovementCosts.Easy;
-        this.color = CellColor.Plain;
+        this.terrainColor = CellTerrainColor.Plain;
 
         this.offset = { x: OffsetColumns.First, y: OffsetRows.First };
     }
@@ -135,13 +164,17 @@ export class WaterCell extends Cell {
         this.movementCost = MovementCosts.Impossible;
         this.movementEnabled = false;
     }
+
+    public getStandardFillColor(_mode: MapMode): string {
+        return this.terrainColor;
+    }
 }
 
 export class ShallowWaterCell extends WaterCell {
     constructor(pos: IPosition2d) {
         super(pos, CellTypes.Water);
 
-        this.color = CellColor.ShallowWater;
+        this.terrainColor = CellTerrainColor.ShallowWater;
 
         this.offset = { x: OffsetColumns.Fifth, y: OffsetRows.First };
     }
@@ -151,7 +184,7 @@ export class DeepWaterCell extends WaterCell {
     constructor(pos: IPosition2d) {
         super(pos, CellTypes.DeepWater);
 
-        this.color = CellColor.DeepWater;
+        this.terrainColor = CellTerrainColor.DeepWater;
 
         this.offset = { x: OffsetColumns.Seventh, y: OffsetRows.First };
     }
