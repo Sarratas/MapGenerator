@@ -100,10 +100,22 @@ test('Get highlight color returns select before path', () => {
     expect(cell.getHighlightColor()).toEqual(HighlightColors.Select);
 });
 
-test('Get highligh color returns path if exists', () => {
+test('Get highlight color returns path if exists', () => {
     const cell = new Cell({ x: 0, y: 0 });
 
     cell.highlightModifier = HighlightModifiers.Path;
 
     expect(cell.getHighlightColor()).toEqual(HighlightColors.Path);
+});
+
+test('Get highlight color for cell without highlight', () => {
+    const cell = new Cell({ x: 0, y: 0 });
+
+    expect(cell.getHighlightColor()).toEqual(HighlightColors.None);
+});
+
+test('Get cell type as string', () => {
+    const cell = new PlainCell({ x: 0, y: 0 });
+
+    expect(cell.typeString).toEqual('Plain')
 });
