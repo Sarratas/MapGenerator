@@ -38,7 +38,8 @@ export abstract class CellsContainer {
         return this.cellsCube.get(pos.x + '.' + pos.y + '.' + pos.z);
     }
 
-    protected setCellCube(cell: Cell): void {
+    protected setCell(cell: Cell): void {
+        this.cellsSquare[cell.pos.x][cell.pos.y] = cell;
         this.cellsCube.set(cell.posCube.x + '.' + cell.posCube.y + '.' + cell.posCube.z, cell);
     }
 

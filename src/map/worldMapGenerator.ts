@@ -85,9 +85,7 @@ export class WorldMapGenerator extends CellsContainer {
         for (let x = 0; x < this.width; ++x) {
             this.cellsSquare.push([]);
             for (let y = 0; y < this.height; ++y) {
-                const newCell = new Cell({ x, y });
-                this.cellsSquare[this.cellsSquare.length - 1].push(newCell);
-                this.setCellCube(newCell);
+                this.setCell(new Cell({ x, y }));
             }
         }
     }
