@@ -10,6 +10,7 @@ import FastPriorityQueue = require('fastpriorityqueue');
 import { IPosition2d } from '../shared/position';
 import { CellsContainer, MapRanges } from './mapBase';
 import { CellFactory } from '../cell/cellFactory';
+import { Nation } from './nation';
 
 enum HexConstants {
     BonusOffsetX = 0.5,
@@ -52,6 +53,8 @@ export class WorldMap extends CellsContainer {
 
     protected mode: MapMode;
 
+    protected nations: { [id: number]: Nation };
+
     protected readonly scaleThresholds = [1, 2, 4, 8, 12, 16, 20, 25, 50, 80, 100, 200, 400];
 
     protected readonly minScaleIndex = 0;
@@ -81,6 +84,7 @@ export class WorldMap extends CellsContainer {
         width: number,
         height: number,
         cells: Cell[][],
+        nations?: Nation[],
     ) {
         super(width, height);
 
@@ -88,6 +92,8 @@ export class WorldMap extends CellsContainer {
         this.scale = this.scaleThresholds[this.scaleIndex];
         this.position = { x: 0, y: 0 };
         this.mode = MapMode.Terrain;
+
+        this.nations = {};
 
         this.render = Utils.throttle(this.render.bind(this), this.minRenderInterval);
         this.placeholderCell = new PlaceholderCell({ x: 0, y: 0 });
@@ -105,6 +111,19 @@ export class WorldMap extends CellsContainer {
         this.onCellSelect = CellHooks.onCellSelect;
         this.onCellDeselect = CellHooks.onCellDeselect;
 
+        nations = [
+            { id: 0, name: 'AAA', color: '#e6194b' },
+            { id: 1, name: 'BBB', color: '#3cb44b' },
+            { id: 2, name: 'CCC', color: '#ffe119' },
+            { id: 3, name: 'DDD', color: '#f58231' },
+            { id: 4, name: 'EEE', color: '#911eb4' },
+            { id: 5, name: 'FFF', color: '#46f0f0' },
+            { id: 6, name: 'GGG', color: '#f032e6' },
+            { id: 7, name: 'HHH', color: '#bcf60c' },
+            { id: 8, name: 'III', color: '#fabebe' },
+            { id: 9, name: 'JJJ', color: '#008080' },
+        ];
+        this.loadNations(nations ?? []);
         this.loadCellsData(cells);
 
         this.setAndBindMouseHandlers();
@@ -265,12 +284,19 @@ export class WorldMap extends CellsContainer {
         return a.priority < b.priority;
     }
 
+    protected loadNations(nations: Nation[]): void {
+        nations.forEach(nation => {
+            this.nations[nation.id] = nation;
+        });
+    }
+
     protected loadCellsData(cells: Cell[][]): void {
         const cellFactory = new CellFactory();
         cells.forEach(elems => {
             this.cellsSquare.push([]);
             elems.forEach(cell => {
                 const newCell = cellFactory.createCell(cell.pos, cell.type);
+                newCell.nation = this.nations[(Math.floor(cell.pos.x / 10) + Math.floor((cell.pos.y) / 10) * 3) % 10];
 
                 this.setCell(newCell);
             });
