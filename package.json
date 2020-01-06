@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "css-loader": "^3.4.0",
+    "css-loader": "^3.4.1",
     "fastpriorityqueue": "^0.6.3",
     "fibers": "^4.0.2",
     "file-loader": "^5.0.2",
