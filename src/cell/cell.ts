@@ -1,5 +1,5 @@
 import { CellTypes, CellTerrainColor, OffsetRows, OffsetColumns,
-    MovementCosts, HighlightModifiers, HighlightColors } from './cellDefines';
+    MovementCosts, HighlightModifiers, HighlightColors, CellConstant } from './cellDefines';
 import { IPosition2d, IPositionCube } from '../shared/position';
 import { MapMode } from '../map/worldMap';
 import { Nation } from '../map/nation';
@@ -69,7 +69,7 @@ export class Cell {
             case MapMode.Terrain:
                 return this.terrainColor;
             case MapMode.Political:
-                return this.nation?.color ?? '#AAA';
+                return this.nation?.color ?? CellConstant.NoNation;
             default:
                 const c: never = mode;
                 throw new Error('Unexpected map mode' + c);
