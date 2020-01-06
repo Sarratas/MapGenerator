@@ -50,9 +50,9 @@ const mockedCells = [
     ],
     [
         new Cell({ x: 4, y: 0 }, CellTypes.Plain),
-        new Cell({ x: 4, y: 1 }, CellTypes.Plain),
+        new Cell({ x: 4, y: 1 }, CellTypes.ShallowWater),
         new Cell({ x: 4, y: 2 }, CellTypes.Plain),
-        new Cell({ x: 4, y: 3 }, CellTypes.Plain),
+        new Cell({ x: 4, y: 3 }, CellTypes.ShallowWater),
         new Cell({ x: 4, y: 4 }, CellTypes.Plain),
     ],
 ];
@@ -369,6 +369,14 @@ describe('Path calculation tests', () => {
         const map = new WorldMap(5, 5, mockedCells);
 
         const path = map.calculatePath(3, 3, 0, 0);
+
+        expect(path).toBeUndefined();
+    });
+
+    test('Result undefined if there is no path between points', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+
+        const path = map.calculatePath(0, 0, 4, 2);
 
         expect(path).toBeUndefined();
     });
