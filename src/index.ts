@@ -10,6 +10,19 @@ const mapWidth = 1000;
 const mapHeight = 1000;
 type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
 
+const nations = [
+    { id: 0, name: 'AAA', color: '#e6194b' },
+    { id: 1, name: 'BBB', color: '#3cb44b' },
+    { id: 2, name: 'CCC', color: '#ffe119' },
+    { id: 3, name: 'DDD', color: '#f58231' },
+    { id: 4, name: 'EEE', color: '#911eb4' },
+    { id: 5, name: 'FFF', color: '#46f0f0' },
+    { id: 6, name: 'GGG', color: '#f032e6' },
+    { id: 7, name: 'HHH', color: '#bcf60c' },
+    { id: 8, name: 'III', color: '#fabebe' },
+    { id: 9, name: 'JJJ', color: '#008080' },
+];
+
 window.addEventListener('DOMContentLoaded', function(): void {
     const generateButton = document.getElementById('generate') as HTMLButtonElement;
     const calcPathButton = document.getElementById('calcPath') as HTMLButtonElement;
@@ -118,8 +131,15 @@ function generateMap(): void {
     }
 
     const generator = new WorldMapGenerator(generationParams);
-    map = generator.generate(mapWidth, mapHeight);
+    const generatedCells = generator.generate(mapWidth, mapHeight);
 
+    // set test nations
+    generatedCells.forEach(elements => elements.forEach(cell => {
+        cell.nation = nations[(Math.floor(cell.pos.x / 10) + Math.floor((cell.pos.y) / 10) * 3) % 10];
+    }));
+
+    map = new WorldMap(mapWidth, mapHeight);
+    map.loadCellsData(generatedCells, mapWidth, mapHeight);
     map.initView(canvas);
 
     map.render();

@@ -5,7 +5,7 @@ import { IPosition2d } from "../../shared/position";
 
 describe('Handle mouse wheel tests', () => {
     it('Should call zoom in function', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['zoomIn'] = jest.fn();
 
@@ -15,7 +15,7 @@ describe('Handle mouse wheel tests', () => {
     });
 
     it('Should call zoom out function', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['zoomOut'] = jest.fn();
 
@@ -25,7 +25,7 @@ describe('Handle mouse wheel tests', () => {
     });
 
     it('Should not call zooming functions', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['zoomOut'] = jest.fn();
         map['zoomIn'] = jest.fn();
@@ -37,7 +37,7 @@ describe('Handle mouse wheel tests', () => {
     });
 
     it('Should cause rerender if needed', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['zoomIn'] = jest.fn((_pos: IPosition2d) => true);
         map['render'] = jest.fn();
@@ -50,7 +50,7 @@ describe('Handle mouse wheel tests', () => {
 
 describe('Handle mouse down tests', () => {
     it('Should set mouse state down', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['getMousePos'] = jest.fn();
 
@@ -64,7 +64,7 @@ describe('Handle mouse down tests', () => {
 
 describe('Handle mouse move tests', () => {
     it('Should handle dragging if mouse is down', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['getMousePos'] = jest.fn();
         map['handleMouseDrag'] = jest.fn();
@@ -80,7 +80,7 @@ describe('Handle mouse move tests', () => {
     });
 
     it('Should call cell hover in if position on cell', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 1, y: 1 });
 
         map['getMousePos'] = jest.fn();
@@ -96,7 +96,7 @@ describe('Handle mouse move tests', () => {
     });
 
     it('Should call cell hover out if left the cell area', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 1, y: 1 });
 
         map['getMousePos'] = jest.fn();
@@ -112,7 +112,7 @@ describe('Handle mouse move tests', () => {
     });
 
     it('Should not call handlers if hovered cell did not change', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 1, y: 1 });
 
         map['getMousePos'] = jest.fn();
@@ -132,7 +132,7 @@ describe('Handle mouse move tests', () => {
 
 describe('Handle mouse up tests', () => {
     it('Should handle dragging if was dragging', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['getMousePos'] = jest.fn();
         map['handleMouseDrag'] = jest.fn();
@@ -145,7 +145,7 @@ describe('Handle mouse up tests', () => {
     });
 
     it('Should select cell if was not previously selected', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 0, y: 0 });
 
         map['getMousePos'] = jest.fn();
@@ -160,7 +160,7 @@ describe('Handle mouse up tests', () => {
     });
 
     it('Should deselect cell if was previously selected', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 0, y: 0 });
 
         map['getMousePos'] = jest.fn();
@@ -175,7 +175,7 @@ describe('Handle mouse up tests', () => {
     });
 
     it('Should select new cell and deselect old', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell1 = new Cell({ x: 0, y: 0 });
         const cell2 = new Cell({ x: 1, y: 1 });
 
@@ -195,7 +195,7 @@ describe('Handle mouse up tests', () => {
 
 describe('Mouse enter and leave tests', () => {
     it('Should stop dragging and set mouse as inside', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['isMouseInside'] = false;
         map['isDragging'] = true;
@@ -207,7 +207,7 @@ describe('Mouse enter and leave tests', () => {
     });
 
     it('Should stop dragging and set mouse as outside', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['isMouseInside'] = true;
         map['isDragging'] = true;
@@ -219,7 +219,7 @@ describe('Mouse enter and leave tests', () => {
     });
 
     it('Should cancel hover and call handler', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
         const cell = new Cell({ x: 0, y: 0 });
 
         map['hoveredCell'] = cell;
@@ -234,7 +234,7 @@ describe('Mouse enter and leave tests', () => {
 
 describe('Handle mouse drag tests', () => {
     it('Should not throw', () => {
-        const map = new WorldMap(5, 5, []);
+        const map = new WorldMap(5, 5);
 
         map['movePosition'] = jest.fn(() => true);
 

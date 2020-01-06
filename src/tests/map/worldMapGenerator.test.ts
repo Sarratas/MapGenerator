@@ -2,7 +2,6 @@ import { CellTypes } from '../../cell/cellDefines';
 import { ShallowWaterCell } from '../../cell/cell';
 import { NeighborAlgorithms } from '../../map/mapBase';
 import { IGenerationParams, WorldMapGenerator } from '../../map/worldMapGenerator';
-import { WorldMap } from '../../map/worldMap';
 
 describe('Generator tests', () => {
     it('Should use given size', () => {
@@ -38,10 +37,10 @@ describe('Generator tests', () => {
     it('Should generate map with only empty cells', () => {
         const generator = new WorldMapGenerator();
 
-        generator.generateEmpty(50, 50);
+        const generatedCells = generator.generateEmpty(50, 50);
 
-        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        const emptyCellsCount = generator['cellsSquare'].reduce((acc, elems) =>
+        const cellsCount = generatedCells.reduce((acc, elems) => acc += elems.length, 0);
+        const emptyCellsCount = generatedCells.reduce((acc, elems) =>
             acc += elems.filter(cell => cell.type === CellTypes.None).length, 0);
 
         expect(cellsCount).toBe(50 * 50);
@@ -114,9 +113,9 @@ describe('Generator tests', () => {
     it('Should generate map without uninitialized cells', () => {
         const generator = new WorldMapGenerator();
 
-        generator.generate(50, 50);
+        const generatedCells = generator.generate(50, 50);
 
-        const uninitializedCells = generator['cellsSquare'].reduce((acc, elems) =>
+        const uninitializedCells = generatedCells.reduce((acc, elems) =>
             acc += elems.filter(cell => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None).length, 0);
 
         expect(uninitializedCells).toBe(0);
@@ -130,9 +129,9 @@ describe('Generator tests', () => {
 
         const generator = new WorldMapGenerator(generationParams);
 
-        generator.generateEmpty(50, 50);
+        const generatedCells = generator.generateEmpty(50, 50);
 
-        const initCell = generator['cellsSquare'][5][5];
+        const initCell = generatedCells[5][5];
 
         const adjacentCells1 = generator['getAdjCellsForGenerating'](initCell, 1);
         const adjacentCells2 = generator['getAdjCellsForSmoothing'](initCell, 1);
@@ -147,25 +146,5 @@ describe('Generator tests', () => {
         expect(() => {
             generator.generate(1000, 1000);
         }).not.toThrow();
-    });
-
-    it('Should return WorldMap object', () => {
-        const generator = new WorldMapGenerator();
-
-        const map = generator.generate(50, 50);
-
-        expect(map).toBeInstanceOf(WorldMap);
-    });
-});
-
-describe('Generated map tests', () => {
-    it('Should generate map with given size', () => {
-        const generator = new WorldMapGenerator();
-
-        const map = generator.generateEmpty(100, 100);
-
-        expect(map['width']).toBe(100);
-        expect(map['height']).toBe(100);
-        expect(map['size']).toBe(100 * 100);
     });
 });

@@ -26,7 +26,9 @@ export abstract class CellsContainer {
         this.width = width;
         this.height = height;
 
-        this.cellsSquare = [];
+        this.cellsSquare = new Array(width).fill(undefined)
+            .map(_ => Array(height)
+                .fill(undefined));
         this.cellsCube = new Map<string, Cell>();
     }
 
