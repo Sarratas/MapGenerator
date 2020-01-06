@@ -1,5 +1,5 @@
 import './canvasContext.mock';
-import { WorldMap } from '../../map/worldMap';
+import { WorldMap, MapMode } from '../../map/worldMap';
 import { CellTypes } from '../../cell/cellDefines';
 import { Cell } from '../../cell/cell';
 
@@ -446,6 +446,22 @@ describe('Rendering tests', () => {
 
         expect(map.render).not.toThrow();
     });
+
+    test('Unbind the view', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        expect(() => map.unbindView()).not.toThrow();
+    });
+
+    test('Unbind the view without canvas', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+
+        expect(() => map.unbindView()).not.toThrow();
+    });
+});
 
 describe('Finding cell from position', () => {
     beforeEach(() => prepareDomBeforeTest());
