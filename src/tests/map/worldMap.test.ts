@@ -446,4 +446,112 @@ describe('Rendering tests', () => {
 
         expect(map.render).not.toThrow();
     });
+
+describe('Finding cell from position', () => {
+    beforeEach(() => prepareDomBeforeTest());
+
+    test('Finding cell in hexagonal', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        map['scale'] = map['hexagonThresholdScale'];
+
+        expect(map['findCellFromPos']({ x: 1, y: 1 })).toBe(map['cellsSquare'][0][0]);
+        expect(map['findCellFromPos']({ x: 10, y: 10 })).toBe(map['cellsSquare'][0][1]);
+        expect(map['findCellFromPos']({ x: 35, y: 30 })).toBe(map['cellsSquare'][3][3]);
+        expect(map['findCellFromPos']({ x: 35, y: 40 })).toBe(map['cellsSquare'][3][4]);
+        expect(map['findCellFromPos']({ x: 60, y: 60 })).toBeUndefined();
+    });
+});
+
+describe('Calculating position in canvas', () => {
+    beforeAll(() => {
+        const testStyle = new CSSStyleDeclaration();
+        testStyle.setProperty('border-top-width', '2px');
+        testStyle.setProperty('border-left-width', '2px');
+        jest.spyOn(HTMLCanvasElement.prototype, 'getBoundingClientRect').mockImplementation(() => {
+            return {
+                width: 9,
+                height: 9,
+                top: 1,
+                left: 1,
+                bottom: 0,
+                right: 0,
+                x: 1,
+                y: 1,
+                toJSON: () => '',
+            }
+        });
+        jest.spyOn(window, 'getComputedStyle').mockImplementation((_elem: Element) => testStyle);
+    });
+
+    beforeEach(() => prepareDomBeforeTest());
+
+    test('Calculating position in canvas 1', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        const event = new MouseEvent('', { clientX: 1, clientY: 1 });
+        expect(map['getMousePos'](event)).toEqual({ x: 0, y: 0 });
+    });
+
+    test('Calculating position in canvas 2', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        const event = new MouseEvent('', { clientX: 3, clientY: 3 });
+        expect(map['getMousePos'](event)).toEqual({ x: 0, y: 0 });
+    });
+
+    test('Calculating position in canvas 3', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        const event = new MouseEvent('', { clientX: 5, clientY: 5 });
+        expect(map['getMousePos'](event)).toEqual({ x: 2, y: 2 });
+    });
+
+    test('Calculating position in canvas 4', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        const event = new MouseEvent('', { clientX: 7, clientY: 7 });
+        expect(map['getMousePos'](event)).toEqual({ x: 4, y: 4 });
+    });
+
+    test('Calculating position in canvas 5', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+        const canvas = createTestCanvas(5, 5);
+
+        map.initView(canvas, 0);
+
+        const event = new MouseEvent('', { clientX: 9, clientY: 9 });
+        expect(map['getMousePos'](event)).toEqual({ x: 4, y: 4 });
+    });
+});
+
+describe('Set map mode test', () => {
+    test('Setting default map mode', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+
+        expect(map['mode']).toEqual(MapMode.Terrain);
+    });
+
+    test('Setting new map mode', () => {
+        const map = new WorldMap(5, 5, mockedCells);
+
+        map.setMapMode(MapMode.Political);
+
+        expect(map['mode']).toEqual(MapMode.Political);
+    });
 });
