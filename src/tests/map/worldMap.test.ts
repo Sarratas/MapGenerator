@@ -61,7 +61,7 @@ describe('Zoom in tests', () => {
     beforeEach(() => prepareDomBeforeTest());
 
     test('Zoom in to top left corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -80,7 +80,7 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to bottom left corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -99,7 +99,7 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to top right corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -118,7 +118,7 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to bottom right corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -137,7 +137,7 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in to random direction', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -153,7 +153,7 @@ describe('Zoom in tests', () => {
     });
 
     test('Zoom in limit', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -174,7 +174,7 @@ describe('Zoom out tests', () => {
     beforeEach(() => prepareDomBeforeTest());
 
     test('Zoom out limit', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -189,7 +189,7 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to top left corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -206,7 +206,7 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to top right corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -223,7 +223,7 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to bottom left corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -240,7 +240,7 @@ describe('Zoom out tests', () => {
     });
 
     test('Zoom out to bottom right corner', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);
@@ -261,7 +261,7 @@ describe('Map position operations tests', () => {
     beforeEach(() => prepareDomBeforeTest());
 
     test('Move position', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 1);
@@ -283,7 +283,7 @@ describe('Map position operations tests', () => {
     });
 
     test('Move within canvas boundaries', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 1);
@@ -305,7 +305,7 @@ describe('Map position operations tests', () => {
     });
 
     test('Close movement', () => {
-        const map = new WorldMap(100, 100, []);
+        const map = new WorldMap(100, 100);
         const canvas = createTestCanvas(100, 100);
 
         map.initView(canvas, 0);

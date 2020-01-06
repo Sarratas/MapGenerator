@@ -2,7 +2,6 @@ import Prando from 'prando';
 import { Cell } from '../cell/cell';
 import { CellTypes } from '../cell/cellDefines';
 import { CellsContainer, MapRanges, NeighborAlgorithms } from './mapBase';
-import { WorldMap } from './worldMap';
 
 export interface IGenerationParams {
     mountainFactor: number;
@@ -57,16 +56,16 @@ export class WorldMapGenerator extends CellsContainer {
             this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
     }
 
-    public generateEmpty(width: number, height: number): WorldMap {
+    public generateEmpty(width: number, height: number): Cell[][] {
         this.width = width;
         this.height = height;
 
         this.generateEmptyCells();
 
-        return new WorldMap(this.width, this.height, this.cellsSquare);
+        return this.cellsSquare;
     }
 
-    public generate(width: number, height: number): WorldMap {
+    public generate(width: number, height: number): Cell[][] {
         this.width = width;
         this.height = height;
 
@@ -78,7 +77,7 @@ export class WorldMapGenerator extends CellsContainer {
         this.smoothingPass3();
         this.generatePlains();
 
-        return new WorldMap(this.width, this.height, this.cellsSquare);
+        return this.cellsSquare;
     }
 
     protected generateEmptyCells(): void {

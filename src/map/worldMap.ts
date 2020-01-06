@@ -65,7 +65,7 @@ export class WorldMap extends CellsContainer {
     protected readonly hexagonThresholdScale = 10;
     protected readonly textureThresholdScale = 100;
 
-    protected readonly hexagonBorderWidth = 0.1;
+    protected readonly hexagonBorderWidth = 0.2;
 
     protected readonly placeholderCell: Cell;
 
@@ -83,7 +83,7 @@ export class WorldMap extends CellsContainer {
     constructor(
         width: number,
         height: number,
-        cells: Cell[][],
+        cells?: Cell[][],
         nations?: Nation[],
     ) {
         super(width, height);
@@ -111,20 +111,12 @@ export class WorldMap extends CellsContainer {
         this.onCellSelect = CellHooks.onCellSelect;
         this.onCellDeselect = CellHooks.onCellDeselect;
 
-        nations = [
-            { id: 0, name: 'AAA', color: '#e6194b' },
-            { id: 1, name: 'BBB', color: '#3cb44b' },
-            { id: 2, name: 'CCC', color: '#ffe119' },
-            { id: 3, name: 'DDD', color: '#f58231' },
-            { id: 4, name: 'EEE', color: '#911eb4' },
-            { id: 5, name: 'FFF', color: '#46f0f0' },
-            { id: 6, name: 'GGG', color: '#f032e6' },
-            { id: 7, name: 'HHH', color: '#bcf60c' },
-            { id: 8, name: 'III', color: '#fabebe' },
-            { id: 9, name: 'JJJ', color: '#008080' },
-        ];
-        this.loadNations(nations ?? []);
-        this.loadCellsData(cells);
+        if (nations !== undefined) {
+            this.loadNations(nations);
+        }
+        if (cells !== undefined) {
+            this.loadCellsData(cells, width, height);
+        }
 
         this.setAndBindMouseHandlers();
     }
@@ -280,27 +272,29 @@ export class WorldMap extends CellsContainer {
         }
     }
 
-    protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
-        return a.priority < b.priority;
-    }
-
-    protected loadNations(nations: Nation[]): void {
+    public loadNations(nations: Nation[]): void {
         nations.forEach(nation => {
             this.nations[nation.id] = nation;
         });
     }
 
-    protected loadCellsData(cells: Cell[][]): void {
+    public loadCellsData(cells: Cell[][], width: number, height: number, offsetPos?: IPosition2d): void {
         const cellFactory = new CellFactory();
-        cells.forEach(elems => {
-            this.cellsSquare.push([]);
-            elems.forEach(cell => {
-                const newCell = cellFactory.createCell(cell.pos, cell.type);
-                newCell.nation = this.nations[(Math.floor(cell.pos.x / 10) + Math.floor((cell.pos.y) / 10) * 3) % 10];
+        const offsetX = offsetPos?.x ?? 0;
+        const offsetY = offsetPos?.y ?? 0;
+        for (let x = 0; x < width; ++x) {
+            for (let y = 0; y < height; ++y) {
+                const cell = cells[x][y];
+                const newCell = cellFactory.createCell({ x: x + offsetX, y: y + offsetY }, cell.type);
+                newCell.nation = cell.nation;
 
                 this.setCell(newCell);
-            });
-        });
+            }
+        }
+    }
+
+    protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
+        return a.priority < b.priority;
     }
 
     protected positionTooltips(): void {
@@ -347,7 +341,7 @@ export class WorldMap extends CellsContainer {
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
                 const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
-                const fillColor = cell.getFillColorForMode(mode);
+                const fillColor = cell?.getFillColorForMode(mode) ?? CellTerrainColor.None;
                 if (fillColor !== lastFillColor) {
                     if (lastFillColor !== CellTerrainColor.None) {
                         ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
@@ -402,13 +396,13 @@ export class WorldMap extends CellsContainer {
                 ctx.closePath();
 
                 if (this.scale < this.textureThresholdScale) {
-                    ctx.fillStyle = cell.getFillColorForMode(mode);
+                    ctx.fillStyle = cell?.getFillColorForMode(mode) ?? CellTerrainColor.None;
                     ctx.fill();
                 } else {
                     ctx.drawImage(sprite, cell.offset.x, cell.offset.y, spriteWidth, spriteHeight,
                         positionX, positionY, hexRectangleWidth, hexHeight * 4);
                 }
-                ctx.strokeStyle = '#FFFFFF';
+                ctx.strokeStyle = '#000';
                 ctx.stroke();
             }
         }
