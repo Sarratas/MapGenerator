@@ -172,7 +172,7 @@ export class WaterCell extends Cell {
 
 export class ShallowWaterCell extends WaterCell {
     constructor(pos: IPosition2d) {
-        super(pos, CellTypes.Water);
+        super(pos, CellTypes.ShallowWater);
 
         this.terrainColor = CellTerrainColor.ShallowWater;
 
