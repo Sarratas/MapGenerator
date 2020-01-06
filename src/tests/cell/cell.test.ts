@@ -1,5 +1,7 @@
 import { Cell, PlaceholderCell, PlainCell, HighlandCell, DeepWaterCell, ShallowWaterCell, MountainCell } from '../../cell/cell';
-import { HighlightModifiers, HighlightColors } from '../../cell/cellDefines';
+import { HighlightModifiers, HighlightColors, CellTerrainColor, CellConstant } from '../../cell/cellDefines';
+import { MapMode } from '../../map/worldMap';
+import { Nation } from '../../map/nation';
 
 describe('Cell coords tests', () => {
     it('Should have square position set correctly', () => {
@@ -133,5 +135,112 @@ describe('Cell type to string tests', () => {
         expect(cell3.typeString).toEqual('Mountain');
         expect(cell4.typeString).toEqual('ShallowWater');
         expect(cell5.typeString).toEqual('DeepWater');
+    });
+});
+
+describe('Cell getStandardFillColor method tests', () => {
+    it('Should return terrain color', () => {
+        const cell1 = new PlainCell({ x: 0, y: 0 });
+        const cell2 = new HighlandCell({ x: 0, y: 0 });
+        const cell3 = new MountainCell({ x: 0, y: 0 });
+        const cell4 = new ShallowWaterCell({ x: 0, y: 0 });
+        const cell5 = new DeepWaterCell({ x: 0, y: 0 });
+        const cell6 = new PlaceholderCell({ x: 0, y: 0 });
+
+        expect(cell1.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.Plain);
+        expect(cell2.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.Highland);
+        expect(cell3.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.Mountain);
+        expect(cell4.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.ShallowWater);
+        expect(cell5.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.DeepWater);
+        expect(cell6.getStandardFillColor(MapMode.Terrain)).toEqual(CellTerrainColor.Placeholder);
+    });
+
+    it('Should return nation color if nation exists', () => {
+        const testColor = '#FFF';
+        const nation = new Nation(1, 'test', testColor);
+
+        const cell1 = new PlainCell({ x: 0, y: 0 });
+        cell1.nation = nation;
+
+        const cell2 = new HighlandCell({ x: 0, y: 0 });
+        cell2.nation = nation;
+
+        const cell3 = new MountainCell({ x: 0, y: 0 });
+        cell3.nation = nation;
+        
+        expect(cell1.getStandardFillColor(MapMode.Political)).toEqual(testColor);
+        expect(cell2.getStandardFillColor(MapMode.Political)).toEqual(testColor);
+        expect(cell3.getStandardFillColor(MapMode.Political)).toEqual(testColor);
+    });
+
+    it('Should return const value if no nation available', () => {
+        const cell1 = new PlainCell({ x: 0, y: 0 });
+        const cell2 = new HighlandCell({ x: 0, y: 0 });
+        const cell3 = new MountainCell({ x: 0, y: 0 });
+
+        expect(cell1.getStandardFillColor(MapMode.Political)).toEqual(CellConstant.NoNation);
+        expect(cell2.getStandardFillColor(MapMode.Political)).toEqual(CellConstant.NoNation);
+        expect(cell3.getStandardFillColor(MapMode.Political)).toEqual(CellConstant.NoNation);
+    });
+
+    it('Should return terrain color even in political view with nation', () => {
+        const testColor = '#FFF';
+        const nation = new Nation(1, 'test', testColor);
+
+        const cell1 = new ShallowWaterCell({ x: 0, y: 0 });
+        cell1.nation = nation;
+
+        const cell2 = new DeepWaterCell({ x: 0, y: 0 });
+        cell2.nation = nation;
+
+        const cell3 = new PlaceholderCell({ x: 0, y: 0 });
+        cell3.nation = nation;
+
+        expect(cell1.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.ShallowWater);
+        expect(cell2.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.DeepWater);
+        expect(cell3.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.Placeholder);
+    });
+
+    it('Should return terrain color even in political view without nation', () => {
+        const cell1 = new ShallowWaterCell({ x: 0, y: 0 });
+        const cell2 = new DeepWaterCell({ x: 0, y: 0 });
+        const cell3 = new PlaceholderCell({ x: 0, y: 0 });
+
+        expect(cell1.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.ShallowWater);
+        expect(cell2.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.DeepWater);
+        expect(cell3.getStandardFillColor(MapMode.Political)).toEqual(CellTerrainColor.Placeholder);
+    });
+
+    it('Should throw if incorrect map mode is provided', () => {
+        const cell = new PlainCell({ x: 0, y: 0 });
+
+        expect(cell.getStandardFillColor.bind('xxx' as unknown as MapMode)).toThrow();
+    });
+});
+
+describe('Cell getFillColorForMode method tests', () => {
+    it('Should call getHighlightColor method if is hihglighted', () => {
+        const spy = jest.spyOn(Cell.prototype, 'getHighlightColor').mockImplementation(jest.fn());
+
+        const cell = new PlainCell({ x: 0, y: 0 });
+
+        cell.highlightModifier |= HighlightModifiers.Hover;
+        cell.getFillColorForMode(MapMode.Terrain);
+
+        expect(spy).toBeCalled();
+
+        spy.mockRestore();
+    });
+    
+    it('Should call getHighlightColor method if is hihglighted', () => {
+        const spy = jest.spyOn(Cell.prototype, 'getStandardFillColor').mockImplementation(jest.fn());
+
+        const cell = new PlainCell({ x: 0, y: 0 });
+
+        cell.getFillColorForMode(MapMode.Terrain);
+
+        expect(spy).toBeCalled();
+
+        spy.mockRestore();
     });
 });
