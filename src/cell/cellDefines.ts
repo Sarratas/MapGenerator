@@ -68,3 +68,7 @@ export enum HighlightColors {
     Hover   = '#606060',
     Select  = '#CC00CC',
 }
+
+export enum CellConstant {
+    NoNation    = '#AAAAAA',
+}
