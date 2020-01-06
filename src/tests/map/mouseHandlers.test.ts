@@ -1,6 +1,7 @@
 import { WorldMap } from "../../map/worldMap";
 import MouseHandlers from "../../map/mouseHandlers";
 import { Cell } from "../../cell/cell";
+import { IPosition2d } from "../../shared/position";
 
 describe('Handle mouse wheel tests', () => {
     it('Should call zoom in function', () => {
@@ -33,6 +34,17 @@ describe('Handle mouse wheel tests', () => {
 
         expect(map['zoomOut']).not.toBeCalled();
         expect(map['zoomIn']).not.toBeCalled();
+    });
+
+    it('Should cause rerender if needed', () => {
+        const map = new WorldMap(5, 5, []);
+
+        map['zoomIn'] = jest.fn((_pos: IPosition2d) => true);
+        map['render'] = jest.fn();
+
+        MouseHandlers.handleMouseWheel.call(map, new WheelEvent('wheel', { deltaY: -1 }));
+
+        expect(map['render']).toBeCalledTimes(1);
     });
 });
 
