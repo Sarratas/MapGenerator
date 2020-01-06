@@ -51,7 +51,7 @@ export const hoverImages = { // Placeholders
     [CellTypes.Plain]: 'https://i.pinimg.com/originals/03/08/e0/0308e0f4aa9d79ff5a7049eede9641bd.jpg',
     [CellTypes.Highland]: 'https://cdna.artstation.com/p/assets/images/images/011/375/136/large/alayna-lemmer-danner-1-plains.jpg?1529273570',
     [CellTypes.Mountain]: 'https://danbooru.donmai.us/data/__magic_the_gathering_drawn_by_alayna_danner__0c9c323f7dbe73d039466d7ac78de593.jpg?download=1',
-    [CellTypes.Water]: 'https://i.etsystatic.com/17930715/r/il/7d01ba/1580305623/il_570xN.1580305623_g52u.jpg',
+    [CellTypes.ShallowWater]: 'https://i.etsystatic.com/17930715/r/il/7d01ba/1580305623/il_570xN.1580305623_g52u.jpg',
     [CellTypes.DeepWater]: 'https://i.pinimg.com/originals/65/77/a6/6577a6d3453ae41b1bdb8b76d303de28.jpg',
 };
 
