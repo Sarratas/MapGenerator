@@ -9,7 +9,7 @@
     "fibers": "^4.0.2",
     "file-loader": "^5.0.2",
     "node-sass": "^4.13.0",
-    "prando": "^5.1.1",
+    "prando": "^5.1.2",
     "sass": "^1.24.4",
     "sass-loader": "^8.0.0",
     "style-loader": "^1.1.2",
