@@ -6,7 +6,7 @@
   "dependencies": {
     "css-loader": "^3.5.3",
     "fastpriorityqueue": "^0.6.3",
-    "fibers": "^4.0.2",
+    "fibers": "^5.0.0",
     "file-loader": "^5.0.2",
     "node-sass": "^4.14.1",
     "prando": "^5.1.2",
