@@ -39,7 +39,7 @@
   "homepage": "https://github.com/Sarratas/MapGenerator#readme",
   "devDependencies": {
     "@types/jest": "^25.2.3",
-    "coveralls": "^3.0.9",
+    "coveralls": "^3.1.0",
     "jest": "^24.9.0",
     "ts-jest": "^24.3.0",
     "tslint": "^5.20.1",
