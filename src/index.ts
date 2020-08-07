@@ -9,7 +9,7 @@ let activePath: Path | undefined;
 const mapWidth = 1000;
 const mapHeight = 1000;
 type KeysOfType<T, U> = { [k in keyof T]: T[k] extends U ? k : never }[keyof T];
-
+alert('test');
 const nations = [
     { id: 0, name: 'AAA', color: '#e6194b' },
     { id: 1, name: 'BBB', color: '#3cb44b' },
