@@ -15,14 +15,14 @@
     "style-loader": "^2.0.0",
     "ts-loader": "^6.2.1",
     "typescript": "^4.3.2",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.10"
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0"
   },
   "scripts": {
-    "build": "webpack --mode development --progress --colors",
-    "build-production": "webpack -p --progress --colors",
-    "build-watch": "webpack --watch --progress --colors --mode development",
-    "start": "webpack-dev-server --open chrome --mode development",
+    "build": "webpack --progress --mode development",
+    "build-production": "webpack --progress --mode production",
+    "build-watch": "webpack --watch --progress --mode development",
+    "start": "webpack serve --open chrome --mode development",
     "test": "npx jest",
     "coverage": "npx jest --verbose --coverage --coverageReporters=text-lcov | npx coveralls",
     "lint": "tslint --config tslint.json --project ."
