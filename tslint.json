@@ -13,7 +13,7 @@
         "no-parameter-properties": true,
         "no-parameter-reassignment": false,
         "no-unused-variable": false,
-        "typedef": [ true, "call-signature", "arrow-call-signature", "parameter", "property-declaration" ],
+        "typedef": [ true, "call-signature", "parameter", "property-declaration" ],
         "unnecessary-else": true,
         "comment-format": {
             "options": [

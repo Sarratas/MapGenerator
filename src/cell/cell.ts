@@ -22,10 +22,6 @@ export class Cell {
 
     public nation: Nation | undefined;
 
-    public get typeString(): string {
-        return CellTypes[this.type];
-    }
-
     constructor(pos: IPosition2d, type: CellTypes = CellTypes.None) {
         this.pos = pos;
         this.type = type;
@@ -55,6 +51,10 @@ export class Cell {
         this.type = type;
 
         this.highlightModifier = HighlightModifiers.None;
+    }
+
+    public get typeString(): string {
+        return CellTypes[this.type];
     }
 
     public getFillColorForMode(mode: MapMode): string {
