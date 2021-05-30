@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "css-loader": "^3.5.3",
-    "fastpriorityqueue": "^0.6.3",
+    "fastpriorityqueue": "^0.7.1",
     "fibers": "^5.0.0",
     "file-loader": "^5.0.2",
     "node-sass": "^4.14.1",
