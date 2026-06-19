@@ -1,15 +1,20 @@
-const path = require('path');
+const path = require('node:path');
 
 module.exports = {
     entry: './src/index.ts',
     devtool: 'inline-source-map',
     devServer: {
-        contentBase: '.',
-        publicPath: '/dist/',
-        watchContentBase: true,
-        watchOptions: {
-            ignored: [ '/node_modules/', '/src/tests/'],
-        }
+        // Serve the project root (index.html, sprite.png, favicon.ico) as static files.
+        static: {
+            directory: path.resolve(__dirname),
+            watch: true,
+        },
+        // Keep the compiled bundle under /dist/ so index.html's <script src="dist/bundle.js"> resolves.
+        devMiddleware: {
+            publicPath: '/dist/',
+        },
+        open: true,
+        hot: true,
     },
     module: {
         rules: [
@@ -20,8 +25,8 @@ module.exports = {
             },
             {
                 test: /\.(s*)css$/,
-                use: ['style-loader','css-loader', 'sass-loader']
-            }
+                use: ['style-loader', 'css-loader', 'sass-loader'],
+            },
         ],
     },
     resolve: {
@@ -30,6 +35,7 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
+        publicPath: '/dist/',
     },
-    mode: "development",
+    mode: 'development',
 };

@@ -1,4 +1,4 @@
-# MapGenerator [![Build Status](https://travis-ci.com/Sarratas/MapGenerator.svg?branch=master)](https://travis-ci.com/Sarratas/MapGenerator) [![Coverage Status](https://coveralls.io/repos/github/Sarratas/MapGenerator/badge.svg)](https://coveralls.io/github/Sarratas/MapGenerator)
+# MapGenerator
 
 * [General Info](#general-info)
 * [Technologies](#technologies)
@@ -18,15 +18,14 @@ Path calculation feature allows to find the fastest way between two points using
 **fastpriorityqueue** *(fast, heap-based priority queue)*  
 **ts-jest** *(TypeScript preprocessor with sourcemap support for Jest)*  
 **jest** *(JavaScript testing framework)*  
-**tslint** *(static analysis tool for TypeScript)*  
+**Biome** *(linter & formatter for TypeScript/JavaScript)*  
   
-**Travis CI** *(continuous integration service)*  
-**Coveralls** *(test coverage history & statistics)*
+**GitHub Actions** *(continuous integration service)*
 
 ## Installation Guide
 
 ### Prerequisites
-Download and install nodejs with npm via https://nodejs.org/en/download/ or your system's specific package manager.
+Download and install nodejs (>= 24, see `.nvmrc`) with npm via https://nodejs.org/en/download/ or your system's specific package manager.
 Download and install git via https://git-scm.com/downloads or package manager.
 
 ### Project installation
@@ -50,7 +49,12 @@ To run unit tests using jest:
 npm test
 ```
 
-To run linting through ts-lint
+To run linting and formatting checks through Biome:
 ```bash
 npm run lint
+```
+
+To auto-fix lint issues and format the code:
+```bash
+npm run lint:fix
 ```

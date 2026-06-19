@@ -3,7 +3,9 @@
         "outDir": "./dist/",
         "noImplicitAny": true,
         "module": "commonjs",
-        "target": "es6",
+        "moduleResolution": "node",
+        "target": "ES2020",
+        "lib": ["ES2020", "DOM"],
         "sourceMap": true,
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
@@ -11,10 +13,7 @@
         "strictNullChecks": true,
         "noImplicitThis": false,
         "noUnusedLocals": true,
-        "noUnusedParameters": true,
+        "noUnusedParameters": true
     },
-    "exclude": [
-        "node_modules",
-        "src/tests",
-    ],
+    "exclude": ["node_modules", "src/tests"]
 }
