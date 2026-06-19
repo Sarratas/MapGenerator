@@ -1,7 +1,7 @@
-import { WorldMap } from "../../map/worldMap";
-import { Cell, PlainCell } from "../../cell/cell";
-import { CellTypes } from "../../cell/cellDefines";
-import { MapRanges } from "../../map/mapBase";
+import { Cell, PlainCell } from '../../cell/cell';
+import { CellTypes } from '../../cell/cellDefines';
+import { MapRanges } from '../../map/mapBase';
+import { WorldMap } from '../../map/worldMap';
 
 const mockedCells = [
     [
@@ -94,9 +94,11 @@ describe('Adjacent cells algorithm tests', () => {
         expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 2, y: 2 } })]));
         expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 2, y: 3 } })]));
 
-        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 1, y: 2 } })]));
+        expect(adjacentCellsAll).not.toEqual(
+            expect.arrayContaining([expect.objectContaining({ pos: { x: 1, y: 2 } })]),
+        );
 
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 0, y: 1} })]));
+        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 0, y: 1 } })]));
         expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 0, y: 2 } })]));
         expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ pos: { x: 0, y: 3 } })]));
     });
@@ -112,17 +114,37 @@ describe('Adjacent cells algorithm tests', () => {
         expect(adjacentCellsAll.length).toBe(6);
         expect(adjacentCellsPlain.length).toBe(3);
 
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -3, z: 3 } })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -2, z: 3 } })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 } })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 } })]));
-        expect(adjacentCellsAll).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -1, z: 2 } })]));
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]),
+        );
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -3, z: 3 } })]),
+        );
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -2, z: 3 } })]),
+        );
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 } })]),
+        );
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 } })]),
+        );
+        expect(adjacentCellsAll).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -1, z: 2 } })]),
+        );
 
-        expect(adjacentCellsAll).not.toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -2, z: 2 } })]));
+        expect(adjacentCellsAll).not.toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -2, z: 2 } })]),
+        );
 
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]));
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -2, z: 3 } })]));
-        expect(adjacentCellsPlain).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -1, z: 2 } })]));
+        expect(adjacentCellsPlain).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]),
+        );
+        expect(adjacentCellsPlain).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -2, z: 3 } })]),
+        );
+        expect(adjacentCellsPlain).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: -1, y: -1, z: 2 } })]),
+        );
     });
 });

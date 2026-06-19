@@ -1,5 +1,5 @@
+import { Cell, HighlandCell, MountainCell, PlainCell, ShallowWaterCell } from '../../cell/cell';
 import { Path } from '../../map/path';
-import { Cell, MountainCell, PlainCell, HighlandCell, ShallowWaterCell } from '../../cell/cell';
 
 test('Add element to path', () => {
     const path = new Path();
@@ -55,7 +55,7 @@ test('Calculating path real cost', () => {
     expect(path4.getRealCost()).toBe(cell1.movementCost + 2 * cell2.movementCost + 3 * cell3.movementCost);
 
     expect(path5.getCost()).toBe(2);
-    expect(path5.getRealCost()).toBe(Infinity);
+    expect(path5.getRealCost()).toBe(Number.POSITIVE_INFINITY);
 });
 
 test('Highlighting path with default color', () => {

@@ -50,10 +50,14 @@ export class WorldMapGenerator extends CellsContainer {
         this.generationParams = { ...this.generationParams, ...generationParams };
         this.rng = new Prando(this.generationParams.seed);
 
-        this.getAdjCellsForSmoothing = generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube ?
-            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
-        this.getAdjCellsForGenerating = generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Cube ?
-            this.getAdjacentCellsCube.bind(this) : this.getAdjacentCellsSquare.bind(this);
+        this.getAdjCellsForSmoothing =
+            generationParams.smoothingNeighborAlgorithm === NeighborAlgorithms.Cube
+                ? this.getAdjacentCellsCube.bind(this)
+                : this.getAdjacentCellsSquare.bind(this);
+        this.getAdjCellsForGenerating =
+            generationParams.generationNeighborAlgorithm === NeighborAlgorithms.Cube
+                ? this.getAdjacentCellsCube.bind(this)
+                : this.getAdjacentCellsSquare.bind(this);
     }
 
     public generateEmpty(width: number, height: number): Cell[][] {
@@ -154,59 +158,42 @@ export class WorldMapGenerator extends CellsContainer {
     }
 
     protected generatePlains(): void {
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            if (currentCell.type === CellTypes.None) {
-                currentCell.type = CellTypes.Plain;
-            }
-        }));
+        this.cellsSquare.forEach((elems) =>
+            elems.forEach((currentCell) => {
+                if (currentCell.type === CellTypes.None) {
+                    currentCell.type = CellTypes.Plain;
+                }
+            }),
+        );
     }
 
     protected smoothingPass(): void {
         let adjacentCells: Array<Cell> = [];
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            switch (currentCell.type) {
-                case CellTypes.ShallowWater:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Immediate, CellTypes.Water);
-                    if (adjacentCells.length < 2) {
-                        currentCell.type = CellTypes.None;
-                        break;
-                    }
-                    break;
-                case CellTypes.Highland:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Immediate, CellTypes.Mountain);
-                    if (adjacentCells.length > this.generationParams.smoothingMountainFactor) {
-                        currentCell.type = CellTypes.Mountain;
-                    }
-                /* falls through */
-                case CellTypes.Mountain:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Close, CellTypes.Water);
-                    if (adjacentCells.length > 0) {
-                        currentCell.type = CellTypes.None;
-                    }
-                    break;
-                case CellTypes.None:
-                    adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Close, CellTypes.Water);
-                    if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
-                        currentCell.type = CellTypes.ShallowWater;
-                        break;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }));
-    }
-
-    protected smoothingPass2(): void {
-        let adjacentCells: Array<Cell> = [];
-        for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
-            this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
+        this.cellsSquare.forEach((elems) =>
+            elems.forEach((currentCell) => {
                 switch (currentCell.type) {
                     case CellTypes.ShallowWater:
                         adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Immediate, CellTypes.Water);
-                        if (adjacentCells.length < i + this.generationParams.waterSmoothingPass3Factor) {
+                        if (adjacentCells.length < 2) {
                             currentCell.type = CellTypes.None;
                             break;
+                        }
+                        break;
+                    // biome-ignore lint/suspicious/noFallthroughSwitchClause: intentional fall-through into Mountain
+                    case CellTypes.Highland:
+                        adjacentCells = this.getAdjCellsForSmoothing(
+                            currentCell,
+                            MapRanges.Immediate,
+                            CellTypes.Mountain,
+                        );
+                        if (adjacentCells.length > this.generationParams.smoothingMountainFactor) {
+                            currentCell.type = CellTypes.Mountain;
+                        }
+                    /* falls through */
+                    case CellTypes.Mountain:
+                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Close, CellTypes.Water);
+                        if (adjacentCells.length > 0) {
+                            currentCell.type = CellTypes.None;
                         }
                         break;
                     case CellTypes.None:
@@ -219,23 +206,58 @@ export class WorldMapGenerator extends CellsContainer {
                     default:
                         break;
                 }
-            }));
+            }),
+        );
+    }
+
+    protected smoothingPass2(): void {
+        let adjacentCells: Array<Cell> = [];
+        for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
+            this.cellsSquare.forEach((elems) =>
+                elems.forEach((currentCell) => {
+                    switch (currentCell.type) {
+                        case CellTypes.ShallowWater:
+                            adjacentCells = this.getAdjCellsForSmoothing(
+                                currentCell,
+                                MapRanges.Immediate,
+                                CellTypes.Water,
+                            );
+                            if (adjacentCells.length < i + this.generationParams.waterSmoothingPass3Factor) {
+                                currentCell.type = CellTypes.None;
+                                break;
+                            }
+                            break;
+                        case CellTypes.None:
+                            adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Close, CellTypes.Water);
+                            if (adjacentCells.length > this.generationParams.smoothingLakeFactor) {
+                                currentCell.type = CellTypes.ShallowWater;
+                                break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }),
+            );
         }
     }
 
     protected smoothingPass3(): void {
-        this.cellsSquare.forEach(elems => elems.forEach(currentCell => {
-            switch (currentCell.type) {
-                case CellTypes.ShallowWater:
-                    const adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Medium);
-                    if (adjacentCells.every(cell => cell.type & CellTypes.Water)) {
-                        currentCell.type = CellTypes.DeepWater;
+        this.cellsSquare.forEach((elems) =>
+            elems.forEach((currentCell) => {
+                switch (currentCell.type) {
+                    case CellTypes.ShallowWater: {
+                        const adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Medium);
+                        if (adjacentCells.every((cell) => cell.type & CellTypes.Water)) {
+                            currentCell.type = CellTypes.DeepWater;
+                            break;
+                        }
                         break;
                     }
-                    break;
-                default:
-                    break;
-            }
-        }));
+                    default:
+                        break;
+                }
+            }),
+        );
     }
 }

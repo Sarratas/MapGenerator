@@ -1,6 +1,6 @@
-import CellHooks from '../../cell/cellHooks';
 import { Cell, PlainCell } from '../../cell/cell';
 import { HighlightModifiers } from '../../cell/cellDefines';
+import CellHooks from '../../cell/cellHooks';
 
 const hoverTooltipMock = document.createElement('div');
 const selectTooltipMock = document.createElement('div');
@@ -14,7 +14,7 @@ describe('Cell hooks tests', () => {
     it('Should show tooltip and update tooltip content on cell hover', () => {
         const cell = new Cell({ x: 0, y: 0 });
 
-        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => { });
+        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => {});
 
         CellHooks.onCellHoverIn.call(cell, new MouseEvent('hover'));
 
@@ -28,7 +28,7 @@ describe('Cell hooks tests', () => {
     it('Should highlight cell when hovered', () => {
         const cell = new Cell({ x: 0, y: 0 });
 
-        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => { });
+        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => {});
 
         CellHooks.onCellHoverIn.call(cell, new MouseEvent('hover'));
 
@@ -74,7 +74,7 @@ describe('Cell hooks tests', () => {
     it('Should highlight cell when hovered', () => {
         const cell = new Cell({ x: 0, y: 0 });
 
-        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => { });
+        const spy = jest.spyOn(CellHooks, 'updateTooltipContent').mockImplementation(() => {});
 
         CellHooks.onCellSelect.call(cell, new MouseEvent('hover'));
 
@@ -120,7 +120,7 @@ describe('Cell hooks dom update test', () => {
         const selector = '.tooltipHoverContent';
 
         CellHooks.updateTooltipContent.call(cell, tooltip, selector);
-        
+
         expect(document.body.innerHTML).toMatch('Plain');
     });
 });

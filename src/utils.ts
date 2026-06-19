@@ -7,11 +7,10 @@ export default class Utils {
         return result;
     }
 
-    // tslint:disable-next-line:no-any
-    public static throttle<T extends Array<any>, U>(func: (...params: T) => U, ms: number): (...args: T) => void {
+    public static throttle<T extends Array<unknown>, U>(func: (...params: T) => U, ms: number): (...args: T) => void {
         let isThrottled = false;
         let savedArgs: T | undefined;
-        let savedThis: Object | undefined;
+        let savedThis: unknown;
 
         function wrapper(...args: T): void {
             if (isThrottled) {

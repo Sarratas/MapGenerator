@@ -1,7 +1,7 @@
-import { CellTypes } from '../../cell/cellDefines';
 import { ShallowWaterCell } from '../../cell/cell';
+import { CellTypes } from '../../cell/cellDefines';
 import { NeighborAlgorithms } from '../../map/mapBase';
-import { IGenerationParams, WorldMapGenerator } from '../../map/worldMapGenerator';
+import { type IGenerationParams, WorldMapGenerator } from '../../map/worldMapGenerator';
 
 describe('Generator tests', () => {
     it('Should use given size', () => {
@@ -39,9 +39,11 @@ describe('Generator tests', () => {
 
         const generatedCells = generator.generateEmpty(50, 50);
 
-        const cellsCount = generatedCells.reduce((acc, elems) => acc += elems.length, 0);
-        const emptyCellsCount = generatedCells.reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.None).length, 0);
+        const cellsCount = generatedCells.reduce((acc, elems) => (acc += elems.length), 0);
+        const emptyCellsCount = generatedCells.reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.None).length),
+            0,
+        );
 
         expect(cellsCount).toBe(50 * 50);
         expect(emptyCellsCount).toBe(50 * 50);
@@ -54,9 +56,11 @@ describe('Generator tests', () => {
 
         generator['generateLakes']();
 
-        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        const waterCellsCount = generator['cellsSquare'].reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.ShallowWater).length, 0);
+        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.length), 0);
+        const waterCellsCount = generator['cellsSquare'].reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.ShallowWater).length),
+            0,
+        );
 
         expect(cellsCount).toBe(50 * 50);
         expect(waterCellsCount).toBeGreaterThanOrEqual(generator['generationParams']['lakeFactor'] * generator.size);
@@ -69,14 +73,20 @@ describe('Generator tests', () => {
 
         generator['generateMountains']();
 
-        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        const mountainCellsCount = generator['cellsSquare'].reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.Mountain).length, 0);
-        const highlandCellCount = generator['cellsSquare'].reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.Highland).length, 0);
+        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.length), 0);
+        const mountainCellsCount = generator['cellsSquare'].reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Mountain).length),
+            0,
+        );
+        const highlandCellCount = generator['cellsSquare'].reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Highland).length),
+            0,
+        );
 
         expect(cellsCount).toBe(50 * 50);
-        expect(mountainCellsCount).toBeGreaterThanOrEqual(generator['generationParams']['mountainFactor'] * generator.size);
+        expect(mountainCellsCount).toBeGreaterThanOrEqual(
+            generator['generationParams']['mountainFactor'] * generator.size,
+        );
         expect(highlandCellCount).toBeGreaterThanOrEqual(mountainCellsCount);
     });
 
@@ -87,9 +97,11 @@ describe('Generator tests', () => {
 
         generator['generatePlains']();
 
-        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => acc += elems.length, 0);
-        const plainCellsCount = generator['cellsSquare'].reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.Plain).length, 0);
+        const cellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.length), 0);
+        const plainCellsCount = generator['cellsSquare'].reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Plain).length),
+            0,
+        );
 
         expect(cellsCount).toBe(50 * 50);
         expect(plainCellsCount).toBe(50 * 50);
@@ -104,8 +116,10 @@ describe('Generator tests', () => {
 
         generator['smoothingPass']();
 
-        const waterCellsCount = generator['cellsSquare'].reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.ShallowWater).length, 0);
+        const waterCellsCount = generator['cellsSquare'].reduce(
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.ShallowWater).length),
+            0,
+        );
 
         expect(waterCellsCount).toBe(0);
     });
@@ -115,8 +129,13 @@ describe('Generator tests', () => {
 
         const generatedCells = generator.generate(50, 50);
 
-        const uninitializedCells = generatedCells.reduce((acc, elems) =>
-            acc += elems.filter(cell => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None).length, 0);
+        const uninitializedCells = generatedCells.reduce(
+            (acc, elems) =>
+                (acc += elems.filter(
+                    (cell) => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None,
+                ).length),
+            0,
+        );
 
         expect(uninitializedCells).toBe(0);
     });
@@ -124,8 +143,8 @@ describe('Generator tests', () => {
     it('Should use non-default neighbor algorithm', () => {
         const generationParams: Partial<IGenerationParams> = {
             generationNeighborAlgorithm: NeighborAlgorithms.Cube,
-            smoothingNeighborAlgorithm: NeighborAlgorithms.Cube
-        }
+            smoothingNeighborAlgorithm: NeighborAlgorithms.Cube,
+        };
 
         const generator = new WorldMapGenerator(generationParams);
 

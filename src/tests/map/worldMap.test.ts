@@ -1,7 +1,7 @@
 import './canvasContext.mock';
-import { WorldMap, MapMode } from '../../map/worldMap';
-import { CellTypes } from '../../cell/cellDefines';
 import { Cell } from '../../cell/cell';
+import { CellTypes } from '../../cell/cellDefines';
+import { MapMode, WorldMap } from '../../map/worldMap';
 
 function prepareDomBeforeTest() {
     document.body.innerHTML = `
@@ -342,10 +342,16 @@ describe('Path calculation tests', () => {
 
         const pathCells = path['cells'];
 
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: 0, z: 0 }})]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 }})]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 }})]));
-        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 }})]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: 0, z: 0 } })]));
+        expect(pathCells).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]),
+        );
+        expect(pathCells).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 } })]),
+        );
+        expect(pathCells).toEqual(
+            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 } })]),
+        );
     });
 
     test('Calculate optimal path around mountains', () => {
@@ -404,7 +410,7 @@ describe('Rendering tests', () => {
 
         map.initView(canvas, 0);
 
-        expect(map.render.bind(map, canvas)).not.toThrow();
+        expect(map.render.bind(map)).not.toThrow();
     });
 
     test('Render hexagonal call', () => {
@@ -421,7 +427,6 @@ describe('Rendering tests', () => {
         expect(map['renderHexagonal']).toBeCalled();
     });
 
-
     test('Render hexagonal implementation', () => {
         const map = new WorldMap(5, 5, mockedCells);
         const canvas = createTestCanvas(5, 5);
@@ -432,7 +437,6 @@ describe('Rendering tests', () => {
 
         expect(map.render).not.toThrow();
     });
-
 
     test('Render textures implementation', () => {
         const map = new WorldMap(5, 5, mockedCells);
@@ -498,7 +502,7 @@ describe('Calculating position in canvas', () => {
                 x: 1,
                 y: 1,
                 toJSON: () => '',
-            }
+            };
         });
         jest.spyOn(window, 'getComputedStyle').mockImplementation((_elem: Element) => testStyle);
     });

@@ -1,4 +1,11 @@
-import { PlaceholderCell, ShallowWaterCell, DeepWaterCell, PlainCell, HighlandCell, MountainCell } from '../../cell/cell';
+import {
+    DeepWaterCell,
+    HighlandCell,
+    MountainCell,
+    PlaceholderCell,
+    PlainCell,
+    ShallowWaterCell,
+} from '../../cell/cell';
 import { CellTypes } from '../../cell/cellDefines';
 import { CellFactory } from '../../cell/cellFactory';
 
@@ -65,7 +72,6 @@ describe('Create cell with different types', () => {
         expect(() => {
             cellFactory.createCell({ x: 0, y: 0 }, CellTypes.Land);
         }).toThrow();
-        
     });
 
     test('Should throw on abstract water cell', () => {

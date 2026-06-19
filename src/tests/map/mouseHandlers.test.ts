@@ -1,7 +1,7 @@
-import { WorldMap } from "../../map/worldMap";
-import MouseHandlers from "../../map/mouseHandlers";
-import { Cell } from "../../cell/cell";
-import { IPosition2d } from "../../shared/position";
+import { Cell } from '../../cell/cell';
+import MouseHandlers from '../../map/mouseHandlers';
+import { WorldMap } from '../../map/worldMap';
+import type { IPosition2d } from '../../shared/position';
 
 describe('Handle mouse wheel tests', () => {
     it('Should call zoom in function', () => {
@@ -70,7 +70,7 @@ describe('Handle mouse move tests', () => {
         map['handleMouseDrag'] = jest.fn();
         map['isMouseInside'] = true;
         map['isMouseDown'] = true;
-        
+
         expect(map['isDragging']).toBeFalsy();
 
         MouseHandlers.handleMouseMove.call(map, new MouseEvent('mousemove'));

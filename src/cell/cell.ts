@@ -1,8 +1,16 @@
-import { CellTypes, CellTerrainColor, OffsetRows, OffsetColumns,
-    MovementCosts, HighlightModifiers, HighlightColors, CellConstant } from './cellDefines';
-import { IPosition2d, IPositionCube } from '../shared/position';
+import type { Nation } from '../map/nation';
 import { MapMode } from '../map/worldMap';
-import { Nation } from '../map/nation';
+import type { IPosition2d, IPositionCube } from '../shared/position';
+import {
+    CellConstant,
+    CellTerrainColor,
+    CellTypes,
+    HighlightColors,
+    HighlightModifiers,
+    MovementCosts,
+    OffsetColumns,
+    OffsetRows,
+} from './cellDefines';
 
 export class Cell {
     public type: CellTypes;
@@ -70,9 +78,10 @@ export class Cell {
                 return this.terrainColor;
             case MapMode.Political:
                 return this.nation?.color ?? CellConstant.NoNation;
-            default:
+            default: {
                 const c: never = mode;
-                throw new Error('Unexpected map mode' + c);
+                throw new Error(`Unexpected map mode ${c}`);
+            }
         }
     }
 
@@ -80,10 +89,7 @@ export class Cell {
         const { x: thisX, y: thisY, z: thisZ } = this.posCube;
         const { x: targetX, y: targetY, z: targetZ } = target.posCube;
 
-        return Math.max(
-            Math.abs(thisX - targetX),
-            Math.abs(thisY - targetY),
-            Math.abs(thisZ - targetZ));
+        return Math.max(Math.abs(thisX - targetX), Math.abs(thisY - targetY), Math.abs(thisZ - targetZ));
     }
 
     public getHighlightColor(): string {

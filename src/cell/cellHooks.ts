@@ -1,5 +1,5 @@
-import { Cell } from './cell';
-import { hoverImages, HighlightModifiers } from './cellDefines';
+import type { Cell } from './cell';
+import { HighlightModifiers, hoverImages } from './cellDefines';
 import { getHoverTooltip, getSelectTooltip } from './cellTooltip';
 
 export default class CellHooks {
@@ -40,9 +40,9 @@ export default class CellHooks {
     public static updateTooltipContent(this: Cell, tooltip: HTMLElement, selector: string): void {
         const elemsToUpdate = tooltip.querySelectorAll(selector) as NodeListOf<HTMLElement>;
         for (const elem of elemsToUpdate) {
-            const content = elem.dataset['content']! as keyof Cell;
+            const content = elem.dataset.content! as keyof Cell;
             elem.innerHTML = this[content]?.toString() ?? '';
         }
-        tooltip.querySelector('img')!.src = hoverImages[this.type];
+        tooltip.querySelector('img')!.src = hoverImages[this.type] ?? '';
     }
 }

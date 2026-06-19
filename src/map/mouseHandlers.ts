@@ -1,8 +1,8 @@
-import { WorldMap } from './worldMap';
-import { IPosition2d } from '../shared/position';
+import type { IPosition2d } from '../shared/position';
+import type { WorldMap } from './worldMap';
 
 export default class MouseHandlers {
-    public static handleMouseWheel(this: WorldMap, event: MouseWheelEvent): void {
+    public static handleMouseWheel(this: WorldMap, event: WheelEvent): void {
         event.preventDefault();
 
         let needsRendering = false;
