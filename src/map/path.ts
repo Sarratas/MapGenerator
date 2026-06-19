@@ -1,4 +1,4 @@
-import { Cell } from '../cell/cell';
+import type { Cell } from '../cell/cell';
 import { HighlightModifiers } from '../cell/cellDefines';
 
 export class Path {
@@ -7,7 +7,7 @@ export class Path {
     private cost: number;
     private realCost: number;
 
-    constructor(color: string = '#000000') {
+    constructor(color = '#000000') {
         this.highlightColor = color;
         this.cells = [];
         this.cost = 0;
@@ -15,14 +15,14 @@ export class Path {
     }
 
     public show(): void {
-        this.cells.forEach(cell => {
+        this.cells.forEach((cell) => {
             cell.highlightColor = this.highlightColor;
             cell.highlightModifier |= HighlightModifiers.Path;
         });
     }
 
     public hide(): void {
-        this.cells.forEach(cell => {
+        this.cells.forEach((cell) => {
             cell.highlightColor = undefined;
             cell.highlightModifier &= ~HighlightModifiers.Path;
         });

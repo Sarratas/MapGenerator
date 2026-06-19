@@ -1,7 +1,15 @@
-import { Cell, PlaceholderCell, PlainCell, HighlandCell, DeepWaterCell, ShallowWaterCell, MountainCell } from '../../cell/cell';
-import { HighlightModifiers, HighlightColors, CellTerrainColor, CellConstant } from '../../cell/cellDefines';
-import { MapMode } from '../../map/worldMap';
+import {
+    Cell,
+    DeepWaterCell,
+    HighlandCell,
+    MountainCell,
+    PlaceholderCell,
+    PlainCell,
+    ShallowWaterCell,
+} from '../../cell/cell';
+import { CellConstant, CellTerrainColor, HighlightColors, HighlightModifiers } from '../../cell/cellDefines';
 import { Nation } from '../../map/nation';
+import { MapMode } from '../../map/worldMap';
 
 describe('Cell coords tests', () => {
     it('Should have square position set correctly', () => {
@@ -167,7 +175,7 @@ describe('Cell getStandardFillColor method tests', () => {
 
         const cell3 = new MountainCell({ x: 0, y: 0 });
         cell3.nation = nation;
-        
+
         expect(cell1.getStandardFillColor(MapMode.Political)).toEqual(testColor);
         expect(cell2.getStandardFillColor(MapMode.Political)).toEqual(testColor);
         expect(cell3.getStandardFillColor(MapMode.Political)).toEqual(testColor);
@@ -231,7 +239,7 @@ describe('Cell getFillColorForMode method tests', () => {
 
         spy.mockRestore();
     });
-    
+
     it('Should call getHighlightColor method if is hihglighted', () => {
         const spy = jest.spyOn(Cell.prototype, 'getStandardFillColor').mockImplementation(jest.fn());
 

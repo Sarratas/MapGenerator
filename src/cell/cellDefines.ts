@@ -44,31 +44,34 @@ export enum MovementCosts {
     Easy = 1,
     Medium = 2,
     Hard = 4,
-    Impossible = Infinity,
+    Impossible = Number.POSITIVE_INFINITY,
 }
 
-export const hoverImages = { // Placeholders
+export const hoverImages: Partial<Record<CellTypes, string>> = {
+    // Placeholders
     [CellTypes.Plain]: 'https://i.pinimg.com/originals/03/08/e0/0308e0f4aa9d79ff5a7049eede9641bd.jpg',
-    [CellTypes.Highland]: 'https://cdna.artstation.com/p/assets/images/images/011/375/136/large/alayna-lemmer-danner-1-plains.jpg?1529273570',
-    [CellTypes.Mountain]: 'https://danbooru.donmai.us/data/__magic_the_gathering_drawn_by_alayna_danner__0c9c323f7dbe73d039466d7ac78de593.jpg?download=1',
+    [CellTypes.Highland]:
+        'https://cdna.artstation.com/p/assets/images/images/011/375/136/large/alayna-lemmer-danner-1-plains.jpg?1529273570',
+    [CellTypes.Mountain]:
+        'https://danbooru.donmai.us/data/__magic_the_gathering_drawn_by_alayna_danner__0c9c323f7dbe73d039466d7ac78de593.jpg?download=1',
     [CellTypes.ShallowWater]: 'https://i.etsystatic.com/17930715/r/il/7d01ba/1580305623/il_570xN.1580305623_g52u.jpg',
     [CellTypes.DeepWater]: 'https://i.pinimg.com/originals/65/77/a6/6577a6d3453ae41b1bdb8b76d303de28.jpg',
 };
 
 export enum HighlightModifiers {
-    None    = 0x00,
-    Path    = 0x01,
-    Hover   = 0x02,
-    Select  = 0x04,
+    None = 0x00,
+    Path = 0x01,
+    Hover = 0x02,
+    Select = 0x04,
 }
 
 export enum HighlightColors {
-    None    = '',
-    Path    = '#000000',
-    Hover   = '#606060',
-    Select  = '#CC00CC',
+    None = '',
+    Path = '#000000',
+    Hover = '#606060',
+    Select = '#CC00CC',
 }
 
 export enum CellConstant {
-    NoNation    = '#AAAAAA',
+    NoNation = '#AAAAAA',
 }

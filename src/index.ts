@@ -1,7 +1,7 @@
-import { WorldMap, MapMode } from './map/worldMap';
-import { IGenerationParams, WorldMapGenerator } from './map/worldMapGenerator';
+import { MapMode, WorldMap } from './map/worldMap';
+import { type IGenerationParams, WorldMapGenerator } from './map/worldMapGenerator';
 import './styles/index.scss';
-import { Path } from './map/path';
+import type { Path } from './map/path';
 
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
 let map: WorldMap | undefined;
@@ -23,12 +23,12 @@ const nations = [
     { id: 9, name: 'JJJ', color: '#008080' },
 ];
 
-window.addEventListener('DOMContentLoaded', function(): void {
+window.addEventListener('DOMContentLoaded', (): void => {
     const generateButton = document.getElementById('generate') as HTMLButtonElement;
     const calcPathButton = document.getElementById('calcPath') as HTMLButtonElement;
     const changeModeForm = document.getElementById('changeMode') as HTMLFormElement;
 
-    generateButton.addEventListener('click', function(event: MouseEvent): void {
+    generateButton.addEventListener('click', (event: MouseEvent): void => {
         event.preventDefault();
 
         const ctx = canvas.getContext('2d')!;
@@ -44,12 +44,12 @@ window.addEventListener('DOMContentLoaded', function(): void {
         const topOffset = 490;
         const generationTimeout = 100;
 
-        ctx.fillText(loadingText , canvas.width / 2 - loadingTextWidth / 2, topOffset);
+        ctx.fillText(loadingText, canvas.width / 2 - loadingTextWidth / 2, topOffset);
 
         setTimeout(generateMap, generationTimeout);
     });
 
-    calcPathButton.addEventListener('click', function(event: MouseEvent): void {
+    calcPathButton.addEventListener('click', (event: MouseEvent): void => {
         if (map === undefined) return;
 
         event.preventDefault();
@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', function(): void {
         map.render();
     });
 
-    changeModeForm.addEventListener('click', function(event: MouseEvent): void {
+    changeModeForm.addEventListener('click', (event: MouseEvent): void => {
         const target = event.target as HTMLButtonElement;
 
         switch (target.id) {
@@ -118,10 +118,10 @@ function generateMap(): void {
 
         if (input.value === '') continue;
 
-        if (isNaN(+input.value)) {
+        if (Number.isNaN(+input.value)) {
             generationParams[name] = input.value;
         } else {
-            generationParams[nameNum] = parseFloat(input.value);
+            generationParams[nameNum] = Number.parseFloat(input.value);
         }
     }
 
@@ -134,9 +134,11 @@ function generateMap(): void {
     const generatedCells = generator.generate(mapWidth, mapHeight);
 
     // set test nations
-    generatedCells.forEach(elements => elements.forEach(cell => {
-        cell.nation = nations[(Math.floor(cell.pos.x / 10) + Math.floor((cell.pos.y) / 10) * 3) % 10];
-    }));
+    generatedCells.forEach((elements) =>
+        elements.forEach((cell) => {
+            cell.nation = nations[(Math.floor(cell.pos.x / 10) + Math.floor(cell.pos.y / 10) * 3) % 10];
+        }),
+    );
 
     map = new WorldMap(mapWidth, mapHeight);
     map.loadCellsData(generatedCells, mapWidth, mapHeight);

@@ -1,16 +1,16 @@
+import { type Cell, PlaceholderCell } from '../cell/cell';
 import { CellTerrainColor } from '../cell/cellDefines';
-import { Cell, PlaceholderCell } from '../cell/cell';
-import Utils from '../utils';
-import { Path } from './path';
-import MouseHandlers from './mouseHandlers';
 import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
+import Utils from '../utils';
+import MouseHandlers from './mouseHandlers';
+import { Path } from './path';
 
 import FastPriorityQueue = require('fastpriorityqueue');
-import { IPosition2d } from '../shared/position';
-import { CellsContainer, MapRanges } from './mapBase';
 import { CellFactory } from '../cell/cellFactory';
-import { Nation } from './nation';
+import type { IPosition2d } from '../shared/position';
+import { CellsContainer, MapRanges } from './mapBase';
+import type { Nation } from './nation';
 
 enum HexConstants {
     BonusOffsetX = 0.5,
@@ -26,8 +26,8 @@ interface ICellWithPriority {
 }
 
 export enum MapMode {
-    Terrain     = 1,
-    Political   = 2,
+    Terrain = 1,
+    Political = 2,
 }
 
 export class WorldMap extends CellsContainer {
@@ -36,7 +36,7 @@ export class WorldMap extends CellsContainer {
     protected isDragging: boolean;
     protected isMouseInside: boolean;
 
-    protected handleMouseWheel!: (event: MouseWheelEvent) => void;
+    protected handleMouseWheel!: (event: WheelEvent) => void;
     protected handleMouseDown!: (event: MouseEvent) => void;
     protected handleMouseMove!: (event: MouseEvent) => void;
     protected handleMouseDrag!: (pos: IPosition2d) => void;
@@ -80,12 +80,7 @@ export class WorldMap extends CellsContainer {
     protected onCellSelect?: (event: MouseEvent) => void;
     protected onCellDeselect?: (event: MouseEvent) => void;
 
-    constructor(
-        width: number,
-        height: number,
-        cells?: Cell[][],
-        nations?: Nation[],
-    ) {
+    constructor(width: number, height: number, cells?: Cell[][], nations?: Nation[]) {
         super(width, height);
 
         this.scaleIndex = this.initialScaleIndex;
@@ -228,7 +223,7 @@ export class WorldMap extends CellsContainer {
         }
 
         const queue = new FastPriorityQueue<ICellWithPriority>(this.priorityComparator);
-        queue.add({cell: startCell, priority: 0});
+        queue.add({ cell: startCell, priority: 0 });
 
         const cellsMap = new Map<Cell, Cell | undefined>();
         const currCost = new Map<Cell, number>();
@@ -252,7 +247,8 @@ export class WorldMap extends CellsContainer {
 
         // backtrace the path
         let current: Cell | undefined = cellsMap.get(endCell);
-        if (current === undefined) { // path not found
+        if (current === undefined) {
+            // path not found
             return undefined;
         }
 
@@ -273,7 +269,7 @@ export class WorldMap extends CellsContainer {
     }
 
     public loadNations(nations: Nation[]): void {
-        nations.forEach(nation => {
+        nations.forEach((nation) => {
             this.nations[nation.id] = nation;
         });
     }
@@ -295,7 +291,7 @@ export class WorldMap extends CellsContainer {
 
     protected priorityComparator = (a: ICellWithPriority, b: ICellWithPriority): boolean => {
         return a.priority < b.priority;
-    }
+    };
 
     protected positionTooltips(): void {
         const hoverTooltip = getHoverTooltip();
@@ -306,14 +302,14 @@ export class WorldMap extends CellsContainer {
         const tooltipLeft = canvasRect.left + this.canvas!.offsetWidth - hoverTooltip.offsetWidth;
         const tooltipTop = canvasRect.top + this.canvas!.offsetHeight - hoverTooltip.offsetHeight;
         hoverTooltip.hidden = true;
-        hoverTooltip.style.left = tooltipLeft + 'px';
-        hoverTooltip.style.top = tooltipTop + 'px';
+        hoverTooltip.style.left = `${tooltipLeft}px`;
+        hoverTooltip.style.top = `${tooltipTop}px`;
 
-        selectTooltip.style.left = tooltipLeft + 'px';
-        selectTooltip.style.top = canvasRect.top + 'px';
+        selectTooltip.style.left = `${tooltipLeft}px`;
+        selectTooltip.style.top = `${canvasRect.top}px`;
     }
 
-    protected getVisibleCellsCount(): { columnsInView: number, rowsInView: number } {
+    protected getVisibleCellsCount(): { columnsInView: number; rowsInView: number } {
         if (this.scale < this.hexagonThresholdScale) {
             return {
                 columnsInView: (this.canvas?.width ?? 0) / this.scale,
@@ -336,7 +332,7 @@ export class WorldMap extends CellsContainer {
         const mode = this.mode;
 
         for (let x = Math.floor(this.position.x), i = 0; x < this.position.x + columnsInView; ++x, ++i) {
-            let lastFillColor: string = '';
+            let lastFillColor = '';
             let cellsInBatch = 1;
             let batchStartY = 0;
             for (let y = Math.floor(this.position.y), j = 0; y < this.position.y + rowsInView; ++y, ++j) {
@@ -353,7 +349,6 @@ export class WorldMap extends CellsContainer {
                     cellsInBatch = 1;
                 } else {
                     ++cellsInBatch;
-                    continue;
                 }
             }
             ctx.fillRect(i * this.scale, batchStartY, this.scale, this.scale * cellsInBatch);
@@ -376,14 +371,14 @@ export class WorldMap extends CellsContainer {
         ctx.lineWidth = this.hexagonBorderWidth;
 
         const offsetX = (this.position.x - Math.floor(this.position.x)) * this.scale;
-        const offsetY = (this.position.y - Math.floor(this.position.y)) * this.scale / HexConstants.WidthHeightRatio;
+        const offsetY = ((this.position.y - Math.floor(this.position.y)) * this.scale) / HexConstants.WidthHeightRatio;
 
         const mode = this.mode;
 
         for (let x = Math.floor(this.position.x) - 1, i = -1; x < this.position.x + columnsInView + 1; ++x, ++i) {
             for (let y = Math.floor(this.position.y) - 1, j = -1; y < this.position.y + rowsInView + 1; ++y, ++j) {
                 const cell = this.checkBoundaries({ x, y }) ? this.cellsSquare[x][y] : this.placeholderCell;
-                const positionX = i * hexRectangleWidth + ((y % 2) * hexRadius) - offsetX;
+                const positionX = i * hexRectangleWidth + (y % 2) * hexRadius - offsetX;
                 const positionY = j * hexRectangleHeight - offsetY;
 
                 ctx.beginPath();
@@ -399,8 +394,17 @@ export class WorldMap extends CellsContainer {
                     ctx.fillStyle = cell?.getFillColorForMode(mode) ?? CellTerrainColor.None;
                     ctx.fill();
                 } else {
-                    ctx.drawImage(sprite, cell.offset.x, cell.offset.y, spriteWidth, spriteHeight,
-                        positionX, positionY, hexRectangleWidth, hexHeight * 4);
+                    ctx.drawImage(
+                        sprite,
+                        cell.offset.x,
+                        cell.offset.y,
+                        spriteWidth,
+                        spriteHeight,
+                        positionX,
+                        positionY,
+                        hexRectangleWidth,
+                        hexHeight * 4,
+                    );
                 }
                 ctx.strokeStyle = '#000';
                 ctx.stroke();
@@ -417,8 +421,8 @@ export class WorldMap extends CellsContainer {
         }
         const rect = canvas.getBoundingClientRect();
         const borderStyle = getComputedStyle(canvas, undefined);
-        const topBorder = parseFloat(borderStyle.getPropertyValue('border-top-width'));
-        const leftBorder = parseFloat(borderStyle.getPropertyValue('border-left-width'));
+        const topBorder = Number.parseFloat(borderStyle.getPropertyValue('border-top-width'));
+        const leftBorder = Number.parseFloat(borderStyle.getPropertyValue('border-left-width'));
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         const pos: IPosition2d = {
@@ -435,7 +439,7 @@ export class WorldMap extends CellsContainer {
         const hexRectangleWidth = this.scale;
         const hexRectangleHeight = hexRectangleWidth * HexConstants.WidthHeightRatio * HexConstants.HeightFactor;
         const posY = Math.floor(this.position.y + y / hexRectangleHeight);
-        const posX = Math.floor(this.position.x + x / hexRectangleWidth - posY % 2 / 2);
+        const posX = Math.floor(this.position.x + x / hexRectangleWidth - (posY % 2) / 2);
         return this.checkBoundaries({ x: posX, y: posY }) ? this.cellsSquare[posX][posY] : undefined;
     }
 

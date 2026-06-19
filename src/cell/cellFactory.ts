@@ -1,6 +1,14 @@
-import { IPosition2d } from '../shared/position';
+import type { IPosition2d } from '../shared/position';
+import {
+    type Cell,
+    DeepWaterCell,
+    HighlandCell,
+    MountainCell,
+    PlaceholderCell,
+    PlainCell,
+    ShallowWaterCell,
+} from './cell';
 import { CellTypes } from './cellDefines';
-import { MountainCell, DeepWaterCell, ShallowWaterCell, PlainCell, HighlandCell, PlaceholderCell, Cell } from './cell';
 
 export class CellFactory {
     public createCell = (pos: IPosition2d, type: CellTypes): Cell => {
@@ -21,5 +29,5 @@ export class CellFactory {
             default:
                 throw new TypeError('Unexpected cell type');
         }
-    }
+    };
 }
