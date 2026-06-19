@@ -1,11 +1,4 @@
-import {
-    DeepWaterCell,
-    HighlandCell,
-    MountainCell,
-    PlaceholderCell,
-    PlainCell,
-    ShallowWaterCell,
-} from '../../cell/cell';
+import { DeepWaterCell, HighlandCell, MountainCell, PlaceholderCell, PlainCell, ShallowWaterCell } from '../../cell/cell';
 import { CellTypes } from '../../cell/cellDefines';
 import { CellFactory } from '../../cell/cellFactory';
 

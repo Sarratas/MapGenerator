@@ -40,10 +40,7 @@ describe('Generator tests', () => {
         const generatedCells = generator.generateEmpty(50, 50);
 
         const cellsCount = generatedCells.reduce((acc, elems) => (acc += elems.length), 0);
-        const emptyCellsCount = generatedCells.reduce(
-            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.None).length),
-            0,
-        );
+        const emptyCellsCount = generatedCells.reduce((acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.None).length), 0);
 
         expect(cellsCount).toBe(50 * 50);
         expect(emptyCellsCount).toBe(50 * 50);
@@ -74,19 +71,11 @@ describe('Generator tests', () => {
         generator['generateMountains']();
 
         const cellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.length), 0);
-        const mountainCellsCount = generator['cellsSquare'].reduce(
-            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Mountain).length),
-            0,
-        );
-        const highlandCellCount = generator['cellsSquare'].reduce(
-            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Highland).length),
-            0,
-        );
+        const mountainCellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Mountain).length), 0);
+        const highlandCellCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Highland).length), 0);
 
         expect(cellsCount).toBe(50 * 50);
-        expect(mountainCellsCount).toBeGreaterThanOrEqual(
-            generator['generationParams']['mountainFactor'] * generator.size,
-        );
+        expect(mountainCellsCount).toBeGreaterThanOrEqual(generator['generationParams']['mountainFactor'] * generator.size);
         expect(highlandCellCount).toBeGreaterThanOrEqual(mountainCellsCount);
     });
 
@@ -98,10 +87,7 @@ describe('Generator tests', () => {
         generator['generatePlains']();
 
         const cellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.length), 0);
-        const plainCellsCount = generator['cellsSquare'].reduce(
-            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Plain).length),
-            0,
-        );
+        const plainCellsCount = generator['cellsSquare'].reduce((acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Plain).length), 0);
 
         expect(cellsCount).toBe(50 * 50);
         expect(plainCellsCount).toBe(50 * 50);
@@ -130,10 +116,7 @@ describe('Generator tests', () => {
         const generatedCells = generator.generate(50, 50);
 
         const uninitializedCells = generatedCells.reduce(
-            (acc, elems) =>
-                (acc += elems.filter(
-                    (cell) => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None,
-                ).length),
+            (acc, elems) => (acc += elems.filter((cell) => cell.type === CellTypes.Placeholder || cell.type === CellTypes.None).length),
             0,
         );
 
