@@ -181,11 +181,7 @@ export class WorldMapGenerator extends CellsContainer {
                         break;
                     // biome-ignore lint/suspicious/noFallthroughSwitchClause: intentional fall-through into Mountain
                     case CellTypes.Highland:
-                        adjacentCells = this.getAdjCellsForSmoothing(
-                            currentCell,
-                            MapRanges.Immediate,
-                            CellTypes.Mountain,
-                        );
+                        adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Immediate, CellTypes.Mountain);
                         if (adjacentCells.length > this.generationParams.smoothingMountainFactor) {
                             currentCell.type = CellTypes.Mountain;
                         }
@@ -217,11 +213,7 @@ export class WorldMapGenerator extends CellsContainer {
                 elems.forEach((currentCell) => {
                     switch (currentCell.type) {
                         case CellTypes.ShallowWater:
-                            adjacentCells = this.getAdjCellsForSmoothing(
-                                currentCell,
-                                MapRanges.Immediate,
-                                CellTypes.Water,
-                            );
+                            adjacentCells = this.getAdjCellsForSmoothing(currentCell, MapRanges.Immediate, CellTypes.Water);
                             if (adjacentCells.length < i + this.generationParams.waterSmoothingPass3Factor) {
                                 currentCell.type = CellTypes.None;
                                 break;

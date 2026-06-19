@@ -343,15 +343,9 @@ describe('Path calculation tests', () => {
         const pathCells = path['cells'];
 
         expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: 0, z: 0 } })]));
-        expect(pathCells).toEqual(
-            expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]),
-        );
-        expect(pathCells).toEqual(
-            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 } })]),
-        );
-        expect(pathCells).toEqual(
-            expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 } })]),
-        );
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 0, y: -1, z: 1 } })]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -2, z: 1 } })]));
+        expect(pathCells).toEqual(expect.arrayContaining([expect.objectContaining({ posCube: { x: 1, y: -3, z: 2 } })]));
     });
 
     test('Calculate optimal path around mountains', () => {

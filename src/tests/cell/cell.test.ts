@@ -1,12 +1,4 @@
-import {
-    Cell,
-    DeepWaterCell,
-    HighlandCell,
-    MountainCell,
-    PlaceholderCell,
-    PlainCell,
-    ShallowWaterCell,
-} from '../../cell/cell';
+import { Cell, DeepWaterCell, HighlandCell, MountainCell, PlaceholderCell, PlainCell, ShallowWaterCell } from '../../cell/cell';
 import { CellConstant, CellTerrainColor, HighlightColors, HighlightModifiers } from '../../cell/cellDefines';
 import { Nation } from '../../map/nation';
 import { MapMode } from '../../map/worldMap';

@@ -1,16 +1,7 @@
 import type { Nation } from '../map/nation';
 import { MapMode } from '../map/worldMap';
 import type { IPosition2d, IPositionCube } from '../shared/position';
-import {
-    CellConstant,
-    CellTerrainColor,
-    CellTypes,
-    HighlightColors,
-    HighlightModifiers,
-    MovementCosts,
-    OffsetColumns,
-    OffsetRows,
-} from './cellDefines';
+import { CellConstant, CellTerrainColor, CellTypes, HighlightColors, HighlightModifiers, MovementCosts, OffsetColumns, OffsetRows } from './cellDefines';
 
 export class Cell {
     public type: CellTypes;

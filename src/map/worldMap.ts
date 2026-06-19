@@ -394,17 +394,7 @@ export class WorldMap extends CellsContainer {
                     ctx.fillStyle = cell?.getFillColorForMode(mode) ?? CellTerrainColor.None;
                     ctx.fill();
                 } else {
-                    ctx.drawImage(
-                        sprite,
-                        cell.offset.x,
-                        cell.offset.y,
-                        spriteWidth,
-                        spriteHeight,
-                        positionX,
-                        positionY,
-                        hexRectangleWidth,
-                        hexHeight * 4,
-                    );
+                    ctx.drawImage(sprite, cell.offset.x, cell.offset.y, spriteWidth, spriteHeight, positionX, positionY, hexRectangleWidth, hexHeight * 4);
                 }
                 ctx.strokeStyle = '#000';
                 ctx.stroke();

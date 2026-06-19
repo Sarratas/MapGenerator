@@ -56,9 +56,7 @@ export abstract class CellsContainer {
                 // don't include source cell in result array
                 if (cell.pos.x === posX && cell.pos.y === posY) return;
 
-                const neighborCell = this.checkBoundaries({ x: posX, y: posY })
-                    ? this.cellsSquare[posX][posY]
-                    : undefined;
+                const neighborCell = this.checkBoundaries({ x: posX, y: posY }) ? this.cellsSquare[posX][posY] : undefined;
                 if (neighborCell === undefined) return;
 
                 if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
