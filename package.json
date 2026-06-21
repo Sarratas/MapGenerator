@@ -42,7 +42,7 @@
         "jest": "^30.4.2",
         "jest-environment-jsdom": "^30.4.1",
         "sass": "^1.83.0",
-        "sass-loader": "^16.0.4",
+        "sass-loader": "^17.0.0",
         "style-loader": "^4.0.0",
         "swc-loader": "^0.2.7",
         "typescript": "^6.0.3",
