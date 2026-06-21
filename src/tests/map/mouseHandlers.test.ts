@@ -11,7 +11,7 @@ describe('Handle mouse wheel tests', () => {
 
         MouseHandlers.handleMouseWheel.call(map, new WheelEvent('wheel', { deltaY: -1 }));
 
-        expect(map['zoomIn']).toBeCalledTimes(1);
+        expect(map['zoomIn']).toHaveBeenCalledTimes(1);
     });
 
     it('Should call zoom out function', () => {
@@ -21,7 +21,7 @@ describe('Handle mouse wheel tests', () => {
 
         MouseHandlers.handleMouseWheel.call(map, new WheelEvent('wheel', { deltaY: 1 }));
 
-        expect(map['zoomOut']).toBeCalledTimes(1);
+        expect(map['zoomOut']).toHaveBeenCalledTimes(1);
     });
 
     it('Should not call zooming functions', () => {
@@ -32,8 +32,8 @@ describe('Handle mouse wheel tests', () => {
 
         MouseHandlers.handleMouseWheel.call(map, new WheelEvent('wheel', { deltaY: 0 }));
 
-        expect(map['zoomOut']).not.toBeCalled();
-        expect(map['zoomIn']).not.toBeCalled();
+        expect(map['zoomOut']).not.toHaveBeenCalled();
+        expect(map['zoomIn']).not.toHaveBeenCalled();
     });
 
     it('Should cause rerender if needed', () => {
@@ -44,7 +44,7 @@ describe('Handle mouse wheel tests', () => {
 
         MouseHandlers.handleMouseWheel.call(map, new WheelEvent('wheel', { deltaY: -1 }));
 
-        expect(map['render']).toBeCalledTimes(1);
+        expect(map['render']).toHaveBeenCalledTimes(1);
     });
 });
 
@@ -76,7 +76,7 @@ describe('Handle mouse move tests', () => {
         MouseHandlers.handleMouseMove.call(map, new MouseEvent('mousemove'));
 
         expect(map['isDragging']).toBeTruthy();
-        expect(map['handleMouseDrag']).toBeCalled();
+        expect(map['handleMouseDrag']).toHaveBeenCalled();
     });
 
     it('Should call cell hover in if position on cell', () => {
@@ -92,7 +92,7 @@ describe('Handle mouse move tests', () => {
         MouseHandlers.handleMouseMove.call(map, new MouseEvent('mousemove'));
 
         expect(map['hoveredCell']).toBe(cell);
-        expect(map['onCellHoverIn']).toBeCalled();
+        expect(map['onCellHoverIn']).toHaveBeenCalled();
     });
 
     it('Should call cell hover out if left the cell area', () => {
@@ -108,7 +108,7 @@ describe('Handle mouse move tests', () => {
         MouseHandlers.handleMouseMove.call(map, new MouseEvent('mousemove'));
 
         expect(map['hoveredCell']).toBeUndefined();
-        expect(map['onCellHoverOut']).toBeCalled();
+        expect(map['onCellHoverOut']).toHaveBeenCalled();
     });
 
     it('Should not call handlers if hovered cell did not change', () => {
@@ -125,8 +125,8 @@ describe('Handle mouse move tests', () => {
         MouseHandlers.handleMouseMove.call(map, new MouseEvent('mousemove'));
 
         expect(map['hoveredCell']).toBe(cell);
-        expect(map['onCellHoverOut']).not.toBeCalled();
-        expect(map['onCellHoverIn']).not.toBeCalled();
+        expect(map['onCellHoverOut']).not.toHaveBeenCalled();
+        expect(map['onCellHoverIn']).not.toHaveBeenCalled();
     });
 });
 
@@ -141,7 +141,7 @@ describe('Handle mouse up tests', () => {
         MouseHandlers.handleMouseUp.call(map, new MouseEvent('mouseup'));
 
         expect(map['isDragging']).toBeFalsy();
-        expect(map['handleMouseDrag']).toBeCalled();
+        expect(map['handleMouseDrag']).toHaveBeenCalled();
     });
 
     it('Should select cell if was not previously selected', () => {
@@ -155,7 +155,7 @@ describe('Handle mouse up tests', () => {
 
         MouseHandlers.handleMouseUp.call(map, new MouseEvent('mouseup'));
 
-        expect(map['onCellSelect']).toBeCalled();
+        expect(map['onCellSelect']).toHaveBeenCalled();
         expect(map['selectedCell']).toBe(cell);
     });
 
@@ -170,7 +170,7 @@ describe('Handle mouse up tests', () => {
 
         MouseHandlers.handleMouseUp.call(map, new MouseEvent('mouseup'));
 
-        expect(map['onCellDeselect']).toBeCalled();
+        expect(map['onCellDeselect']).toHaveBeenCalled();
         expect(map['selectedCell']).toBeUndefined();
     });
 
@@ -187,8 +187,8 @@ describe('Handle mouse up tests', () => {
 
         MouseHandlers.handleMouseUp.call(map, new MouseEvent('mouseup'));
 
-        expect(map['onCellDeselect']).toBeCalled();
-        expect(map['onCellSelect']).toBeCalled();
+        expect(map['onCellDeselect']).toHaveBeenCalled();
+        expect(map['onCellSelect']).toHaveBeenCalled();
         expect(map['selectedCell']).toBe(cell2);
     });
 });
@@ -228,7 +228,7 @@ describe('Mouse enter and leave tests', () => {
         MouseHandlers.handleMouseLeave.call(map, new MouseEvent('mouseleave'));
 
         expect(map['hoveredCell']).toBeUndefined();
-        expect(map['onCellHoverOut']).toBeCalled();
+        expect(map['onCellHoverOut']).toHaveBeenCalled();
     });
 });
 

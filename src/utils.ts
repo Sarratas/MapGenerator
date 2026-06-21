@@ -12,7 +12,7 @@ export default class Utils {
         let savedArgs: T | undefined;
         let savedThis: unknown;
 
-        function wrapper(...args: T): void {
+        function wrapper(this: unknown, ...args: T): void {
             if (isThrottled) {
                 savedArgs = args;
                 savedThis = this;

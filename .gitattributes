@@ -1,0 +1,7 @@
+# Normalize all text files to LF in the repository and working tree.
+# Keeps Biome's formatter (LF by default) consistent across OSes and CI.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.ico binary

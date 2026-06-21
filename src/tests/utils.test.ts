@@ -19,11 +19,11 @@ test('Utils.throttle without this', () => {
     throttledFunc('a');
     throttledFunc('a');
 
-    expect(fn).toBeCalledTimes(1);
+    expect(fn).toHaveBeenCalledTimes(1);
 
     jest.runAllTimers();
 
-    expect(fn).toBeCalledTimes(2);
+    expect(fn).toHaveBeenCalledTimes(2);
 });
 
 test('Utils.throttle with this', () => {
@@ -38,9 +38,9 @@ test('Utils.throttle with this', () => {
     throttledFunc();
     throttledFunc();
 
-    expect(obj.fn).toBeCalledTimes(1);
+    expect(obj.fn).toHaveBeenCalledTimes(1);
 
     jest.runAllTimers();
 
-    expect(obj.fn).toBeCalledTimes(2);
+    expect(obj.fn).toHaveBeenCalledTimes(2);
 });

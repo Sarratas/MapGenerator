@@ -13,6 +13,7 @@
         "start": "webpack serve --mode development",
         "test": "jest",
         "coverage": "jest --verbose --coverage",
+        "typecheck": "tsc --noEmit",
         "lint": "biome check .",
         "lint:fix": "biome check --write .",
         "format": "biome format --write ."
@@ -28,23 +29,25 @@
     },
     "homepage": "https://github.com/Sarratas/MapGenerator#readme",
     "dependencies": {
-        "fastpriorityqueue": "^0.7.5",
+        "fastpriorityqueue": "^0.8.0",
         "prando": "^6.0.1"
     },
     "devDependencies": {
-        "@biomejs/biome": "^1.9.4",
-        "@types/jest": "^29.5.14",
+        "@biomejs/biome": "^2.5.0",
+        "@swc/core": "^1.15.41",
+        "@swc/jest": "^0.2.39",
+        "@types/jest": "^30.0.0",
         "css-loader": "^7.1.2",
-        "jest": "^29.7.0",
-        "jest-environment-jsdom": "^29.7.0",
+        "fork-ts-checker-webpack-plugin": "^9.1.0",
+        "jest": "^30.4.2",
+        "jest-environment-jsdom": "^30.4.1",
         "sass": "^1.83.0",
         "sass-loader": "^16.0.4",
         "style-loader": "^4.0.0",
-        "ts-jest": "^29.2.5",
-        "ts-loader": "^9.5.2",
-        "typescript": "^5.7.2",
+        "swc-loader": "^0.2.7",
+        "typescript": "^6.0.3",
         "webpack": "^5.97.1",
-        "webpack-cli": "^6.0.1",
+        "webpack-cli": "^7.0.3",
         "webpack-dev-server": "^5.2.0"
     }
 }

@@ -6,7 +6,7 @@ import Utils from '../utils';
 import MouseHandlers from './mouseHandlers';
 import { Path } from './path';
 
-import FastPriorityQueue = require('fastpriorityqueue');
+import FastPriorityQueue from 'fastpriorityqueue';
 import { CellFactory } from '../cell/cellFactory';
 import type { IPosition2d } from '../shared/position';
 import { CellsContainer, MapRanges } from './mapBase';
@@ -434,6 +434,7 @@ export class WorldMap extends CellsContainer {
     }
 
     private setAndBindMouseHandlers(): void {
+        // These are registered as DOM event listeners, where `this` would otherwise be the canvas, so the bind is required.
         this.handleMouseWheel = MouseHandlers.handleMouseWheel.bind(this);
         this.handleMouseDown = MouseHandlers.handleMouseDown.bind(this);
         this.handleMouseMove = Utils.throttle(MouseHandlers.handleMouseMove.bind(this), 50);
