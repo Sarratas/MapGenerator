@@ -1,16 +1,15 @@
+import FastPriorityQueue from 'fastpriorityqueue';
 import { type Cell, PlaceholderCell } from '../cell/cell';
 import { CellTerrainColor } from '../cell/cellDefines';
+import { CellFactory } from '../cell/cellFactory';
 import CellHooks from '../cell/cellHooks';
 import { getHoverTooltip, getSelectTooltip } from '../cell/cellTooltip';
-import Utils from '../utils';
-import MouseHandlers from './mouseHandlers';
-import { Path } from './path';
-
-import FastPriorityQueue from 'fastpriorityqueue';
-import { CellFactory } from '../cell/cellFactory';
 import type { IPosition2d } from '../shared/position';
+import Utils from '../utils';
 import { CellsContainer, MapRanges } from './mapBase';
+import MouseHandlers from './mouseHandlers';
 import type { Nation } from './nation';
+import { Path } from './path';
 
 enum HexConstants {
     BonusOffsetX = 0.5,
