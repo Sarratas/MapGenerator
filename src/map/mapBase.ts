@@ -51,7 +51,7 @@ export abstract class CellsContainer {
         const result: Array<Cell> = [];
         const arrayX = Utils.range(cell.pos.x - radius, cell.pos.x + radius);
         const arrayY = Utils.range(cell.pos.y - radius, cell.pos.y + radius);
-        arrayX.forEach((posX) =>
+        arrayX.forEach((posX) => {
             arrayY.forEach((posY) => {
                 // don't include source cell in result array
                 if (cell.pos.x === posX && cell.pos.y === posY) return;
@@ -62,8 +62,8 @@ export abstract class CellsContainer {
                 if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
                     result.push(neighborCell);
                 }
-            }),
-        );
+            });
+        });
         return result;
     }
 
@@ -71,7 +71,7 @@ export abstract class CellsContainer {
         const result: Array<Cell> = [];
         const arrayX = Utils.range(cell.posCube.x - radius, cell.posCube.x + radius);
         const arrayY = Utils.range(cell.posCube.y - radius, cell.posCube.y + radius);
-        arrayX.forEach((cubeX) =>
+        arrayX.forEach((cubeX) => {
             arrayY.forEach((cubeY) => {
                 const cubeZ = -cubeX - cubeY;
                 if (cell.posCube.z - cubeZ < -radius || cell.posCube.z - cubeZ > radius) return;
@@ -84,8 +84,8 @@ export abstract class CellsContainer {
                 if (filterType === undefined || (filterType & neighborCell.type) !== 0) {
                     result.push(neighborCell);
                 }
-            }),
-        );
+            });
+        });
         return result;
     }
 }

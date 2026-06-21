@@ -227,7 +227,7 @@ describe('Cell getFillColorForMode method tests', () => {
         cell.highlightModifier |= HighlightModifiers.Hover;
         cell.getFillColorForMode(MapMode.Terrain);
 
-        expect(spy).toBeCalled();
+        expect(spy).toHaveBeenCalled();
 
         spy.mockRestore();
     });
@@ -239,7 +239,7 @@ describe('Cell getFillColorForMode method tests', () => {
 
         cell.getFillColorForMode(MapMode.Terrain);
 
-        expect(spy).toBeCalled();
+        expect(spy).toHaveBeenCalled();
 
         spy.mockRestore();
     });

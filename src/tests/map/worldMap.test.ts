@@ -395,7 +395,7 @@ describe('Rendering tests', () => {
 
         map.render();
 
-        expect(map['renderSquare']).toBeCalled();
+        expect(map['renderSquare']).toHaveBeenCalled();
     });
 
     test('Render square implementation', () => {
@@ -418,7 +418,7 @@ describe('Rendering tests', () => {
 
         map.render();
 
-        expect(map['renderHexagonal']).toBeCalled();
+        expect(map['renderHexagonal']).toHaveBeenCalled();
     });
 
     test('Render hexagonal implementation', () => {

@@ -158,18 +158,18 @@ export class WorldMapGenerator extends CellsContainer {
     }
 
     protected generatePlains(): void {
-        this.cellsSquare.forEach((elems) =>
+        this.cellsSquare.forEach((elems) => {
             elems.forEach((currentCell) => {
                 if (currentCell.type === CellTypes.None) {
                     currentCell.type = CellTypes.Plain;
                 }
-            }),
-        );
+            });
+        });
     }
 
     protected smoothingPass(): void {
         let adjacentCells: Array<Cell> = [];
-        this.cellsSquare.forEach((elems) =>
+        this.cellsSquare.forEach((elems) => {
             elems.forEach((currentCell) => {
                 switch (currentCell.type) {
                     case CellTypes.ShallowWater:
@@ -202,14 +202,14 @@ export class WorldMapGenerator extends CellsContainer {
                     default:
                         break;
                 }
-            }),
-        );
+            });
+        });
     }
 
     protected smoothingPass2(): void {
         let adjacentCells: Array<Cell> = [];
         for (let i = 0; i < this.generationParams.waterSmoothingPasses; ++i) {
-            this.cellsSquare.forEach((elems) =>
+            this.cellsSquare.forEach((elems) => {
                 elems.forEach((currentCell) => {
                     switch (currentCell.type) {
                         case CellTypes.ShallowWater:
@@ -229,13 +229,13 @@ export class WorldMapGenerator extends CellsContainer {
                         default:
                             break;
                     }
-                }),
-            );
+                });
+            });
         }
     }
 
     protected smoothingPass3(): void {
-        this.cellsSquare.forEach((elems) =>
+        this.cellsSquare.forEach((elems) => {
             elems.forEach((currentCell) => {
                 switch (currentCell.type) {
                     case CellTypes.ShallowWater: {
@@ -249,7 +249,7 @@ export class WorldMapGenerator extends CellsContainer {
                     default:
                         break;
                 }
-            }),
-        );
+            });
+        });
     }
 }

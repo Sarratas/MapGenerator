@@ -134,11 +134,11 @@ function generateMap(): void {
     const generatedCells = generator.generate(mapWidth, mapHeight);
 
     // set test nations
-    generatedCells.forEach((elements) =>
+    generatedCells.forEach((elements) => {
         elements.forEach((cell) => {
             cell.nation = nations[(Math.floor(cell.pos.x / 10) + Math.floor(cell.pos.y / 10) * 3) % 10];
-        }),
-    );
+        });
+    });
 
     map = new WorldMap(mapWidth, mapHeight);
     map.loadCellsData(generatedCells, mapWidth, mapHeight);

@@ -26,12 +26,12 @@ describe('Generator tests', () => {
 
         generator.generate(50, 50);
 
-        expect(generator['generateLakes']).toBeCalledTimes(1);
-        expect(generator['generateMountains']).toBeCalledTimes(1);
-        expect(generator['smoothingPass']).toBeCalledTimes(1);
-        expect(generator['smoothingPass2']).toBeCalledTimes(1);
-        expect(generator['smoothingPass3']).toBeCalledTimes(1);
-        expect(generator['generatePlains']).toBeCalledTimes(1);
+        expect(generator['generateLakes']).toHaveBeenCalledTimes(1);
+        expect(generator['generateMountains']).toHaveBeenCalledTimes(1);
+        expect(generator['smoothingPass']).toHaveBeenCalledTimes(1);
+        expect(generator['smoothingPass2']).toHaveBeenCalledTimes(1);
+        expect(generator['smoothingPass3']).toHaveBeenCalledTimes(1);
+        expect(generator['generatePlains']).toHaveBeenCalledTimes(1);
     });
 
     it('Should generate map with only empty cells', () => {

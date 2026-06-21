@@ -1,4 +1,5 @@
 const path = require('node:path');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
     entry: './src/index.ts',
@@ -20,8 +21,18 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
                 exclude: /node_modules/,
+                use: {
+                    loader: 'swc-loader',
+                    options: {
+                        jsc: {
+                            parser: { syntax: 'typescript' },
+                            target: 'es2020',
+                        },
+                        // Emit ES modules so webpack can tree-shake.
+                        module: { type: 'es6' },
+                    },
+                },
             },
             {
                 test: /\.(s*)css$/,
@@ -29,6 +40,14 @@ module.exports = {
             },
         ],
     },
+    plugins: [
+        // swc transpiles without type-checking; run tsc in a separate process so type errors still fail the build.
+        // Use the build-only config (app sources, no tests) so the dev-server overlay isn't driven by test types;
+        // `npm run typecheck` covers tests via the root tsconfig.
+        new ForkTsCheckerWebpackPlugin({
+            typescript: { configFile: 'tsconfig.build.json' },
+        }),
+    ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },

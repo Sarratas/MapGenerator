@@ -18,7 +18,7 @@ describe('Cell hooks tests', () => {
 
         CellHooks.onCellHoverIn.call(cell, new MouseEvent('hover'));
 
-        expect(CellHooks.updateTooltipContent).toBeCalledTimes(1);
+        expect(CellHooks.updateTooltipContent).toHaveBeenCalledTimes(1);
 
         expect(hoverTooltipMock.hidden).toBeFalsy();
 
@@ -64,7 +64,7 @@ describe('Cell hooks tests', () => {
 
         CellHooks.onCellSelect.call(cell, new MouseEvent('click'));
 
-        expect(CellHooks.updateTooltipContent).toBeCalledTimes(1);
+        expect(CellHooks.updateTooltipContent).toHaveBeenCalledTimes(1);
 
         expect(selectTooltipMock.hidden).toBeFalsy();
 
