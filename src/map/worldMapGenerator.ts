@@ -1,6 +1,8 @@
 import Prando from 'prando';
+
 import { Cell } from '../cell/cell';
 import { CellTypes } from '../cell/cellDefines';
+
 import { CellsContainer, MapRanges, NeighborAlgorithms } from './mapBase';
 
 export interface IGenerationParams {
