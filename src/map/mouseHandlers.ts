@@ -1,4 +1,5 @@
 import type { IPosition2d } from '../shared/position';
+
 import type { WorldMap } from './worldMap';
 
 export default class MouseHandlers {

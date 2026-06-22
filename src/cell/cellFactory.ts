@@ -1,4 +1,5 @@
 import type { IPosition2d } from '../shared/position';
+
 import { type Cell, DeepWaterCell, HighlandCell, MountainCell, PlaceholderCell, PlainCell, ShallowWaterCell } from './cell';
 import { CellTypes } from './cellDefines';
 
